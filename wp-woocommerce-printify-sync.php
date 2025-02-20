@@ -11,6 +11,9 @@
 
 namespace ApolloWeb\WooCommercePrintifySync;
 
+use ApolloWeb\WooCommercePrintifySync\Admin;
+use ApolloWeb\WooCommercePrintifySync\OrderSync;
+
 // Exit if accessed directly.
 if (!defined('ABSPATH')) {
     exit;
