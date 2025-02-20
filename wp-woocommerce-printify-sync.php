@@ -32,8 +32,8 @@ spl_autoload_register( function ( $class ) {
 	}
 	$relative_class = substr( $class, $len );
 	$directories    = array(
-		__DIR__ . '/includes/',
 		__DIR__ . '/admin/',
+		__DIR__ . '/includes/',
 	);
 	foreach ( $directories as $base_dir ) {
 		$file = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
