@@ -14,6 +14,6 @@ jobs:
     - name: Push files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USERNAME }}
+        server: ftp.apololo-web.co.uk
+        username: apolloweb
         password: ${{ secrets.FTP_PASSWORD }}
