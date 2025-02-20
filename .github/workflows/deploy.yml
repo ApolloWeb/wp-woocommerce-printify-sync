@@ -1,21 +1,37 @@
+name: Deploy to FTP Server
 
 on:
   push:
     branches:
       - master
-name: Deploy website on push
-jobs:
-  web-deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    environment: WooCommerce Printify
-    steps:
-    - name: Get latest code
-      uses: actions/checkout@v3
+  pull_request:
+    branches:
+      - master
 
-    - name: Push files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+      environment: WooCommerce Printify
+    steps:
+      # Checkout the repository
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      # Set up FTP client (lftp)
+      - name: Set up FTP client
+        run: sudo apt-get install -y lftp
+
+      # Deploy to FTP server
+      - name: Deploy to FTP server
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          echo "Starting FTP connection..."
+          lftp -d -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST <<EOF
+            mkdir -p /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
+            mirror -R ./ /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
+            quit
+          EOF
+          echo "Deployment complete!"
