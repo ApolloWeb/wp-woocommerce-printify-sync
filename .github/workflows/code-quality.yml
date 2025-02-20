@@ -3,7 +3,7 @@ name: Code Quality Check
 on:
   push:
     branches:
-      - master  # Trigger workflow on push to the master branch
+      - mercury  # Trigger workflow on push to the master branch
       - 'feature/*'  # Optionally, include feature branches
   pull_request:
     branches:
