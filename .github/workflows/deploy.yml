@@ -3,10 +3,10 @@ name: Deploy to FTP Server
 on:
   push:
     branches:
-      - master  # Trigger deployment on push to master branch
+      - master
   pull_request:
     branches:
-      - master  # Trigger deployment on pull request to master
+      - master
 
 jobs:
   deploy:
@@ -19,20 +19,32 @@ jobs:
 
       # Set up the FTP client (lftp)
       - name: Set up FTP client
-        run: sudo apt-get install -y lftp  # Install FTP client (lftp)
+        run: sudo apt-get install -y lftp
 
-      # Deploy the code to the FTP server
+      # Debugging Step: Print FTP secrets to check if they're passed correctly
+      - name: Print FTP secrets for debugging
+        run: |
+          echo "FTP_HOST is set to: $FTP_HOST"
+          echo "FTP_USERNAME is set to: $FTP_USERNAME"
+          echo "FTP_PASSWORD is set to: $FTP_PASSWORD"
+
+      # Test FTP connection manually
+      - name: Test FTP connection manually
+        run: |
+          echo "Testing FTP connection..."
+          lftp -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST -e "ls; quit"
+
+      # Deploy to FTP server
       - name: Deploy to FTP server
         env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}  # Store sensitive data in GitHub Secrets
+          FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Starting deployment..."
+          echo "Starting FTP connection..."
           lftp -d -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST <<EOF
-            # Enabling debugging output
-            mirror -R ./ /public_html/wp-content/plugins/wp-woocomerce-printiify-sync  # Path on the server
+            mkdir -p /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
+            mirror -R ./ /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
             quit
           EOF
-
           echo "Deployment complete!"
