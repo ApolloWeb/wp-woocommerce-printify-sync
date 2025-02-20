@@ -28,10 +28,5 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Starting FTP connection..."
-          lftp -d -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST <<EOF
-            mkdir -p /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
-            mirror -R ./ /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
-            quit
-          EOF
-          echo "Deployment complete!"
+          mkdir -p /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
+          mirror -R ./ /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
