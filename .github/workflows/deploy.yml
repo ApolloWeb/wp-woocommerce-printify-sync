@@ -13,19 +13,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v2
+      # Checkout the code from the repository
+      - name: Checkout the repository
+        uses: actions/checkout@v2
 
-    - name: Set up FTP client
-      run: sudo apt-get install -y lftp  # Install FTP client (lftp)
+      # Set up the FTP client (lftp)
+      - name: Set up FTP client
+        run: sudo apt-get install -y lftp  # Install FTP client (lftp)
 
-    - name: Deploy to FTP server
-      env:
-        FTP_HOST: ${{ secrets.FTP_HOST }}  # Store sensitive data in GitHub Secrets
-        FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-        FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-      run: |
-        lftp -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST <<EOF
-        mirror -R ./ /public_html/wp-content/plugins/wp-woocomerce-printiify-sync  # Path on the server
-        quit
-        EOF
+      # Deploy the code to the FTP server
+      - name: Deploy to FTP server
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}  # Store sensitive data in GitHub Secrets
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          echo "Starting deployment..."
+          lftp -d -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST <<EOF
+            # Enabling debugging output
+            mirror -R ./ /public_html/wp-content/plugins/wp-woocomerce-printiify-sync  # Path on the server
+            quit
+          EOF
+
+          echo "Deployment complete!"
