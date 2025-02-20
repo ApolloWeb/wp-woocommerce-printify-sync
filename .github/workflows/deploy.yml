@@ -1,49 +1,19 @@
-name: Deploy to FTP Server
-
 on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
-
+name: Deploy website on push
 jobs:
-  deploy:
+  web-deploy:
+    name: Deploy
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repository
-      - name: Checkout the repository
-        uses: actions/checkout@v2
+    - name: Get latest code
+      uses: actions/checkout@v3
 
-      # Set up FTP client (lftp)
-      - name: Set up FTP client
-        run: sudo apt-get install -y lftp
-
-      # Print the FTP connection details (for debugging)
-      - name: Print FTP connection details
-        run: |
-          echo "FTP_HOST: $FTP_HOST"
-          echo "FTP_USERNAME: $FTP_USERNAME"
-
-      # Test FTP connection manually with debug
-      - name: Test FTP connection with debug output
-        run: |
-          echo "Testing FTP connection..."
-          lftp -d -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST -e "ls; quit"
-
-      # Deploy to FTP server
-      - name: Deploy to FTP server
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-        run: |
-          echo "Starting FTP connection..."
-          lftp -d -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST <<EOF
-            mkdir -p /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
-            mirror -R ./ /public_html/wp-content/plugins/wp-woocomerce-printiify-sync
-            quit
-          EOF
-          echo "Deployment complete!"
+    - name: Push files
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
