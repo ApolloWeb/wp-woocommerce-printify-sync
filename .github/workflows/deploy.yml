@@ -13,26 +13,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code from the repository
+      # Checkout the repository
       - name: Checkout the repository
         uses: actions/checkout@v2
 
-      # Set up the FTP client (lftp)
+      # Set up FTP client (lftp)
       - name: Set up FTP client
         run: sudo apt-get install -y lftp
 
-      # Debugging Step: Print FTP secrets to check if they're passed correctly
-      - name: Print FTP secrets for debugging
+      # Print the FTP connection details (for debugging)
+      - name: Print FTP connection details
         run: |
-          echo "FTP_HOST is set to: $FTP_HOST"
-          echo "FTP_USERNAME is set to: $FTP_USERNAME"
-          echo "FTP_PASSWORD is set to: $FTP_PASSWORD"
+          echo "FTP_HOST: $FTP_HOST"
+          echo "FTP_USERNAME: $FTP_USERNAME"
 
-      # Test FTP connection manually
-      - name: Test FTP connection manually
+      # Test FTP connection manually with debug
+      - name: Test FTP connection with debug output
         run: |
           echo "Testing FTP connection..."
-          lftp -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST -e "ls; quit"
+          lftp -d -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST -e "ls; quit"
 
       # Deploy to FTP server
       - name: Deploy to FTP server
