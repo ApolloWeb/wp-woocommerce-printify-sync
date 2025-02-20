@@ -53,5 +53,5 @@ jobs:
 
     - name: Run ESLint (JavaScript syntax check)
       run: |
-        eslint src/ --ext .js --fix  # Adjust the directory to match your JS files
+        npx eslint src/ --fix # Adjust the directory to match your JS files
       continue-on-error: true  # Allows workflow to continue even with issues
