@@ -1,0 +1,26 @@
+{
+    "require": {
+        "squizlabs/php_codesniffer": "*",
+        "wp-coding-standards/wpcs": "*",
+        "phpstan/phpstan": "*",
+        "friendsofphp/php-cs-fixer": "*",
+        "phpunit/phpunit": "^9.5",
+        "dealerdirect/phpcodesniffer-composer-installer": "*"
+    },
+    "config": {
+        "bin-dir": "vendor/bin"
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "extra": {
+        "installer-paths": {
+            "vendor/bin/phpcs": ["squizlabs/php_codesniffer"],
+            "vendor/bin/phpcs": ["wp-coding-standards/wpcs"],
+            "vendor/bin/phpstan": ["phpstan/phpstan"],
+            "vendor/bin/php-cs-fixer": ["friendsofphp/php-cs-fixer"],
+            "vendor/bin/phpunit": ["phpunit/phpunit"],
+            "vendor/bin/phpcs": ["dealerdirect/phpcodesniffer-composer-installer"]
+        }
+    }
+}

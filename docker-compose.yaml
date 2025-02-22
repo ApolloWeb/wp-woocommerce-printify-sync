@@ -1,67 +1,53 @@
-version: '3.8'
 
 services:
   nginx:
-    image: nginx:latest
-    container_name: ${NGINX_CONTAINER:-custom_nginx_container}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: nginx:alpine
+    container_name: wordpress_nginx
     ports:
-      - "${NGINX_PORT:-8080}:80"
+      - "8080:80"
     volumes:
-      - ${WORDPRESS_PATH:-./wordpress}:/var/www
-      - ${DOCKER_PATH:-./docker}/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./:/var/www/html/wp-content
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - php
-      - db
     networks:
-      - ${NETWORK_NAME:-webnet}
+      - wordpress_network
 
   php:
     build:
-      context: ${DOCKER_PATH:-./docker}
-      dockerfile: Dockerfile
-      args:
-        WORDPRESS_VERSION: ${WORDPRESS_VERSION}
-        WORDPRESS_LOCALE: ${WORDPRESS_LOCALE}
-    container_name: ${PHP_CONTAINER:-custom_php_container}
-    environment:
-      WORDPRESS_VERSION: ${WORDPRESS_VERSION}
-      WORDPRESS_LOCALE: ${WORDPRESS_LOCALE}
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    container_name: wordpress_php
     volumes:
-      - ${WORDPRESS_PATH:-./wordpress}:/var/www
+      - ./wp-content/plugins/:/var/www/plugins
+      - ./phpcs.xml.dist:/var/www/html/phpcs.xml.dist:ro
+      - ./.php-cs-fixer.php:/var/www/html/.php-cs-fixer.php:ro
+      - ./phpstan.neon:/var/www/html/phpstan.neon:ro
+      - ./eslint.config.js:/var/www/html/eslint.config.js:ro
+      - ./phpunit.xml.dist:/var/www/html/phpunit.xml.dist:ro
+      - ./tests/bootstrap.php:/var/www/html/tests/bootstrap.php:ro
     networks:
-      - ${NETWORK_NAME:-webnet}
+      - wordpress_network
 
   db:
     image: mysql:8.0
-    container_name: ${DB_CONTAINER:-custom_mysql_container}
+    container_name: wordpress_db
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress_user
+      MYSQL_PASSWORD: wordpress_password
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - ${NETWORK_NAME:-webnet}
-
-  dev-tools:
-    build:
-      context: ${DOCKER_PATH:-./docker}
-      dockerfile: dev.Dockerfile
-    container_name: ${DEV_TOOLS_CONTAINER:-dev_tools_container}
-    volumes:
-      - .:/var/www  # Mount the root directory so tests can run on all files
-    working_dir: /var/www
-    stdin_open: true
-    tty: true
-    networks:
-      - ${NETWORK_NAME:-webnet}
-    #command: ["/usr/local/bin/run-tests.sh"]
+      - wordpress_network
 
 volumes:
   db_data:
-    driver: local
 
 networks:
-  ${NETWORK_NAME:-webnet}:
+  wordpress_network:
     driver: bridge

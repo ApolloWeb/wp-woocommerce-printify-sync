@@ -8,7 +8,8 @@
     "johnpbloch/wordpress": "^6.3",
     "apolloweb/wp-woocommerce-printify-sync": "dev-main",
     "wpackagist-theme/envo-shopper": "^1.0",
-    "wpackagist-plugin/wordpress-seo": "^21.0"
+    "wpackagist-plugin/wordpress-seo": "^21.0",
+    "vlucas/phpdotenv": "^5.5"
   },
   "repositories": [
     {
@@ -29,7 +30,7 @@
   },
   "autoload": {
     "psr-4": {
-      "MyPlugin\": "plugins/wp-woocommerce-printify-sync/"
+      "MyPlugin\\": "plugins/wp-woocommerce-printify-sync/"
     }
   },
   "extra": {
