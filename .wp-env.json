@@ -1,0 +1,14 @@
+{
+  "core": "WordPress",
+  "core": "wordpress/wordpress",
+  "plugins": [ "." ],
+  "mappings": {},
+  "dockerComposeOverrides": {
+    "networks": {
+      "default": {
+        "external": true,
+        "name": "my-bridge"
+      }
+    }
+  }
+}
