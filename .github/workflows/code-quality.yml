@@ -3,11 +3,11 @@ name: Code Quality Check
 on:
   push:
     branches:
-      - mercury  # Trigger workflow on push to the master branch
-      - 'feature/*'  # Optionally, include feature branches
+      - mercury  # Run on push to mercury
+      - 'feature/*'  # Run on feature branches
   pull_request:
     branches:
-      - master  # Trigger workflow on pull requests to the master branch
+      - master  # Run on PRs to master
 
 jobs:
   lint-and-analyze:
@@ -15,43 +15,52 @@ jobs:
     
     steps:
     - name: Checkout the repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up PHP 8.1
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.1'
+        tools: composer, phpstan, php-cs-fixer, phpcs, phpcbf, phplint
         extensions: mbstring, dom
 
     - name: Install Composer dependencies
-      run: |
-        curl -sS https://getcomposer.org/installer | php
-        php composer.phar install --no-interaction
+      run: composer install --prefer-dist --no-progress --no-suggest
 
-    - name: Install Node.js and ESLint
-      uses: actions/setup-node@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
       with:
-        node-version: '16'  # Use the required Node.js version
+        node-version: '16'
+
     - name: Install ESLint
-      run: |
-        npm install -g eslint
+      run: npm install -g eslint
 
-    - name: Install PHPStan
-      run: |
-        curl -sS https://getcomposer.org/installer | php
-        php composer.phar require --dev phpstan/phpstan
+    # ✅ 1️⃣ Run PHP Lint (Syntax Check)
+    - name: Run PHP Lint (Syntax Check)
+      run: find . -name "*.php" | xargs -n1 php -l
+      continue-on-error: false
 
-    - name: Run PHP-CS-Fixer (PHP formatting)
-      run: |
-        vendor/bin/php-cs-fixer fix --config=.php_cs --dry-run --verbose
-      continue-on-error: true  # Allows workflow to continue even with issues
+    # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards
+    - name: Run PHP CodeSniffer (PHPCS)
+      run: vendor/bin/phpcs --standard=WordPress-Core --extensions=php .
+      continue-on-error: true
 
-    - name: Run PHPStan (Static analysis)
-      run: |
-        vendor/bin/phpstan analyse src/  # Adjust the directory to match your codebase
-      continue-on-error: true  # Allows workflow to continue even with issues
+    # ✅ 3️⃣ Run PHP Code Beautifier (PHPCBF) to auto-fix PHPCS issues
+    - name: Run PHP Code Beautifier (PHPCBF)
+      run: vendor/bin/phpcbf --standard=WordPress-Core --extensions=php .
+      continue-on-error: true
 
-    - name: Run ESLint (JavaScript syntax check)
-      run: |
-        npx eslint src/ --fix # Adjust the directory to match your JS files
-      continue-on-error: true  # Allows workflow to continue even with issues
+    # ✅ 4️⃣ Run PHP-CS-Fixer for additional formatting fixes
+    - name: Run PHP-CS-Fixer (PHP Formatting)
+      run: vendor/bin/php-cs-fixer fix --config=.php_cs --dry-run --verbose .
+      continue-on-error: true
+
+    # ✅ 5️⃣ Run PHPStan (Static Analysis)
+    - name: Run PHPStan (Static Analysis)
+      run: vendor/bin/phpstan analyse --level=max .
+      continue-on-error: true
+
+    # ✅ 6️⃣ Run ESLint on all JavaScript and TypeScript files
+    - name: Run ESLint (JavaScript Syntax Check)
+      run: npx eslint . --ext .js,.jsx,.ts,.tsx --fix
+      continue-on-error: true
