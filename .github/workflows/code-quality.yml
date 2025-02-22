@@ -24,9 +24,15 @@ jobs:
         tools: composer, phpstan, php-cs-fixer, phpcs, phpcbf, phplint
         extensions: mbstring, dom
 
-    - name: Install Composer dependencies
+    # ✅ Configure Composer plugins
+    - name: Configure Composer plugins
       run: |
         composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+        composer config --no-plugins allow-plugins.johnpbloch/wordpress-core-installer true
+
+    # ✅ Install Composer Dependencies
+    - name: Install Composer dependencies
+      run: |
         composer install --prefer-dist --no-progress
         vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs
 
