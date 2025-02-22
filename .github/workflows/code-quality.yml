@@ -24,7 +24,6 @@ jobs:
         tools: composer, phpstan, php-cs-fixer, phpcs, phpcbf, phplint
         extensions: mbstring, dom
 
-    # ✅ Install Composer Dependencies with Plugin Fix
     - name: Install Composer dependencies
       run: |
         composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true --file=.github/workflows/composer.json install
