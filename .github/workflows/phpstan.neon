@@ -1,12 +1,11 @@
 ﻿parameters:
     level: max
     paths:
-        - src/
+        - /
     excludePaths:
         - wp/*
         - vendor/*
         - node_modules/*
         - .github/*
-
     memoryLimit: 512M
     tmpDir: %currentWorkingDirectory%/tmp
