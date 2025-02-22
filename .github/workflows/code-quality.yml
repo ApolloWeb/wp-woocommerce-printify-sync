@@ -46,9 +46,10 @@ jobs:
         EOL
         cat composer.json  # Show the created file
 
-    # ✅ Install Composer Dependencies
+    # ✅ Install Composer Dependencies with Plugin Fix
     - name: Install Composer dependencies
       run: |
+        composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
         composer install --prefer-dist --no-progress
         vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs
 
