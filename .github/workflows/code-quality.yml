@@ -12,7 +12,7 @@ on:
 jobs:
   lint-and-analyze:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v3
@@ -56,10 +56,25 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'
+        node-version: '18'
 
     - name: Install ESLint
       run: npm install -g eslint
+
+    # ✅ Create ESLint configuration file if not present
+    - name: Create ESLint config
+      run: |
+        cat <<EOL > eslint.config.js
+        export default [
+          {
+            files: ['**/*.js'],
+            rules: {
+              'no-unused-vars': 'error',
+              'eqeqeq': 'error'
+            }
+          }
+        ];
+        EOL
 
     # ✅ 1️⃣ Run PHP Lint (Syntax Check) - Excluding vendor/, node_modules/, and .github/
     - name: Run PHP Lint (Syntax Check)
@@ -84,15 +99,14 @@ jobs:
     # ✅ 4️⃣ Run PHP-CS-Fixer for additional formatting fixes
     - name: Run PHP-CS-Fixer (PHP Formatting)
       run: |
-        vendor/bin/php-cs-fixer fix --config=.php_cs --dry-run --verbose \
-        --exclude=node_modules,vendor,.github .
+        vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --verbose
       continue-on-error: true
 
     # ✅ 5️⃣ Run PHPStan (Static Analysis)
     - name: Run PHPStan (Static Analysis)
       run: |
         vendor/bin/phpstan analyse --level=max \
-        --paths src/ --exclude-paths vendor/,node_modules/,.github/ .
+        --paths src/
       continue-on-error: true
 
     # ✅ 6️⃣ Run ESLint on all JavaScript and TypeScript files
