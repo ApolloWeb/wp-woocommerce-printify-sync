@@ -1,5 +1,5 @@
 {
-  "name": "my-wordpress-project",
+  "name": "myvendor/my-wordpress-project",
   "description": "A WordPress development environment with code quality tools.",
   "type": "project",
   "require": {
