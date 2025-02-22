@@ -27,7 +27,7 @@ jobs:
     - name: Install Composer dependencies
       run: |
         composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-        composer --file=.github/workflows/composer.json install --prefer-dist --no-progress
+        composer --file .github/workflows/composer.json install --prefer-dist --no-progress
         vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs
 
     - name: Set up Node.js
