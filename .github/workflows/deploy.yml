@@ -1,10 +1,16 @@
-on: push
+on:
+  push:
+    branches:
+      - mercury
+      - 'feature/*'
+
 name: Deploy On Push
 jobs:
   web-deploy:
     name: Deploy
     runs-on: ubuntu-latest
     environment: WooCommerce Printify
+    needs: lint-and-analyze  # ✅ Ensure deployment runs only after code quality checks pass
 
     steps:
     - name: Get latest code
