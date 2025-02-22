@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: ${NGINX_CONTAINER:-custom_nginx_container}
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    volumes:
+      - ${WORDPRESS_PATH:-./wordpress}:/var/www
+      - ${DOCKER_PATH:-./docker}/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - php
+      - db
+    networks:
+      - ${NETWORK_NAME:-webnet}
+
+  php:
+    build:
+      context: ${DOCKER_PATH:-./docker}
+      dockerfile: Dockerfile
+      args:
+        WORDPRESS_VERSION: ${WORDPRESS_VERSION}
+        WORDPRESS_LOCALE: ${WORDPRESS_LOCALE}
+    container_name: ${PHP_CONTAINER:-custom_php_container}
+    environment:
+      WORDPRESS_VERSION: ${WORDPRESS_VERSION}
+      WORDPRESS_LOCALE: ${WORDPRESS_LOCALE}
+    volumes:
+      - ${WORDPRESS_PATH:-./wordpress}:/var/www
+    networks:
+      - ${NETWORK_NAME:-webnet}
+
+  db:
+    image: mysql:8.0
+    container_name: ${DB_CONTAINER:-custom_mysql_container}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - ${NETWORK_NAME:-webnet}
+
+  dev-tools:
+    build:
+      context: ${DOCKER_PATH:-./docker}
+      dockerfile: dev.Dockerfile
+    container_name: ${DEV_TOOLS_CONTAINER:-dev_tools_container}
+    volumes:
+      - .:/var/www  # Mount the root directory so tests can run on all files
+    working_dir: /var/www
+    stdin_open: true
+    tty: true
+    networks:
+      - ${NETWORK_NAME:-webnet}
+    #command: ["/usr/local/bin/run-tests.sh"]
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  ${NETWORK_NAME:-webnet}:
+    driver: bridge

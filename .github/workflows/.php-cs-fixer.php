@@ -1,15 +1,15 @@
-﻿<?php
-
-$finder = PhpCsFixer\Finder::create()
-    ->in(__DIR__)
-    ->exclude('vendor')
-    ->exclude('node_modules')
-    ->exclude('.github')
-    ->exclude('wp');
+<?php
 
 return (new PhpCsFixer\Config())
-    ->setFinder($finder)
+    ->setRiskyAllowed(true)
     ->setRules([
-        '@PSR12' => true,
-        // Add or modify rules as needed
-    ]);
+        '@PSR2' => true,
+        'array_syntax' => ['syntax' => 'short'],
+        'ordered_imports' => ['sort_algorithm' => 'alpha'],
+        'no_unused_imports' => true,
+    ])
+    ->setFinder(
+        PhpCsFixer\Finder::create()
+            ->in(__DIR__)
+            ->exclude(['vendor', 'node_modules', 'wp'])
+    );

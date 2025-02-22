@@ -11,9 +11,14 @@ jobs:
     - name: Get latest code
       uses: actions/checkout@v4
     
-    - name: Sync files
+    - name: Sync only wp-woocommerce-printify-sync plugin
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: wp-content/plugins/wp-woocommerce-printify-sync/
+        server-dir: /public_html/wp-content/plugins/wp-woocommerce-printify-sync/
+        exclude: |
+          wp-content/plugins/*
+          !wp-content/plugins/wp-woocommerce-printify-sync/

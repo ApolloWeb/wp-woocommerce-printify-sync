@@ -44,38 +44,38 @@ jobs:
     - name: Install ESLint
       run: npm install -g eslint
 
-    # ✅ 1️⃣ Run PHP Lint (Syntax Check)
+    # ✅ 1️⃣ Run PHP Lint (Syntax Check) - ONLY in Plugin Directory
     - name: Run PHP Lint (Syntax Check)
       run: |
-        find . \( -path ./wp -o -path ./vendor -o -path ./node_modules -o -path ./.github \) -prune -o -name "*.php" -print | xargs -n1 php -l
+        find wp-content/plugins/wp-woocommerce-printify-sync -name "*.php" -print | xargs -n1 php -l
       continue-on-error: false
 
-    # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards
+    # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards - ONLY in Plugin
     - name: Run PHP CodeSniffer (PHPCS)
       run: |
-        vendor/bin/phpcs --standard=WordPress-Core --extensions=php --ignore=wp,vendor,node_modules,.github .
+        vendor/bin/phpcs --standard=WordPress-Core --extensions=php wp-content/plugins/wp-woocommerce-printify-sync
       continue-on-error: true
 
-    # ✅ 3️⃣ Run PHP Code Beautifier (PHPCBF) to auto-fix PHPCS issues
+    # ✅ 3️⃣ Run PHP Code Beautifier (PHPCBF) to auto-fix PHPCS issues - ONLY in Plugin
     - name: Run PHP Code Beautifier (PHPCBF)
       run: |
-        vendor/bin/phpcbf --standard=WordPress-Core --extensions=php --ignore=wp,vendor,node_modules,.github .
+        vendor/bin/phpcbf --standard=WordPress-Core --extensions=php wp-content/plugins/wp-woocommerce-printify-sync
       continue-on-error: true
 
-    # ✅ 4️⃣ Run PHP-CS-Fixer for additional formatting fixes
+    # ✅ 4️⃣ Run PHP-CS-Fixer for additional formatting fixes - ONLY in Plugin
     - name: Run PHP-CS-Fixer (PHP Formatting)
       run: |
-        vendor/bin/php-cs-fixer fix --config=.github/workflows/.php-cs-fixer.php --verbose
+        vendor/bin/php-cs-fixer fix --config=.github/workflows/.php-cs-fixer.php --verbose --path-mode=intersection wp-content/plugins/wp-woocommerce-printify-sync
       continue-on-error: true
 
-    # ✅ 5️⃣ Run PHPStan (Static Analysis)
+    # ✅ 5️⃣ Run PHPStan (Static Analysis) - ONLY in Plugin
     - name: Run PHPStan (Static Analysis)
       run: |
-        vendor/bin/phpstan analyse --configuration=.github/workflows/phpstan.neon --level=max --memory-limit=512M
+        vendor/bin/phpstan analyse --configuration=.github/workflows/phpstan.neon --level=max --memory-limit=512M wp-content/plugins/wp-woocommerce-printify-sync
       continue-on-error: true
 
-    # ✅ 6️⃣ Run ESLint on all JavaScript and TypeScript files
+    # ✅ 6️⃣ Run ESLint on Plugin JavaScript Files
     - name: Run ESLint (JavaScript Syntax Check)
       run: |
-        npx eslint --config .github/workflows/eslint.config.js . --fix
+        npx eslint --config .github/workflows/eslint.config.js wp-content/plugins/wp-woocommerce-printify-sync --fix
       continue-on-error: true

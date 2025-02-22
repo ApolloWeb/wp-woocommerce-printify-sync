@@ -1,4 +1,3 @@
-﻿// eslint.config.js
 export default [
     {
         files: ["**/*.js"],
@@ -6,7 +5,6 @@ export default [
             ecmaVersion: "latest",
             sourceType: "module",
             globals: {
-                // If you need specific globals from `env`:
                 window: "readonly",
                 document: "readonly",
                 navigator: "readonly",
@@ -17,6 +15,6 @@ export default [
             "no-unused-vars": "error",
             "eqeqeq": "error",
         },
-        ignores: ["wp/", "vendor/", "node_modules/", ".github/"],
+        ignores: ["vendor/", "node_modules/", "wp/"],
     },
 ];
