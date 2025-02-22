@@ -68,25 +68,35 @@ jobs:
 
     # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards
     - name: Run PHP CodeSniffer (PHPCS)
-      run: vendor/bin/phpcs --standard=WordPress-Core --extensions=php .
+      run: |
+        vendor/bin/phpcs --standard=WordPress-Core --extensions=php \
+        --ignore=node_modules/,vendor/ .
       continue-on-error: true
 
     # ✅ 3️⃣ Run PHP Code Beautifier (PHPCBF) to auto-fix PHPCS issues
     - name: Run PHP Code Beautifier (PHPCBF)
-      run: vendor/bin/phpcbf --standard=WordPress-Core --extensions=php .
+      run: |
+        vendor/bin/phpcbf --standard=WordPress-Core --extensions=php \
+        --ignore=node_modules/,vendor/ .
       continue-on-error: true
 
     # ✅ 4️⃣ Run PHP-CS-Fixer for additional formatting fixes
     - name: Run PHP-CS-Fixer (PHP Formatting)
-      run: vendor/bin/php-cs-fixer fix --config=.php_cs --dry-run --verbose .
+      run: |
+        vendor/bin/php-cs-fixer fix --config=.php_cs --dry-run --verbose \
+        --exclude=node_modules,vendor .
       continue-on-error: true
 
     # ✅ 5️⃣ Run PHPStan (Static Analysis)
     - name: Run PHPStan (Static Analysis)
-      run: vendor/bin/phpstan analyse --level=max .
+      run: |
+        vendor/bin/phpstan analyse --level=max \
+        --paths src/ --exclude-paths vendor/,node_modules/ .
       continue-on-error: true
 
     # ✅ 6️⃣ Run ESLint on all JavaScript and TypeScript files
     - name: Run ESLint (JavaScript Syntax Check)
-      run: npx eslint . --ext .js,.jsx,.ts,.tsx --fix
+      run: |
+        npx eslint . --ext .js,.jsx,.ts,.tsx --fix \
+        --ignore-pattern node_modules/ --ignore-pattern vendor/
       continue-on-error: true
