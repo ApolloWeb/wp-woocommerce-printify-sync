@@ -1,5 +1,5 @@
 name: Code Quality Check
-#Comment
+
 on:
   push:
     branches:
@@ -61,9 +61,10 @@ jobs:
     - name: Install ESLint
       run: npm install -g eslint
 
-    # ✅ 1️⃣ Run PHP Lint (Syntax Check)
+    # ✅ 1️⃣ Run PHP Lint (Syntax Check) - Excluding vendor/ and node_modules/
     - name: Run PHP Lint (Syntax Check)
-      run: find . -name "*.php" | xargs -n1 php -l
+      run: |
+        find . \( -path ./vendor -o -path ./node_modules \) -prune -o -name "*.php" -print | xargs -n1 php -l
       continue-on-error: false
 
     # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards
