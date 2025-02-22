@@ -1,15 +1,1 @@
-vendor/
-wordpress/
-app/
-composer.lock
-docker-compose.yml
-.wp-env.json
-,gitignore
-.eslint-config.js
-.wp-env.json
-[tests-wordpress
-assets/
-composer.lock
-docker-compose.yml
-vendor/
-wordpress/
+composer.json
