@@ -1,10 +1,10 @@
-﻿includes:
-    - vendor/phpstan/phpstan/conf/strict-rules.neon
-
-parameters:
+﻿parameters:
     level: max
     paths:
-        - .
+        - src/
     excludePaths:
         - vendor/*
         - node_modules/*
+        - .github/*
+    memoryLimit: 512M
+    tmpDir: %currentWorkingDirectory%/tmp

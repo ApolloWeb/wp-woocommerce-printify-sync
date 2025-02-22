@@ -24,28 +24,6 @@ jobs:
         tools: composer, phpstan, php-cs-fixer, phpcs, phpcbf, phplint
         extensions: mbstring, dom
 
-    # ✅ Generate `composer.json` inside GitHub Actions
-    - name: Generate composer.json
-      run: |
-        cat <<EOL > composer.json
-        {
-          "name": "myvendor/wp-woocommerce-printify-sync",
-          "description": "WooCommerce Printify Sync Plugin",
-          "type": "project",
-          "require": {
-            "php": ">=8.1"
-          },
-          "require-dev": {
-            "friendsofphp/php-cs-fixer": "^3.0",
-            "squizlabs/php_codesniffer": "^3.7",
-            "wp-coding-standards/wpcs": "^3.0",
-            "phpstan/phpstan": "^1.10",
-            "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
-          }
-        }
-        EOL
-        cat composer.json  # Show the created file
-
     # ✅ Install Composer Dependencies with Plugin Fix
     - name: Install Composer dependencies
       run: |
@@ -61,22 +39,7 @@ jobs:
     - name: Install ESLint
       run: npm install -g eslint
 
-    # ✅ Create ESLint configuration file if not present
-    - name: Create ESLint config
-      run: |
-        cat <<EOL > eslint.config.js
-        export default [
-          {
-            files: ['**/*.js'],
-            rules: {
-              'no-unused-vars': 'error',
-              'eqeqeq': 'error'
-            }
-          }
-        ];
-        EOL
-
-    # ✅ 1️⃣ Run PHP Lint (Syntax Check) - Excluding vendor/, node_modules/, and .github/
+    # ✅ 1️⃣ Run PHP Lint (Syntax Check)
     - name: Run PHP Lint (Syntax Check)
       run: |
         find . \( -path ./vendor -o -path ./node_modules -o -path ./.github \) -prune -o -name "*.php" -print | xargs -n1 php -l
@@ -85,33 +48,29 @@ jobs:
     # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards
     - name: Run PHP CodeSniffer (PHPCS)
       run: |
-        vendor/bin/phpcs --standard=WordPress-Core --extensions=php \
-        --ignore=node_modules/,vendor/,.github/ .
+        vendor/bin/phpcs --standard=.github/workflows/phpcs.xml.dist
       continue-on-error: true
 
     # ✅ 3️⃣ Run PHP Code Beautifier (PHPCBF) to auto-fix PHPCS issues
     - name: Run PHP Code Beautifier (PHPCBF)
       run: |
-        vendor/bin/phpcbf --standard=WordPress-Core --extensions=php \
-        --ignore=node_modules/,vendor/,.github/ .
+        vendor/bin/phpcbf --standard=.github/workflows/phpcs.xml.dist
       continue-on-error: true
 
     # ✅ 4️⃣ Run PHP-CS-Fixer for additional formatting fixes
     - name: Run PHP-CS-Fixer (PHP Formatting)
       run: |
-        vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --verbose
+        vendor/bin/php-cs-fixer fix --config=.github/workflows/.php-cs-fixer.php --dry-run --verbose
       continue-on-error: true
 
     # ✅ 5️⃣ Run PHPStan (Static Analysis)
     - name: Run PHPStan (Static Analysis)
       run: |
-        vendor/bin/phpstan analyse --level=max \
-        --paths src/
+        vendor/bin/phpstan analyse --configuration=.github/workflows/phpstan.neon
       continue-on-error: true
 
     # ✅ 6️⃣ Run ESLint on all JavaScript and TypeScript files
     - name: Run ESLint (JavaScript Syntax Check)
       run: |
-        npx eslint . --ext .js,.jsx,.ts,.tsx --fix \
-        --ignore-pattern node_modules/ --ignore-pattern vendor/ --ignore-pattern .github/
+        npx eslint --config .github/workflows/eslint.config.js . --fix
       continue-on-error: true

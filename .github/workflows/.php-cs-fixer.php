@@ -1,17 +1,14 @@
 ﻿<?php
 
- = PhpCsFixer\Finder::create()
-    ->in(__DIR__)
+$finder = PhpCsFixer\Finder::create()
+    ->in(__DIR__ . '/../../') // Adjust path if necessary
     ->exclude('vendor')
-    ->notPath('wp-config.php');
+    ->exclude('node_modules')
+    ->exclude('.github');
 
 return (new PhpCsFixer\Config())
+    ->setFinder($finder)
     ->setRules([
         '@PSR12' => true,
-        'array_syntax' => ['syntax' => 'short'],
-        'binary_operator_spaces' => ['default' => 'align_single_space'],
-        'blank_line_after_opening_tag' => true,
-        'braces' => true,
-        'concat_space' => ['spacing' => 'one'],
-    ])
-    ->setFinder();
+        // Add or modify rules as needed
+    ]);

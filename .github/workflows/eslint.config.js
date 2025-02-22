@@ -1,15 +1,16 @@
-﻿import js from "@eslint/js";
-import recommended from "eslint-config-recommended";
-
-export default [
-  js.configs.recommended,
-  recommended,
-  {
-    rules: {
-      "no-unused-vars": "warn",
-      "no-console": "off",
-      "indent": ["error", 2],
-      "quotes": ["error", "double"],
+﻿module.exports = {
+    root: true,
+    env: {
+        node: true,
+        browser: true,
+        es2021: true,
     },
-  },
-];
+    extends: [
+        'eslint:recommended'
+    ],
+    rules: {
+        'no-unused-vars': 'error',
+        'eqeqeq': 'error'
+    },
+    ignorePatterns: ['node_modules/', 'vendor/', '.github/'],
+};

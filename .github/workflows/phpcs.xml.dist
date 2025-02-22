@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ruleset name="WordPress Standards">
+    <description>My custom WordPress PHPCS ruleset.</description>
+
+    <!-- WordPress Coding Standards -->
+    <rule ref="WordPress-Core" />
+
+    <!-- Exclude common vendor directories -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>node_modules/*</exclude-pattern>
+    <exclude-pattern>.github/*</exclude-pattern>
+
+    <!-- Set the file extensions to check -->
+    <file>./src</file>
+</ruleset>
