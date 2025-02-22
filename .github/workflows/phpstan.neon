@@ -1,0 +1,10 @@
+﻿includes:
+    - vendor/phpstan/phpstan/conf/strict-rules.neon
+
+parameters:
+    level: max
+    paths:
+        - .
+    excludePaths:
+        - vendor/*
+        - node_modules/*

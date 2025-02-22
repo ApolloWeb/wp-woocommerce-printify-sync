@@ -1,0 +1,9 @@
+﻿<?xml version="1.0"?>
+<ruleset name="WordPress Coding Standards">
+    <description>PHP_CodeSniffer rules for WordPress</description>
+    <rule ref="WordPress-Core"/>
+    <rule ref="WordPress-Docs"/>
+    <rule ref="WordPress-Extra"/>
+    <rule ref="WordPress-VIP-Go"/>
+    <exclude-pattern>vendor/*</exclude-pattern>
+</ruleset>
