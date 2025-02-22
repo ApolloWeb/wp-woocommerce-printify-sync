@@ -3,11 +3,11 @@ name: Code Quality Check
 on:
   push:
     branches:
-      - mercury  # Run on push to mercury
-      - 'feature/*'  # Run on feature branches
+      - mercury
+      - 'feature/*'
   pull_request:
     branches:
-      - master  # Run on PRs to master
+      - master
 
 jobs:
   lint-and-analyze:
@@ -24,12 +24,12 @@ jobs:
         tools: composer, phpstan, php-cs-fixer, phpcs, phpcbf, phplint
         extensions: mbstring, dom
 
-    # ✅ Dynamically Create `composer.json` in GitHub Actions
+    # ✅ Generate `composer.json` inside GitHub Actions
     - name: Generate composer.json
       run: |
         cat <<EOL > composer.json
         {
-          "name": "wp-woocommerce-printify-sync",
+          "name": "myvendor/wp-woocommerce-printify-sync",
           "description": "WooCommerce Printify Sync Plugin",
           "type": "project",
           "require": {
