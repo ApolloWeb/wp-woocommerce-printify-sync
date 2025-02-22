@@ -20,7 +20,7 @@
   },
   "autoload": {
     "psr-4": {
-      "MyPlugin\\": "wp-content/plugins/wp-woocommerce-printify-sync/"
+      "MyPlugin\\": "./wp-content/plugins/wp-woocommerce-printify-sync/"
     }
   },
   "scripts": {
