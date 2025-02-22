@@ -47,7 +47,7 @@ jobs:
     # ✅ 1️⃣ Run PHP Lint (Syntax Check)
     - name: Run PHP Lint (Syntax Check)
       run: |
-        find . \( -path ./vendor -o -path ./node_modules -o -path ./.github \) -prune -o -name "*.php" -print | xargs -n1 php -l
+        find . \( -path ./wp -o -path ./vendor -o -path ./node_modules -o -path ./.github \) -prune -o -name "*.php" -print | xargs -n1 php -l
       continue-on-error: false
 
     # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards

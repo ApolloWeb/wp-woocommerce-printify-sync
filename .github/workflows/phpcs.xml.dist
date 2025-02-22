@@ -5,10 +5,13 @@
     <!-- WordPress Coding Standards -->
     <rule ref="WordPress-Core" />
 
-    <!-- Exclude common vendor directories -->
-    <exclude-pattern>vendor/*</exclude-pattern>
-    <exclude-pattern>node_modules/*</exclude-pattern>
-    <exclude-pattern>.github/*</exclude-pattern>
+    <ruleset name="MyProjectRules">
+        <exclude-pattern>wp/*</exclude-pattern>
+        <exclude-pattern>vendor/*</exclude-pattern>
+        <exclude-pattern>node_modules/*</exclude-pattern>
+        <exclude-pattern>.github/*</exclude-pattern>
+    </ruleset>
+
 
     <!-- Set the file extensions to check -->
     <file>./src</file>

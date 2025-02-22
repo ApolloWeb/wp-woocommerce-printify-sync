@@ -12,5 +12,5 @@
         'no-unused-vars': 'error',
         'eqeqeq': 'error'
     },
-    ignorePatterns: ['node_modules/', 'vendor/', '.github/'],
+    ignorePatterns: ["wp/", "vendor/", "node_modules/", ".github/"],
 };
