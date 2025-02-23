@@ -1,56 +1,50 @@
 # Use PHP-FPM with Alpine
 FROM php:8.2-fpm-alpine
 
-# ✅ Install required dependencies
+# Install required dependencies
 RUN apk add --no-cache git zip unzip curl jq apache2 apache2-utils
 
-# ✅ Install Composer
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# ✅ Set working directory
+# Set working directory
 WORKDIR /var/www
 
-# ✅ Copy all project files into the container
+# Copy all project files into the container
 COPY . /var/www/
 
-# ✅ Fix Git safe directory error
+# Fix Git safe directory error
 RUN git config --global --add safe.directory /var/www
 
-# ✅ Ensure Composer uses HTTPS instead of SSH
+# Ensure Composer uses HTTPS instead of SSH
 RUN composer config --global github-protocols https
 
-# ✅ Clone the required repository manually using Git (remove existing directory first)
-RUN rm -rf plugins/wp-woocommerce-printify-sync && \
-    git clone --branch mercury https://github.com/ApolloWeb/wp-woocommerce-printify-sync.git plugins/wp-woocommerce-printify-sync
-
-# ✅ Ensure the cloned repo is recognized by Composer
-RUN composer dump-autoload
-
-# ✅ Copy custom composer.json for development dependencies
-COPY docker/composer.custom.json /var/www/composer.custom.json
-
-# ✅ Install Composer dependencies
+# Install Composer dependencies, including WordPress
 RUN composer clear-cache && composer install --prefer-dist --no-progress --working-dir=/var/www --no-interaction --optimize-autoloader --no-dev
 
-# ✅ Install custom development dependencies
-RUN composer install --prefer-dist --no-progress --working-dir=/var/www --no-interaction --optimize-autoloader --dev -n --no-scripts -d /var/www/composer.custom.json
+# Clone the required plugin repository manually using Git
+RUN rm -rf wp-content/plugins/wp-woocommerce-printify-sync && \
+    git clone --branch master https://github.com/ApolloWeb/wp-woocommerce-printify-sync.git wp-content/plugins/wp-woocommerce-printify-sync
 
-# ✅ Ensure correct permissions for WordPress files and create missing directories
+# Ensure the cloned repo is recognized by Composer
+RUN composer dump-autoload
+
+# Ensure correct permissions for WordPress files and create missing directories
 RUN mkdir -p /var/www/wp-content && \
     chown -R www-data:www-data /var/www && \
     chmod -R 755 /var/www/wp-content
 
-# ✅ Enable necessary Apache modules
+# Enable necessary Apache modules
 RUN sed -i 's/^#LoadModule proxy_module/LoadModule proxy_module/' /etc/apache2/httpd.conf && \
     sed -i 's/^#LoadModule proxy_fcgi_module/LoadModule proxy_fcgi_module/' /etc/apache2/httpd.conf
 
-# ✅ Configure Apache
+# Configure Apache
 COPY docker/apache/httpd.conf /etc/apache2/httpd.conf
 RUN mkdir -p /run/apache2 && chown -R www-data:www-data /run/apache2
 
-# ✅ Expose ports for Apache and PHP-FPM
+# Expose ports for Apache and PHP-FPM
 EXPOSE 80
 EXPOSE 9000
 
-# ✅ Start Apache and PHP-FPM
+# Start Apache and PHP-FPM
 CMD ["sh", "-c", "httpd -D FOREGROUND & php-fpm -F"]
