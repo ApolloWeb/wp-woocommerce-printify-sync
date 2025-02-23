@@ -24,7 +24,6 @@ cat > "${PROJECT_DIR}/.dockerignore" << 'INNEREOF'
 .gitignore
 node_modules
 **/node_modules
-.env
 *.log
 .vscode
 .idea

@@ -32,12 +32,7 @@ COPY composer.json composer.lock /var/www/html/
 
 # Install dependencies
 WORKDIR /var/www/html
-RUN composer install --no-dev --optimize-autoloader
+RUN sudo composer install --no-dev --optimize-autoloader
 
 # Copy plugin files
 COPY wp-content/plugins/wp-woocommerce-printify-sync /var/www/html/wp-content/plugins/wp-woocommerce-printify-sync
-
-# Copy and set up entrypoint script
-COPY docker-entrypoint-extras.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint-extras.sh \
-    && sed -i 's/\r//g' /usr/local/bin/docker-entrypoint-extras.sh

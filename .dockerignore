@@ -12,3 +12,8 @@ wp-content/plugins/wp-woocommerce-printify-sync/*.log
 # Ignore version control
 .git/
 .gitignore
+
+!.env
+!php.ini
+!composer.json
+!composer.lock
