@@ -1,16 +1,29 @@
 services:
-  apache:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: wordpress_apache
-    ports:
-      - "8082:80"
+  wordpress:
+    build: .
+    container_name: wordpress
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress_user
+      WORDPRESS_DB_PASSWORD: wordpress_password
+      WORDPRESS_DB_NAME: wordpress
     volumes:
-      - ./:/var/www
-      - ./docker/apache/httpd.conf:/etc/apache2/httpd.conf:ro
+      - ./wp-content:/var/www/html/wp-content
     depends_on:
       - db
+    networks:
+      - wordpress_network
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www/html/
+    depends_on:
+      - wordpress
     networks:
       - wordpress_network
 
