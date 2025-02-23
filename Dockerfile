@@ -21,7 +21,7 @@ RUN composer config --global github-protocols https
 
 # ✅ Clone the required repository manually using Git (remove existing directory first)
 RUN rm -rf plugins/wp-woocommerce-printify-sync && \
-    git clone --branch master https://github.com/ApolloWeb/wp-woocommerce-printify-sync.git plugins/wp-woocommerce-printify-sync
+    git clone --branch mercury https://github.com/ApolloWeb/wp-woocommerce-printify-sync.git plugins/wp-woocommerce-printify-sync
 
 # ✅ Ensure the cloned repo is recognized by Composer
 RUN composer dump-autoload
@@ -35,12 +35,14 @@ RUN composer clear-cache && composer install --prefer-dist --no-progress --worki
 # ✅ Install custom development dependencies
 RUN composer install --prefer-dist --no-progress --working-dir=/var/www --no-interaction --optimize-autoloader --dev -n --no-scripts -d /var/www/composer.custom.json
 
+# ✅ Ensure correct permissions for WordPress files and create missing directories
+RUN mkdir -p /var/www/wp-content && \
+    chown -R www-data:www-data /var/www && \
+    chmod -R 755 /var/www/wp-content
+
 # ✅ Enable necessary Apache modules
 RUN sed -i 's/^#LoadModule proxy_module/LoadModule proxy_module/' /etc/apache2/httpd.conf && \
     sed -i 's/^#LoadModule proxy_fcgi_module/LoadModule proxy_fcgi_module/' /etc/apache2/httpd.conf
-
-# ✅ Ensure correct permissions for WordPress files
-RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www/wp-content
 
 # ✅ Configure Apache
 COPY docker/apache/httpd.conf /etc/apache2/httpd.conf
