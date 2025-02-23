@@ -1,0 +1,34 @@
+/* Admin Settings Page Styles for Printify Sync Plugin */
+.printify-sync-settings {
+    background: #f7f7f7;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+.printify-sync-settings h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.printify-sync-settings form {
+    background: #ffffff;
+    padding: 20px;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    max-width: 600px;
+}
+
+.printify-sync-settings input.regular-text,
+.printify-sync-settings select.regular-text {
+    max-width: 100%;
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+#printify-products-results {
+    margin-top: 20px;
+    background: #ffffff;
+    padding: 15px;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+}
