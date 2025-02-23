@@ -1,57 +1,39 @@
-# Use PHP-FPM with Alpine 3.21
+# Use PHP-FPM with Alpine
 FROM php:8.2-fpm-alpine
 
-# ✅ Ensure the correct Alpine repositories are used
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/latest-stable/community" >> /etc/apk/repositories && \
-    apk update --no-cache
-
-# ✅ Install PHP 8.2 packages (Alpine provides php82-*)
-RUN apk add --no-cache \
-    php82 \
-    php82-fpm \
-    php82-openssl \
-    php82-phar \
-    php82-pdo \
-    php82-pdo_mysql \
-    php82-tokenizer \
-    php82-zlib \
-    php82-dom \
-    php82-session \
-    php82-mbstring \
-    php82-ctype \
-    php82-simplexml \
-    php82-curl \
-    php82-soap \
-    php82-bcmath \
-    php82-xml \
-    php82-zip \
-    php82-exif \
-    php82-gd \
-    php82-opcache \
-    zip \
-    unzip \
-    wget \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    libzip-dev \
-    oniguruma-dev \
-    bash \
-    coreutils \
-    curl
-
-# ✅ Set working directory
-WORKDIR /var/www
+# ✅ Install required dependencies
+RUN apk add --no-cache git zip unzip curl jq
 
 # ✅ Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# ✅ Copy Composer dependencies
-COPY composer.json ./
-RUN composer install --prefer-dist --no-progress --no-dev
+# ✅ Set working directory
+WORKDIR /var/www
 
-# ✅ Set permissions
+# ✅ Copy project files *before* running Composer
+COPY . /var/www/
+
+# ✅ Fix Git safe directory error
+RUN git config --global --add safe.directory /var/www
+
+# ✅ Ensure Git uses HTTPS instead of SSH
+RUN git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+# ✅ Clone the required repository manually using Git
+RUN rm -rf plugins/wp-woocommerce-printify-sync && \
+    git clone --branch mercury https://github.com/ApolloWeb/wp-woocommerce-printify-sync.git plugins/wp-woocommerce-printify-sync
+
+# ✅ Ensure `composer.json` exists before running Composer commands
+WORKDIR /var/www
+
+# ✅ Allow necessary plugins for Composer
+RUN composer config --no-plugins allow-plugins.johnpbloch/wordpress-core-installer true && \
+    composer config --no-plugins allow-plugins.composer/installers true
+
+# ✅ Install Composer dependencies
+RUN composer install --prefer-dist --no-progress
+
+# ✅ Ensure correct permissions for WordPress files
 RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 
 # ✅ Expose PHP-FPM port

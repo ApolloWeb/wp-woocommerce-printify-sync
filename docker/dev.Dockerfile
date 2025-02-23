@@ -1,57 +1,39 @@
-# Use PHP-FPM with Alpine Linux for a lightweight image
-FROM php:8.1-fpm-alpine
+# Use PHP-FPM with Alpine
+FROM php:8.2-fpm-alpine
 
-# Install system dependencies and PHP extensions
-RUN apk update && apk add --no-cache \
-    bash \
-    git \
-    curl \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    nodejs \
-    npm \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd mbstring xml pdo pdo_mysql bcmath opcache
+# ✅ Install required dependencies
+RUN apk add --no-cache git zip unzip curl jq
 
-# Install Composer globally
+# ✅ Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Set working directory
+# ✅ Set working directory
 WORKDIR /var/www
 
-# Copy your alternative composer.json into the container
-COPY docker/composer-custom.json /
+# ✅ Copy all project files into the container
+COPY . /var/www/
 
-# Set the COMPOSER environment variable to use the alternative composer.json
-ENV COMPOSER=composer-custom.json
+# ✅ Fix Git safe directory error
+RUN git config --global --add safe.directory /var/www
 
-# Install global Composer packages using the custom configuration file
-RUN composer Install
+# ✅ Ensure Composer uses HTTPS instead of SSH
+RUN composer config --global github-protocols https
 
-# Configure PHPCS to use WordPress Coding Standards
-RUN ~/.composer/vendor/bin/phpcs --config-set installed_paths ~/.composer/vendor/wp-coding-standards/wpcs
+# ✅ Clone the required repository manually using Git (remove existing directory first)
+RUN rm -rf plugins/wp-woocommerce-printify-sync && \
+    git clone --branch mercury https://github.com/ApolloWeb/wp-woocommerce-printify-sync.git plugins/wp-woocommerce-printify-sync
 
-# Install ESLint globally
-RUN npm install -g eslint
+# ✅ Ensure the cloned repo is recognized by Composer
+RUN composer dump-autoload
 
-# Set working directory
-WORKDIR /var/www
+# ✅ Install Composer dependencies
+RUN composer clear-cache && composer install --prefer-dist --no-progress
 
-# Copy configuration files into the container
-COPY .github/workflows/phpcs.xml.dist ./
-COPY .github/workflows/.php-cs-fixer.php ./
-COPY .github/workflows/phpstan.neon ./
-COPY .github/workflows/eslint.config.js ./
-COPY .github/workflows/phpunit.xml.dist ./
-COPY tests/bootstrap.php ./tests/
+# ✅ Ensure correct permissions for WordPress files
+RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www/wp-content
 
-# Expose PHP-FPM port
+# ✅ Expose PHP-FPM port
 EXPOSE 9000
 
-# Start PHP-FPM
+# ✅ Start PHP-FPM
 CMD ["php-fpm", "-F"]

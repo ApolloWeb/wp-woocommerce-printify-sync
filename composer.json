@@ -1,43 +1,32 @@
 {
-  "name": "myvendor/my-wordpress-project",
-  "description": "A WordPress development environment.",
+  "name": "apolloweb/wordpress-project",
+  "description": "A WordPress project using Composer for dependencies",
   "type": "project",
-  "require": {
-    "php": ">=8.1",
-    "johnpbloch/wordpress-core-installer": "^2.0",
-    "johnpbloch/wordpress": "^6.3",
-    "apolloweb/wp-woocommerce-printify-sync": "dev-main",
-    "wpackagist-theme/envo-shopper": "^1.0",
-    "wpackagist-plugin/wordpress-seo": "^21.0",
-    "vlucas/phpdotenv": "^5.5"
-  },
+  "license": "GPL-2.0-or-later",
   "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/ApolloWeb/wp-woocommerce-printify-sync"
-    },
     {
       "type": "composer",
       "url": "https://wpackagist.org"
     }
   ],
-  "config": {
-    "optimize-autoloader": true,
-    "sort-packages": true,
-    "allow-plugins": {
-      "johnpbloch/wordpress-core-installer": true
-    }
-  },
-  "autoload": {
-    "psr-4": {
-      "MyPlugin\\": "plugins/wp-woocommerce-printify-sync/"
-    }
+  "require": {
+    "php": ">=8.2",
+    "johnpbloch/wordpress": "^6.4",
+    "wpackagist-plugin/woocommerce": "*",
+    "wpackagist-plugin/wordpress-seo": "*",
+    "wpackagist-plugin/woo-multi-currency": "*"
   },
   "extra": {
-    "wordpress-install-dir": "wp",
-    "installer-paths": {
-      "./plugins/{$name}/": ["type:wordpress-plugin"],
-      "./themes/{$name}/": ["type:wordpress-theme"]
+    "wordpress-install-dir": "wp"
+  },
+  "config": {
+    "preferred-install": "dist",
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "johnpbloch/wordpress-core-installer": true,
+      "composer/installers": true
     }
-  }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
