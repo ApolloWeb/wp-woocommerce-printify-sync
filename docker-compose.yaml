@@ -2,13 +2,13 @@ services:
   apache:
     build:
       context: .
-      dockerfile: docker/dev.Dockerfile
+      dockerfile: Dockerfile
     container_name: wordpress_apache
     ports:
-      - "8081:80"
+      - "8082:80"
     volumes:
       - ./:/var/www
-      - ./apache/httpd.conf:/etc/apache2/httpd.conf:ro
+      - ./docker/apache/httpd.conf:/etc/apache2/httpd.conf:ro
     depends_on:
       - db
     networks:
