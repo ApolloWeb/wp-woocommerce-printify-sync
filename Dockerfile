@@ -32,7 +32,6 @@ COPY composer.json composer.lock /var/www/html/
 
 # Install dependencies
 ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV PATH="${PATH}:/root/.composer/vendor/bin"
 WORKDIR /var/www/html
 RUN composer install --no-dev --optimize-autoloader
 
