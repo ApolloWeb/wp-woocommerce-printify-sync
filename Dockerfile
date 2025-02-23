@@ -1,5 +1,7 @@
 FROM wordpress:php8.2-fpm
 
+RUN CACHEBUSTER=0
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     libzip-dev \
@@ -40,5 +42,7 @@ USER www-data
 
 WORKDIR /var/www/html
 
-RUN composer install --no-interaction --prefer-dist --no-progress
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+RUN composer config --global --no-plugins allow-plugins.composer/installers true
 RUN composer dump-autoload --optimize
