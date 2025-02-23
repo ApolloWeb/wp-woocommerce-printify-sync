@@ -1,6 +1,6 @@
 FROM wordpress:php8.2-fpm
 
-ENV CACHEBUSTER=0
+ENV CACHEBUSTER=2
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -19,6 +19,8 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# Create .composer directory and set ownership
+RUN mkdir -p /var/www/.composer && chown -R www-data:www-data /var/www/.composer
 
 # Add wp-cli config
 RUN mkdir -p /var/www/.wp-cli \
@@ -33,6 +35,9 @@ COPY wp-config-project.php /var/www/html/wp-config.php
 # Copy Composer files
 COPY composer.json /var/www/html/composer.json
 COPY composer.lock /var/www/html/composer.lock
+
+#Copy .env file
+COPY .env /var/www/html/.env
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
