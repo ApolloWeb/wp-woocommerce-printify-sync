@@ -17,6 +17,7 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+
 # Add wp-cli config
 RUN mkdir -p /var/www/.wp-cli \
     && chown www-data:www-data /var/www/.wp-cli
@@ -27,6 +28,10 @@ COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 # Copy WP Config
 COPY wp-config-project.php /var/www/wp-config.php
 
+# Copy Composer files
+COPY composer.json /var/www/composer.json
+COPY composer.lock /var/www/composer.lock
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 
@@ -34,3 +39,6 @@ RUN chown -R www-data:www-data /var/www/html
 USER www-data
 
 WORKDIR /var/www/html
+
+RUN composer install --no-interaction --prefer-dist --no-progress
+RUN composer dump-autoload --optimize
