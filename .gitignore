@@ -1,16 +1,23 @@
 # First ignore everything
 /*
 
-!.gitignore
-!.github/*
+# Allow GitHub workflows and config
+!.github/
 
 # Allow Docker files
 !docker-compose.yaml
 !docker-compose.yml
 !Dockerfile
 !.dockerignore
+!php.ini
 !nginx.conf
 !default.conf
+!docker-entrypoint-extras.sh
+!.env
+
+# Allow Composer files
+!composer.json
+!composer.lock
 
 # Then allow only wp-content/plugins directory
 !/wp-content/
@@ -23,6 +30,7 @@
 .DS_Store
 node_modules/
 *.log
+vendor/
 
 # IDE specific files
 .idea/
