@@ -17,3 +17,4 @@ wp-content/plugins/wp-woocommerce-printify-sync/*.log
 !php.ini
 !composer.json
 !composer.lock
+!wait-for-it.sh

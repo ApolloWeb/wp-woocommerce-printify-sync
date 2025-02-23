@@ -30,7 +30,7 @@
 node_modules/
 *.log
 vendor/
-
+!wait-for-it.sh
 # IDE specific files
 .idea/
 .vscode/
