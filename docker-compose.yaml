@@ -1,6 +1,9 @@
 services:
   wordpress:
-    build: .
+    context: .
+      dockerfile: Dockerfile
+      args:
+        BUILDKIT_INLINE_CACHE: 1
     container_name: wordpress_printify
     restart: unless-stopped
     volumes:
