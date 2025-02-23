@@ -31,8 +31,10 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 COPY composer.json composer.lock /var/www/html/
 
 # Install dependencies
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV PATH="${PATH}:/root/.composer/vendor/bin"
 WORKDIR /var/www/html
-RUN sudo composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader
 
 # Copy plugin files
 COPY wp-content/plugins/wp-woocommerce-printify-sync /var/www/html/wp-content/plugins/wp-woocommerce-printify-sync
