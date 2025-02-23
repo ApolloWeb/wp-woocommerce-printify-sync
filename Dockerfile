@@ -2,7 +2,10 @@
 FROM php:8.2-fpm-alpine
 
 # Install required dependencies
-RUN apk add --no-cache git zip unzip curl jq apache2 apache2-utils apache2-proxy apache2-proxy-fcgi
+RUN apk add --no-cache git zip unzip curl jq apache2 apache2-utils
+
+# Install Apache modules
+RUN apk add --no-cache apache2-proxy apache2-proxy-html apache2-proxy-wstunnel
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
