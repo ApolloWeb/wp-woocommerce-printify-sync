@@ -7,11 +7,6 @@
         "vlucas/phpdotenv": "^5.6",
         "composer/installers": "^2.2"
     },
-    "autoload": {
-        "psr-4": {
-            "ApolloWeb\\WooCommercePrintifySync\\": "wp-content/plugins/wp-woocommerce-printify-sync/src/"
-        }
-    },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
