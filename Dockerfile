@@ -1,6 +1,4 @@
-ARG CACHEBUST=1
-
-FROM wordpress:php8.2-fpm
+ARG CACHEBUST=2
 
 # Install additional performance dependencies
 FROM wordpress:php8.2-fpm
