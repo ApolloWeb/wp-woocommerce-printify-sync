@@ -1,6 +1,6 @@
 FROM wordpress:php8.2-fpm
 
-RUN CACHEBUSTER=0
+ENV CACHEBUSTER=0
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
