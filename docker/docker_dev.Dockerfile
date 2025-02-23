@@ -2,7 +2,7 @@
 FROM php:8.2-fpm-alpine
 
 # ✅ Install required dependencies
-RUN apk add --no-cache git zip unzip curl jq
+RUN apk add --no-cache git zip unzip curl jq apache2 apache2-proxy apache2-ssl apache2-proxy-fcgi
 
 # ✅ Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -38,8 +38,13 @@ RUN composer install --prefer-dist --no-progress --working-dir=/var/www --no-int
 # ✅ Ensure correct permissions for WordPress files
 RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www/wp-content
 
-# ✅ Expose PHP-FPM port
+# ✅ Configure Apache
+COPY docker/apache/httpd.conf /etc/apache2/httpd.conf
+RUN mkdir -p /run/apache2 && chown -R www-data:www-data /run/apache2
+
+# ✅ Expose ports for Apache and PHP-FPM
+EXPOSE 80
 EXPOSE 9000
 
-# ✅ Start PHP-FPM
-CMD ["php-fpm", "-F"]
+# ✅ Start Apache and PHP-FPM
+CMD ["sh", "-c", "httpd -D FOREGROUND & php-fpm -F"]
