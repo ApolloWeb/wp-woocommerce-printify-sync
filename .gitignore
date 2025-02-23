@@ -1,0 +1,35 @@
+# First ignore everything
+/*
+
+!.gitignore
+!.github/*
+
+# Allow Docker files
+!docker-compose.yaml
+!docker-compose.yml
+!Dockerfile
+!.dockerignore
+!nginx.conf
+!default.conf
+
+# Then allow only wp-content/plugins directory
+!/wp-content/
+/wp-content/*
+!/wp-content/plugins/
+/wp-content/plugins/*
+!/wp-content/plugins/wp-woocommerce-printify-sync/
+
+# Development files
+.DS_Store
+node_modules/
+*.log
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Environment files (keep these private)
+.env
+.env.*
