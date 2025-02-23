@@ -26,11 +26,11 @@ RUN mkdir -p /var/www/.wp-cli \
 COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Copy WP Config
-COPY wp-config-project.php /var/www/wp-config.php
+COPY wp-config-project.php /var/www/html/wp-config.php
 
 # Copy Composer files
-COPY composer.json /var/www/composer.json
-COPY composer.lock /var/www/composer.lock
+COPY composer.json /var/www/html/composer.json
+COPY composer.lock /var/www/html/composer.lock
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
