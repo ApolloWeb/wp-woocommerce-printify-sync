@@ -24,6 +24,9 @@ RUN mkdir -p /var/www/.wp-cli \
 # Copy custom php.ini settings
 COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
+# Copy WP Config
+COPY wp-config-project.php /var/www/wp-config.php
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 

@@ -13,10 +13,12 @@ namespace ApolloWeb\WooCommercePrintifySync;
 
 use ApolloWeb\WooCommercePrintifySync\Admin;
 use ApolloWeb\WooCommercePrintifySync\OrderSync;
+use ApolloWeb\WooCommercePrintifySync\PluginDependencies;
+use ApolloWeb\WooCommercePrintifySync\UploadHandler;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 
 // Define plugin constants.
@@ -45,6 +47,12 @@ spl_autoload_register(function($class) {
         }
     }
 });
+
+// Initialize UploadHandler
+new UploadHandler();
+
+// Initialize Plugin Dependencies
+new PluginDependencies();
 
 // Initialize the Admin settings page.
 new Admin();
