@@ -24,6 +24,7 @@
 !/wp-content/plugins/
 /wp-content/plugins/*
 !/wp-content/plugins/wp-woocommerce-printify-sync/
+!wp-config.php
 
 # Development files
 .DS_Store
