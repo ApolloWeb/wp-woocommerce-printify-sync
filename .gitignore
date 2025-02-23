@@ -13,7 +13,6 @@
 !nginx.conf
 !default.conf
 !docker-entrypoint-extras.sh
-!.env
 
 # Allow Composer files
 !composer.json
@@ -39,5 +38,5 @@ vendor/
 *.sublime-project
 
 # Environment files (keep these private)
-.env
+!.env
 .env.*
