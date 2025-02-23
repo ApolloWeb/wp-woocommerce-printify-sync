@@ -1,6 +1,7 @@
 services:
   wordpress:
-    context: .
+    build:
+      context: .
       dockerfile: Dockerfile
       args:
         BUILDKIT_INLINE_CACHE: 1
@@ -82,5 +83,5 @@ networks:
     name: wordpress_printify_network
     driver: bridge
 
-# Configuration timestamp: 2025-02-23 19:58:28 UTC
+# Configuration timestamp: 2025-02-23 21:51:45 UTC
 # Updated by: ApolloWeb
