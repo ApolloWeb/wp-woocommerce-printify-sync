@@ -12,7 +12,3 @@ wp-content/plugins/wp-woocommerce-printify-sync/*.log
 # Ignore version control
 .git/
 .gitignore
-
-# Ignore environment files
-.env
-.env.*
