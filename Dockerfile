@@ -33,7 +33,8 @@ COPY composer.json composer.lock /var/www/html/
 # Install dependencies
 ENV COMPOSER_ALLOW_SUPERUSER=1
 WORKDIR /var/www/html
-RUN composer install --no-dev --optimize-autoloader
+RUN composer config --no-plugins allow-plugins.composer/installers true && \
+    composer install --no-dev --optimize-autoloader
 
 # Copy plugin files
 COPY wp-content/plugins/wp-woocommerce-printify-sync /var/www/html/wp-content/plugins/wp-woocommerce-printify-sync
