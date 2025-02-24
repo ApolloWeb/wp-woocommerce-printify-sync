@@ -10,6 +10,11 @@ parameters:
     - ./node_modules/*
     - ./wp-content/plugins/wp-woocommerce-printify-sync/tests/*
 
+  wp:
+    wpVersion: '6.1'
+    themeSupport: true
+    pluginSupport: true
+
   ignoreErrors:
     - '#Call to an undefined function (add_action|apply_filters)#'
     - '#WordPress.PHP.DiscouragedFunctions#'
