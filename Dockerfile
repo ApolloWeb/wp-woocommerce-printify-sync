@@ -35,11 +35,11 @@ COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Copy WP Config
 COPY wp-config-project.php /var/www/wp-config.php
-RUN chown www-data:www-data /var/www/html/wp-config.php
+RUN chown www-data:www-data /var/www/wp-config.php
 
 # Copy the .env file
 COPY .env /var/www/.env
-RUN chown www-data:www-data /var/www/html/.env
+RUN chown www-data:www-data /var/www/.env
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
