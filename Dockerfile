@@ -36,6 +36,10 @@ COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 
+# Ensure proper permissions for composer files before switching to www-data user
+COPY composer.json composer.lock ./
+RUN chown www-data:www-data composer.json composer.lock
+
 # Switch to www-data user
 USER www-data
 
