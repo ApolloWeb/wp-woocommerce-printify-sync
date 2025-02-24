@@ -5,59 +5,7 @@ on:
     branches: [ '**' ]
   pull_request:
     branches: [ '**' ]
-    workflow_dispatch:
-      
-jobs:
-  codeql:
-    name: Analyze
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      security-events: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Run PHPStan for WordPress
-      - name: PHPStan for WordPress
-        uses: dingo-d/phpstan-wp-action@v2
-        with:
-          php_version: 8.1
-
-      # PHP Lint
-      - name: PHP Lint
-        uses: michaelw90/PHP-Lint@2.1.0
-        with:
-          php_version: 8.1
-
-      # Run & fix PHP Code Sniffer
-      - name: Run & fix PHP Code Sniffer
-        uses: shalior/wordpress-phpcs-action@v2.0.0
-        with:
-          github_token: ${{ secrets.github_token }}
-          use_default_configuration_file: true
-
-      # Commented out PHPUnit tests
-      # - name: PHPUnit Tests
-      #   uses: php-actions/phpunit@v9
-      #   with:
-      #     php_version: '8.1'
-
-      # ESLint Code Lint & Fix
-      - name: ESLint Code Lint & Fix
-        uses: permafrost-dev/eslint-docker-ga@v1.0.0
-        with:
-          path: "src/**/*.js"
-          args: "--fix"
-name: "CodeQL Analysis with Additional Actions"
-
-on:
-  push:
-    branches: [ '**' ]
-  pull_request:
-    branches: [ '**' ]
+  workflow_dispatch:
 
 jobs:
   codeql:
