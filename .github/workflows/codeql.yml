@@ -45,3 +45,4 @@ jobs:
           path: "./"  # Adjust the path to your PHP files if necessary
           standard: "PSR12"  # Change this to match your coding standard (e.g., WordPress, PSR12)
           extensions: "php"
+#1
