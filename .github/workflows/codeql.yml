@@ -32,8 +32,6 @@ jobs:
       # Run PHPStan for WordPress
       - name: PHPStan for WordPress
         uses: dingo-d/phpstan-wp-action@v2
-        with:
-          php_version: 8.2
 
       # PHP Lint
       - name: PHP Lint

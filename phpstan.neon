@@ -1,5 +1,4 @@
 includes:
-  - vendor/phpstan/phpstan-wordpress/extension.neon
   - vendor/szepeviktor/phpstan-wordpress/extension.neon
 
 parameters:
