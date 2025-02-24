@@ -1,0 +1,22 @@
+includes:
+  - vendor/phpstan/phpstan-wordpress/extension.neon
+  - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+  level: max
+  paths:
+    - wp-content/plugins/wp-woocommerce-printify-sync/
+  excludePaths:
+    - ./vendor/*
+    - ./node_modules/*
+    - ./wp-content/plugins/wp-woocommerce-printify-sync/tests/*
+
+  wp:
+    wpVersion: '6.1'
+    themeSupport: true
+    pluginSupport: true
+
+  ignoreErrors:
+    - '#Call to an undefined function (add_action|apply_filters)#'
+    - '#WordPress.PHP.DiscouragedFunctions#'
+    # Add more ignores here if you identify common false positives or known patterns.
