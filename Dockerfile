@@ -51,11 +51,7 @@ RUN composer config --global --no-plugins allow-plugins.composer/installers true
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Install composer dependencies
-RUN if [ "$COMPOSER_ALLOW_SUPERUSER" = "1" ]; then \
-        composer install --no-interaction --prefer-dist --no-progress --no-cache --no-plugins; \
-    else \
-        composer install --no-interaction --prefer-dist --no-progress --no-cache --no-plugins; \
-    fi
+RUN composer install --no-interaction --prefer-dist --no-progress --no-cache --no-plugins; \
 
 # Dump autoload
 RUN composer dump-autoload --optimize
