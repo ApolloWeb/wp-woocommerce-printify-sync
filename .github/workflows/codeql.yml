@@ -24,7 +24,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.1
+          php-version: 8.2
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest
@@ -33,13 +33,13 @@ jobs:
       - name: PHPStan for WordPress
         uses: dingo-d/phpstan-wp-action@v2
         with:
-          php_version: 8.1
+          php_version: 8.2
 
       # PHP Lint
       - name: PHP Lint
         uses: michaelw90/PHP-Lint@2.1.0
         with:
-          php_version: 8.1
+          php_version: 8.2
 
       # Run & fix PHP Code Sniffer
       - name: Run & fix PHP Code Sniffer
@@ -52,7 +52,7 @@ jobs:
       # - name: PHPUnit Tests
       #   uses: php-actions/phpunit@v9
       #   with:
-      #     php_version: '8.1'
+      #     php_version: '8.2'
 
       # ESLint Code Lint & Fix
       - name: ESLint Code Lint & Fix
