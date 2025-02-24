@@ -11,8 +11,7 @@ COPY version.txt /usr/local/bin/version.txt
 RUN /usr/local/bin/version.sh
 
 # Get the version number
-ARG VERSION
-ENV VERSION=$VERSION
+ENV VERSION=4
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -72,7 +71,3 @@ RUN composer install --no-interaction --prefer-dist --no-progress --no-cache --n
 
 # Dump autoload
 RUN composer dump-autoload --optimize
-
-# Append version number to assets for cache busting
-RUN find . -type f -name "*.css" -exec mv {} {}.$VERSION \;
-RUN find . -type f -name "*.js" -exec mv {} {}.$VERSION \;
