@@ -14,7 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # --- PHP Code Analysis ---
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -23,16 +22,14 @@ jobs:
       - name: Install PHP dependencies
         run: composer install
 
-      - name: Install PHPCS, WPCS, PHPCSExtra & PHPCSUtils
+      - name: Configure PHPCS installed_paths
         run: |
-          composer require --dev squizlabs/php_codesniffer wp-coding-standards/wpcs dealerdirect/phpcodesniffer-composer-installer php-stan/phpcsutils phpcsstandards/phpcsextra
-          vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcsstandards/phpcsextra
+          vendor/bin/phpcs --config-set installed_paths "vendor/wp-coding-standards/wpcs,vendor/phpcsstandards/phpcsutils,vendor/phpcsstandards/phpcsextra"
           vendor/bin/phpcs -i
 
       - name: Run PHPCS with WordPress Coding Standards
         run: vendor/bin/phpcs --standard=phpcs.xml.dist
 
-      # --- PHPStan for WordPress ---
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --configuration=phpstan.neon --error-format=sarif > phpstan-report.sarif
 
@@ -41,15 +38,13 @@ jobs:
         with:
           sarif_file: phpstan-report.sarif
 
-      # --- JavaScript (jQuery) Code Analysis ---
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'
 
       - name: Install Node.js dependencies
-        run: |
-          npm install eslint eslint-plugin-jquery --save-dev
+        run: npm install eslint eslint-plugin-jquery --save-dev
 
       - name: Run ESLint
         run: npx eslint wp-content/plugins/wp-woocommerce-printify-sync/assets/js/ --config .eslintrc.json --format sarif --output-file eslint-report.sarif
