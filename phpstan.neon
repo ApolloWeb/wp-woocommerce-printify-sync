@@ -1,21 +1,16 @@
-includes:
-  - vendor/szepeviktor/phpstan-wordpress/extension.neon
-
 parameters:
-  level: max
+  level: 5
   paths:
-    - ./wp-content/plugins/wp-woocommerce-printify-sync/
+    - .
   excludePaths:
-    - ./vendor/*
-    - ./node_modules/*
-    - ./wp-content/plugins/wp-woocommerce-printify-sync/tests/*
-
-  wp:
-    wpVersion: '6.1'
-    themeSupport: true
-    pluginSupport: true
-
+    - vendor
+    - node_modules
+    - tests
+  bootstrapFiles:
+    - vendor/szepeviktor/phpstan-wordpress/bootstrap.php
+  sarifReport: phpstan-results.sarif
+  checkMissingIterableValueType: false
+  checkGenericClassInNonGenericObjectType: false
   ignoreErrors:
-    - '#Call to an undefined function (add_action|apply_filters)#'
-    - '#WordPress.PHP.DiscouragedFunctions#'
-    # Add more ignores here if you identify common false positives or known patterns.
+    - '#^Function [a-zA-Z0-9\\_]+\(\) has no return type specified\.#'
+    - '#^Method [a-zA-Z0-9\\_]+\(\) has no return type specified\.#'

@@ -32,6 +32,7 @@ node_modules/
 *.log
 vendor/
 !wait-for-it.sh
+
 # IDE specific files
 .idea/
 .vscode/
@@ -41,3 +42,16 @@ vendor/
 # Environment files (keep these private)
 !.env
 .env.*
+
+# SARIF reports from code scanning
+*-results.sarif
+
+# Test coverage
+/coverage/
+
+# Composer generated files
+composer.phar
+
+# NPM/Yarn lock files
+package-lock.json
+yarn.lock

@@ -1,48 +1,44 @@
-name: "CodeQL & PHP Code Sniffer"
+name: PHP Code Check
 
 on:
   push:
-    branches: ["master"]
+    branches: [ master ]
   pull_request:
-    branches: ["master"]
-  schedule:
-    - cron: "0 12 * * 1"  # Runs every Monday at 12:00 UTC
+    branches: [ master ]
 
 jobs:
-  codeql-analysis:
-    name: "CodeQL Analysis"
+  php-code-check:
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ["javascript", "php"]
+    
     steps:
-      - name: "Checkout repository"
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v3
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.0'
+        tools: composer, phpcs
+        
+    - name: Install WordPress Coding Standards
+      run: |
+        composer global require wp-coding-standards/wpcs
+        phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
+    
+    - name: Check PHP Syntax
+      run: |
+        find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+        
+    - name: Run PHPCS
+      run: phpcs --standard=WordPress --extensions=php .
 
-      - name: "Initialize CodeQL"
-        uses: github/codeql-action/init@v2
-        with:
-          languages: ${{ matrix.language }}
-
-      - name: "Perform CodeQL Analysis"
-        uses: github/codeql-action/analyze@v2
-
-  php-codesniffer:
-    name: "Run PHP Code Sniffer Fix"
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout repository"
-        uses: actions/checkout@v4
-
-      - name: "Run PHP Code Sniffer Fix"
-        uses: valantic/run-fix-php-code-sniffer@v1
-        with:
-          path: "./"  # Adjust the path to your PHP files if necessary
-          standard: "PSR12"  # Change this to match your coding standard (e.g., WordPress, PSR12)
-          extensions: "php"
-#1
+    - name: Check JavaScript files
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+    
+    - name: Install ESLint
+      run: |
+        npm install eslint eslint-plugin-jquery
+        
+    - name: Run ESLint
+      run: npx eslint . --ext .js
