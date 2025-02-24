@@ -15,7 +15,7 @@
     "szepeviktor/phpstan-wordpress": "dev-master"
   },
   "scripts": {
-    "phpcs": "vendor/bin/phpcs --standard=WordPress .",
+    "phpcs": "vendor/bin/phpcs -d memory_limit=2048M --standard=WordPress .",
     "phpcbf": "vendor/bin/phpcbf --standard=WordPress .",
     "phpstan": "vendor/bin/phpstan analyse"
   },
