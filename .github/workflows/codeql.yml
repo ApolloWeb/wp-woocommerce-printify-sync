@@ -20,26 +20,23 @@ jobs:
         uses: actions/checkout@v3
 
       # Run PHPStan for WordPress
-      - name: Run PHPStan for WordPress
-        uses: wearerequired/phpstan-wordpress-action@v1
+      - name: PHPStan for WordPress
+        uses: dingo-d/phpstan-wp-action@v2
         with:
           php_version: 8.1
 
-      # Run PHP Lint
+      # PHP Lint
       - name: PHP Lint
-        run: |
-          find . \( -path "./vendor" -o -path "./node_modules" \) -prune -o -type f -name "*.php" -print0 | \
-          while IFS= read -r -d '' file; do
-            php -l "$file" || echo "Syntax error in $file"
-          done || true
-
-      # Run PHP Code Sniffer
-      - name: PHP Code Sniffer
-        uses: php-actions/phpcs@v1
+        uses: michaelw90/PHP-Lint@2.1.0
         with:
           php_version: 8.1
-          path: .
-          standard: phpcs.xml
+
+      # Run & fix PHP Code Sniffer
+      - name: Run & fix PHP Code Sniffer
+        uses: shalior/wordpress-phpcs-action@v2.0.0
+        with:
+          github_token: ${{ secrets.github_token }}
+          use_default_configuration_file: true
 
       # Commented out PHPUnit tests
       # - name: PHPUnit Tests
@@ -47,15 +44,61 @@ jobs:
       #   with:
       #     php_version: '8.1'
 
-      # Set up Node.js for ESLint
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      # Run ESLint
+      # ESLint Code Lint & Fix
       - name: ESLint Code Lint & Fix
-        uses: actions-eslint/eslint-action@v3
+        uses: permafrost-dev/eslint-docker-ga@v1.0.0
         with:
-          eslint_args: "src/**/*.js --fix"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          path: "src/**/*.js"
+          args: "--fix"
+name: "CodeQL Analysis with Additional Actions"
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  codeql:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Run PHPStan for WordPress
+      - name: PHPStan for WordPress
+        uses: dingo-d/phpstan-wp-action@v2
+        with:
+          php_version: 8.1
+
+      # PHP Lint
+      - name: PHP Lint
+        uses: michaelw90/PHP-Lint@2.1.0
+        with:
+          php_version: 8.1
+
+      # Run & fix PHP Code Sniffer
+      - name: Run & fix PHP Code Sniffer
+        uses: shalior/wordpress-phpcs-action@v2.0.0
+        with:
+          github_token: ${{ secrets.github_token }}
+          use_default_configuration_file: true
+
+      # Commented out PHPUnit tests
+      # - name: PHPUnit Tests
+      #   uses: php-actions/phpunit@v9
+      #   with:
+      #     php_version: '8.1'
+
+      # ESLint Code Lint & Fix
+      - name: ESLint Code Lint & Fix
+        uses: permafrost-dev/eslint-docker-ga@v1.0.0
+        with:
+          path: "src/**/*.js"
+          args: "--fix"
