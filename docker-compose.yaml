@@ -58,7 +58,7 @@ services:
       - "9003:9003"
     volumes:
       - ./default.conf:/etc/nginx/conf.d/default.conf:ro
-      - wordpress_data:/var/www/html
+      - ./:/var/www/html
       - ./logs/nginx:/var/log/nginx
       - ./nginx-cache:/tmp/nginx-cache
       - ./certs:/etc/nginx/certs:ro
