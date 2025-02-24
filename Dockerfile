@@ -34,13 +34,12 @@ RUN mkdir -p /var/www/.wp-cli \
 COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Copy WP Config
-COPY wp-config-project.php /var/www/wp-config.php
+COPY wp-config-project.php /var/www/wp-config.php \
+    && chown www-data:www-data /var/www/html/wp-config.php
 
 # Copy the .env file
-COPY .env /var/www/html/.env
-
-# Set permissions for the .env file
-RUN chmod 660 /var/www/html/.env && chown www-data:www-data /var/www/html/.env
+COPY .env /var/www/html/.env \
+    && chown www-data:www-data /var/www/html/.env
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
