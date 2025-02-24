@@ -1,0 +1,6 @@
+{
+    "phpcs_standard": "WordPress",
+    "phpstan_level": "max",
+    "eslint_config": "C:\\Websites\\WooCoomercePrintify\\wordpress\\wp-content\\plugins\\wp-woocommerce-printify-sync\/.eslintrc.json",
+    "error_log_file": "C:\\Websites\\WooCoomercePrintify\\wordpress\\wp-content\\plugins\\wp-woocommerce-printify-sync\/error_log.txt"
+}

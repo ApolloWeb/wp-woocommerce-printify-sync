@@ -1,31 +1,47 @@
+name: "CodeQL & PHP Code Sniffer"
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  schedule:
+    - cron: "0 12 * * 1"  # Runs every Monday at 12:00 UTC
+
 jobs:
-  codeql:
-    name: Analyze
+  codeql-analysis:
+    name: "CodeQL Analysis"
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript", "php"]
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Initialize CodeQL"
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: "Perform CodeQL Analysis"
+        uses: github/codeql-action/analyze@v2
+
+  php-codesniffer:
+    name: "Run PHP Code Sniffer Fix"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      # other steps...
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
 
-  jobs:
-    codeql:
-      name: Analyze
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
-        # other steps...
-
-  linter_name:
-    name: runner / phpcs
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: shalior/wordpress-phpcs-action@master
+      - name: "Run PHP Code Sniffer Fix"
+        uses: valantic/run-fix-php-code-sniffer@v1
         with:
-          github_token: ${{ secrets.github_token }}
-          use_default_configuration_file: true
-          phpcs_args: '-n' # ignore warnings
-      - uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Fix PHPCS errors
+          path: "./"  # Adjust the path to your PHP files if necessary
+          standard: "PSR12"  # Change this to match your coding standard (e.g., WordPress, PSR12)
+          extensions: "php"
