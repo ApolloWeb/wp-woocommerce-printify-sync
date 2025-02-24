@@ -6,7 +6,6 @@
 
 # Ignore development files in plugin directory
 wp-content/plugins/wp-woocommerce-printify-sync/node_modules/
-wp-content/plugins/wp-woocommerce-printify-sync/.env
 wp-content/plugins/wp-woocommerce-printify-sync/*.log
 !wp-config-project.php
 

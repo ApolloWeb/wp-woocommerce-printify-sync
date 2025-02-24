@@ -1,7 +1,5 @@
 FROM wordpress:php8.2-fpm
 
-ENV CACHEBUSTER=2
-
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     libzip-dev \
@@ -30,14 +28,13 @@ RUN mkdir -p /var/www/.wp-cli \
 COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Copy WP Config
-COPY wp-config-project.php /var/www/html/wp-config.php
+COPY wp-config-project.php /var/www/wp-config.php
 
-# Copy Composer files
-COPY composer.json /var/www/html/composer.json
-COPY composer.lock /var/www/html/composer.lock
-
-#Copy .env file
+# Copy the .env file
 COPY .env /var/www/html/.env
+
+# Set permissions for the .env file
+RUN chmod 660 /var/www/html/.env && chown www-data:www-data /var/www/html/.env
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
@@ -47,7 +44,18 @@ USER www-data
 
 WORKDIR /var/www/html
 
+# Allow composer/installers plugin
+RUN composer config --global --no-plugins allow-plugins.composer/installers true
+
+# Set an environment variable to control running composer as root
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-RUN composer config --global --no-plugins allow-plugins.composer/installers true
+# Install composer dependencies
+RUN if [ "$COMPOSER_ALLOW_SUPERUSER" = "1" ]; then \
+        composer install --no-interaction --prefer-dist --no-progress --no-cache --no-plugins; \
+    else \
+        composer install --no-interaction --prefer-dist --no-progress --no-cache --no-plugins; \
+    fi
+
+# Dump autoload
 RUN composer dump-autoload --optimize
