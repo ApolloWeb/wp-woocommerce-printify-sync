@@ -28,7 +28,7 @@ jobs:
           vendor/bin/phpcs -i
 
       - name: Run PHPCS with WordPress Coding Standards
-        run: vendor/bin/phpcs --standard=WordPress
+        run: vendor/bin/phpcs --standard=WordPress .
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --configuration=phpstan.neon --error-format=sarif > phpstan-report.sarif
