@@ -26,11 +26,9 @@ jobs:
         with:
           php-version: 8.2
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
-
       # Run PHPStan for WordPress
       - name: PHPStan for WordPress
+        run: composer
         uses: dingo-d/phpstan-wp-action@v2
 
       # PHP Lint
