@@ -41,7 +41,7 @@ jobs:
         run: vendor/bin/phpcbf --standard=WordPress --ignore=*/vendor/*,*/node_modules/* . || true
 
       - name: Run PHPStan analysis
-        run: vendor/bin/phpstan analyse --configuration=phpstan.neon --error-format=sarif > phpstan-report.sarif || true
+        run: vendor/bin/phpstan analyse --configuration=phpstan.neon --error-format=sarif --debug > phpstan-report.sarif || true
 
       - name: Upload PHPStan SARIF
         uses: github/codeql-action/upload-sarif@v2
