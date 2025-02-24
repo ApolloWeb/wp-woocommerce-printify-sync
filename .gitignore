@@ -48,6 +48,10 @@ vendor/
 
 # Test coverage
 /coverage/
+.phpunit.result.cache
+/wordpress-tests-lib/
+/tmp/
+/tests/coverage/
 
 # Composer generated files
 composer.phar
@@ -55,3 +59,21 @@ composer.phar
 # NPM/Yarn lock files
 package-lock.json
 yarn.lock
+
+# Additional WordPress testing files
+wp-tests-config.php
+/wordpress/
+local-phpinfo.php
+
+# Build and dist files
+/dist/
+/build/
+*.zip
+
+# Operating system files
+Thumbs.db
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini

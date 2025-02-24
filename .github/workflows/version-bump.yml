@@ -1,0 +1,29 @@
+name: Version Bump
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Update Version Numbers
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          # Update plugin header version
+          sed -i "s/Version: .*/Version: ${VERSION}/" wp-woocommerce-printify-sync.php
+          # Update stable tag in readme.txt
+          sed -i "s/Stable tag: .*/Stable tag: ${VERSION}/" readme.txt
+          
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "chore: bump version to ${VERSION}"
+          commit-message: "chore: bump version to ${VERSION}"
+          branch: "version-bump/${VERSION}"
+          delete-branch: true

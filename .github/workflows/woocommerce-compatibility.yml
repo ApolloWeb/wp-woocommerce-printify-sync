@@ -1,0 +1,39 @@
+name: WooCommerce Compatibility
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 0 * * 1'  # Run weekly on Mondays
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        woocommerce: ['7.9', '8.0', 'latest']
+        wordpress: ['6.2', '6.3', 'latest']
+        
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          extensions: mbstring, xml, mysql
+          
+      - name: Install WordPress
+        run: |
+          wp core download --version=${{ matrix.wordpress }}
+          wp config create --dbname=wptests --dbuser=root --dbpass=root
+          wp core install --url=localhost --title=Test --admin_user=admin --admin_password=password --admin_email=admin@example.com
+          
+      - name: Install WooCommerce
+        run: |
+          wp plugin install woocommerce --version=${{ matrix.woocommerce }} --activate
+          
+      - name: Run Integration Tests
+        run: vendor/bin/phpunit --testsuite integration

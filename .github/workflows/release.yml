@@ -1,0 +1,40 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, bcmath, intl, gd
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Create plugin archive
+        run: |
+          mkdir wp-woocommerce-printify-sync
+          rsync -av --exclude={'.*',composer.json,composer.lock,phpunit.xml.dist,phpcs.xml.dist,phpstan.neon.dist,tests,bin} ./ wp-woocommerce-printify-sync/
+          zip -r wp-woocommerce-printify-sync.zip wp-woocommerce-printify-sync
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: wp-woocommerce-printify-sync.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
