@@ -4,7 +4,7 @@ FROM wordpress:php8.2-fpm
 WORKDIR /var/www/html
 
 # Get the version number
-ENV VERSION=9
+ENV VERSION=10
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -56,8 +56,12 @@ RUN composer config --global --no-plugins allow-plugins.composer/installers true
 # Set an environment variable to control running composer as root
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Copy the composer.json and composer.lock files
+# Ensure proper permissions for composer files before switching to www-data user
 COPY composer.json composer.lock ./
+RUN chown www-data:www-data composer.json composer.lock
+
+# Switch to www-data user
+USER www-data
 
 # Install composer dependencies
 RUN composer install --no-interaction --prefer-dist --no-progress --no-cache --no-plugins
