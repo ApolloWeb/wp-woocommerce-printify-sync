@@ -3,15 +3,11 @@ FROM wordpress:php8.2-fpm
 # Set the working directory
 WORKDIR /var/www/html
 
-# Copy the versioning script and version file
-COPY version.sh /usr/local/bin/version.sh
-COPY version.txt /usr/local/bin/version.txt
-
 # Run the versioning script
 RUN /usr/local/bin/version.sh
 
 # Get the version number
-ENV VERSION=4
+ENV VERSION=9
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
