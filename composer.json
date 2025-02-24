@@ -2,22 +2,23 @@
     "name": "apolloweb/wp-woocommerce-printify-sync",
     "description": "WordPress plugin to provide syncing between WooCommerce and Printify",
     "type": "wordpress-plugin",
+    "license": "proprietary",
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "phpstan/extension-installer": true,
-            "composer/installers": true
-        }
+            "phpstan/extension-installer": true
+        },
+        "sort-packages": true
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "phpstan/phpstan": "^1.10",
-        "wp-coding-standards/wpcs": "^3.0",
-        "phpcompatibility/phpcompatibility-wp": "^2.1",
-        "szepeviktor/phpstan-wordpress": "^1.3",
         "php-parallel-lint/php-parallel-lint": "^1.3",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/phpstan": "^1.10",
+        "phpstan/phpstan-sarif": "^1.0",
         "staabm/phpstan-dba": "^0.2",
-        "phpstan/phpstan-sarif": "^1.0"
+        "szepeviktor/phpstan-wordpress": "^1.3",
+        "wp-coding-standards/wpcs": "^3.0"
     },
     "scripts": {
         "phpcs": "phpcs --standard=WordPress",
@@ -25,7 +26,6 @@
         "phpstan": "phpstan analyse",
         "lint": "parallel-lint . --exclude vendor --exclude node_modules"
     },
-    "time": "2025-02-24 18:58:53",
     "authors": [
         {
             "name": "ApolloWeb",
