@@ -1,14 +1,17 @@
 # Ignore everything
 *
+
+# Allow plugin files AND its contents
+!wp-content/plugins/wp-woocommerce-printify-sync/
+!wp-content/plugins/wp-woocommerce-printify-sync/**/*
+
+# Allow root files
 !.env
 !php.ini
 !composer.json
 !composer.lock
-!wait-for-it.sh
-
-# Allow plugin files
-!wp-content/plugins/wp-woocommerce-printify-sync/
 !wp-config-project.php
+!wait-for-it.sh
 
 # Ignore version control
 .git/
