@@ -1,24 +1,37 @@
-name: PHP Code Check
+name: PHP and JavaScript Code Check
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly check on Sunday
 
 jobs:
   php-code-check:
     runs-on: ubuntu-latest
-    
+    strategy:
+      matrix:
+        php-versions: ['7.4', '8.0', '8.1']  # Test multiple PHP versions
+        
     steps:
     - uses: actions/checkout@v3
     
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'
+        php-version: ${{ matrix.php-versions }}
         tools: composer, phpcs
+        extensions: mbstring, xml, json, mysql
+        coverage: xdebug
         
+    - name: Validate composer.json
+      run: composer validate --strict
+        
+    - name: Install Composer dependencies
+      run: composer install --prefer-dist --no-progress
+
     - name: Install WordPress Coding Standards
       run: |
         composer global require wp-coding-standards/wpcs
@@ -31,14 +44,64 @@ jobs:
     - name: Run PHPCS
       run: phpcs --standard=WordPress --extensions=php .
 
-    - name: Check JavaScript files
+    - name: Run PHPStan
+      run: composer run-script phpstan
+      
+    - name: Run PHP Parallel Lint
+      run: composer run-script lint
+
+  javascript-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '16'
+        cache: 'npm'
     
-    - name: Install ESLint
+    - name: Install Dependencies
       run: |
+        npm ci
         npm install eslint eslint-plugin-jquery
         
     - name: Run ESLint
       run: npx eslint . --ext .js
+
+  security:
+    needs: [php-code-check, javascript-check]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Security scan
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javascript, php
+        
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  build:
+    needs: [php-code-check, javascript-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create release package
+      run: |
+        mkdir build
+        rsync -r --exclude={.*,composer.*,*.md,tests,build,node_modules} . build/wp-woocommerce-printify-sync
+        cd build
+        zip -r wp-woocommerce-printify-sync.zip wp-woocommerce-printify-sync
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: plugin-package
+        path: build/wp-woocommerce-printify-sync.zip

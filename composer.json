@@ -4,7 +4,9 @@
     "type": "wordpress-plugin",
     "config": {
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true,
+            "composer/installers": true
         }
     },
     "require-dev": {
