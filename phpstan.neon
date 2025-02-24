@@ -4,7 +4,7 @@ includes:
 parameters:
   level: max
   paths:
-    - wp-content/plugins/wp-woocommerce-printify-sync/
+    - ./wp-content/plugins/wp-woocommerce-printify-sync/
   excludePaths:
     - ./vendor/*
     - ./node_modules/*
