@@ -3,9 +3,6 @@ FROM wordpress:php8.2-fpm
 # Set the working directory
 WORKDIR /var/www/html
 
-# Run the versioning script
-RUN /usr/local/bin/version.sh
-
 # Get the version number
 ENV VERSION=9
 
