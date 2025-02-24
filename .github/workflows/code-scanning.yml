@@ -27,10 +27,16 @@ jobs:
           vendor/bin/phpcs --config-set installed_paths "vendor/wp-coding-standards/wpcs,vendor/phpcsstandards/phpcsutils,vendor/phpcsstandards/phpcsextra"
           vendor/bin/phpcs -i
 
+      - name: Run PHP Lint (Syntax Check)
+        run: find . -type f -name "*.php" -print0 | xargs -0 -n1 php -l
+
       - name: Run PHPCS with WordPress Coding Standards
         run: vendor/bin/phpcs --standard=WordPress .
 
-      - name: Run PHPStan
+      - name: Run PHPCBF to auto-fix code style issues
+        run: vendor/bin/phpcbf --standard=WordPress .
+
+      - name: Run PHPStan analysis
         run: vendor/bin/phpstan analyse --configuration=phpstan.neon --error-format=sarif > phpstan-report.sarif
 
       - name: Upload PHPStan SARIF
