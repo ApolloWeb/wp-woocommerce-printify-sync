@@ -58,4 +58,4 @@ RUN composer install --no-interaction --prefer-dist --no-progress --no-cache --n
 RUN composer dump-autoload --optimize
 
 # Command to copy files on container startup
-CMD cp /var/www/wp-config-project.php /var/www/html/wp-config.php && cp /var/www/html/.env /var/www/html/.env && php-fpm
+CMD ["sh", "-c", "cp /var/www/wp-config-project.php /var/www/html/wp-config.php && cp /var/www/html/.env /var/www/html/.env && php-fpm"]
