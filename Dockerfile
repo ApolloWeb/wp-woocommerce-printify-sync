@@ -1,5 +1,7 @@
 FROM wordpress:php8.2-fpm
 
+ENV CACHE_BUSTER=3
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     libzip-dev \
