@@ -33,20 +33,8 @@ RUN mkdir -p /var/www/.wp-cli \
 # Copy custom php.ini settings
 COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
-# Copy WP Config
-COPY wp-config-project.php /var/www/wp-config.php
-RUN chown www-data:www-data /var/www/wp-config.php
-
-# Copy the .env file
-COPY .env /var/www/.env
-RUN chown www-data:www-data /var/www/.env
-
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
-
-# Ensure proper permissions for composer files before switching to www-data user
-COPY composer.json composer.lock ./
-RUN chown www-data:www-data composer.json composer.lock
 
 # Switch to www-data user
 USER www-data
@@ -64,6 +52,3 @@ RUN composer install --no-interaction --prefer-dist --no-progress --no-cache --n
 
 # Dump autoload
 RUN composer dump-autoload --optimize
-
-# Command to copy files on container startup
-CMD ["sh", "-c", "cp /var/www/wp-config-project.php /var/www/html/wp-config.php && cp /var/www/.env /var/www/html/.env && php-fpm"]

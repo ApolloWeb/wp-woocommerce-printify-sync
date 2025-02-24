@@ -10,7 +10,7 @@ services:
     volumes:
       - ./wp-content/plugins/wp-woocommerce-printify-sync:/var/www/html/wp-content/plugins/wp-woocommerce-printify-sync
       - ./vendor:/var/www/html/vendor
-      - wordpress_data:/var/www/html
+      - ./:/var/www/html
       - php_logs:/var/log/php
       - ./xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini:ro
     environment:
