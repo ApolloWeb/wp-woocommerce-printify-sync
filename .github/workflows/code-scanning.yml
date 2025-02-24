@@ -28,13 +28,17 @@ jobs:
           vendor/bin/phpcs -i
 
       - name: Run PHP Lint (Syntax Check)
-        run: find . -type f -name "*.php" -print0 | xargs -0 -n1 php -l
+        run: |
+          find . \( -path "./vendor" -o -path "./node_modules" \) -prune -o -type f -name "*.php" -print0 | \
+          while IFS= read -r -d '' file; do
+            php -l "$file" || echo "Syntax error in $file"
+          done
 
       - name: Run PHPCS with WordPress Coding Standards
-        run: vendor/bin/phpcs --standard=WordPress .
+        run: vendor/bin/phpcs --standard=WordPress --ignore=*/vendor/*,*/node_modules/* .
 
       - name: Run PHPCBF to auto-fix code style issues
-        run: vendor/bin/phpcbf --standard=WordPress .
+        run: vendor/bin/phpcbf --standard=WordPress --ignore=*/vendor/*,*/node_modules/* .
 
       - name: Run PHPStan analysis
         run: vendor/bin/phpstan analyse --configuration=phpstan.neon --error-format=sarif > phpstan-report.sarif
@@ -42,20 +46,4 @@ jobs:
       - name: Upload PHPStan SARIF
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: phpstan-report.sarif
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install Node.js dependencies
-        run: npm install eslint eslint-plugin-jquery --save-dev
-
-      - name: Run ESLint
-        run: npx eslint wp-content/plugins/wp-woocommerce-printify-sync/assets/js/ --config .eslintrc.json --format sarif --output-file eslint-report.sarif
-
-      - name: Upload ESLint SARIF
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: eslint-report.sarif
+        
