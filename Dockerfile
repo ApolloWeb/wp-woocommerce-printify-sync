@@ -1,6 +1,18 @@
 FROM wordpress:php8.2-fpm
 
-ENV CACHE_BUSTER=3
+# Set the working directory
+WORKDIR /var/www/html
+
+# Copy the versioning script and version file
+COPY version.sh /usr/local/bin/version.sh
+COPY version.txt /usr/local/bin/version.txt
+
+# Run the versioning script
+RUN /usr/local/bin/version.sh
+
+# Get the version number
+ARG VERSION
+ENV VERSION=$VERSION
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -52,8 +64,15 @@ RUN composer config --global --no-plugins allow-plugins.composer/installers true
 # Set an environment variable to control running composer as root
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
+# Copy the composer.json and composer.lock files
+COPY composer.json composer.lock ./
+
 # Install composer dependencies
-RUN composer install --no-interaction --prefer-dist --no-progress --no-cache --no-plugins; \
+RUN composer install --no-interaction --prefer-dist --no-progress --no-cache --no-plugins
 
 # Dump autoload
 RUN composer dump-autoload --optimize
+
+# Append version number to assets for cache busting
+RUN find . -type f -name "*.css" -exec mv {} {}.$VERSION \;
+RUN find . -type f -name "*.js" -exec mv {} {}.$VERSION \;
