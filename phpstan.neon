@@ -1,11 +1,6 @@
-includes:
-    - vendor/szepeviktor/phpstan-wordpress/extension.neon
-
 parameters:
     level: max
     paths:
-        - %currentWorkingDirectory%/src
-        - %currentWorkingDirectory%/tests
         - %currentWorkingDirectory%/wp-content/plugins/wp-woocommerce-printify-sync
     autoload_files:
         - %currentWorkingDirectory%/vendor/autoload.php
