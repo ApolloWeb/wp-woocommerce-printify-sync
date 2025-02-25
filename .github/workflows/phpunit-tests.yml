@@ -46,13 +46,13 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Install WooCommerce
+      - name: Install WooCommerce Sniffs
         run: |
           composer require woocommerce/woocommerce-sniffs --dev
-          composer require woocommerce/woocommerce-testing --dev
 
       - name: Install WordPress Test Suite
         run: |
+          chmod +x bin/install-wp-tests.sh
           bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 ${{ matrix.wordpress }}
 
       - name: Install Dependencies
@@ -93,7 +93,7 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: PHPCS check
-        run: vendor/bin/phpcs --standard=WordPress --report=checkstyle | cs2pr
+        run: vendor/bin/phpcs --standard=WordPress --report=checkstyle . | cs2pr
 
       - name: PHPStan analysis
         run: vendor/bin/phpstan analyse --error-format=github
