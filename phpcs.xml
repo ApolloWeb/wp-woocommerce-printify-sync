@@ -5,7 +5,6 @@
     <rule ref="WordPress-Core"/>
     <rule ref="WordPress-Docs"/>
     <rule ref="WordPress-Extra"/>
-    <rule ref="WordPress-VIP"/>
     <rule ref="WordPress-Theme"/>
     <file>src</file>
     <file>tests</file>
