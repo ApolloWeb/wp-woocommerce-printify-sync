@@ -1,14 +1,21 @@
+# Dependabot configuration file
 version: 2
 updates:
+  # Maintain dependencies for PHP packages (Composer)
   - package-ecosystem: "composer"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
-    versioning-strategy: lockfile-only
-    allow:
-      - dependency-type: "development"
+    # Configure version constraints to avoid PHP version conflicts
+    ignore:
+      # Ignore major version updates that would require PHP 8.2+
+      - dependency-name: "symfony/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "overtrue/phplint"
+        versions: [">=9.5.6"]
 
+  # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
