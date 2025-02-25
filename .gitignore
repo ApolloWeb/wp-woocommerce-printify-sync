@@ -29,6 +29,15 @@
 !/wp-content/plugins/wp-woocommerce-printify-sync/
 !wp-config-project.php
 
+# Allow .neon files in the wp-content/plugins/wp-woocommerce-printify-sync/ directory
+!/wp-content/plugins/wp-woocommerce-printify-sync/*.neon
+
+# Allow additional config files
+!.eslintrc.json
+!eslint.config.js
+!phpcs.xml
+!.php_cs.dist
+!phpstan.neon
 # Development files
 .DS_Store
 node_modules/

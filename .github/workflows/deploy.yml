@@ -1,30 +1,39 @@
-name: Deploy
+name: Deploy to WordPress SVN
 
 on:
   push:
-    branches: [ master ]
+    tags:
+      - 'v*.*.*'
 
 jobs:
   deploy:
+    name: Deploy to WordPress SVN
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup SVN
-      run: sudo apt-get install -y subversion
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
 
-    - name: SVN Checkout
-      env:
-        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-      run: |
-        svn checkout --username $SVN_USERNAME --password $SVN_PASSWORD https://your.svn.repo.url/trunk
+      - name: Install NPM dependencies
+        run: npm install
 
-    - name: Deploy to SVN
-      env:
-        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-      run: |
-        svn commit --username $SVN_USERNAME --password $SVN_PASSWORD -m "Deploying to SVN"
+      - name: Install WP-CLI
+        run: |
+          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          chmod +x wp-cli.phar
+          sudo mv wp-cli.phar /usr/local/bin/wp
+
+      - name: Deploy to WordPress SVN
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        run: |
+          svn --version
+          svn co --username $SVN_USERNAME --password $SVN_PASSWORD https://plugins.svn.wordpress.org/YOUR-PLUGIN-SLUG/ svn
+          rsync -av --delete --exclude-from='.svnignore' . svn/trunk/
+          cd svn
+          svn add --force trunk
+          svn ci -m "Deploy version $GITHUB_REF" --username $SVN_USERNAME --password $SVN_PASSWORD --no-auth-cache

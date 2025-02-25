@@ -1,0 +1,19 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: max
+    paths:
+        - %currentWorkingDirectory%/src
+        - %currentWorkingDirectory%/tests
+        - %currentWorkingDirectory%/wp-content/plugins/wp-woocommerce-printify-sync
+    autoload_files:
+        - %currentWorkingDirectory%/vendor/autoload.php
+    ignoreErrors:
+        - '#Call to an undefined method.*#'
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    checkMissingTypehints: false
+    checkUninitializedProperty: false
+    checkDynamicProperties: false
+    reportUnmatchedIgnoredErrors: false

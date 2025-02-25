@@ -1,16 +1,18 @@
-name: PHP Code Quality
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  tags:
+    - 'v*.*.*'
 
 jobs:
-  php-code-quality:
-    name: PHP ${{ matrix.php }}
+  build:
+    name: Build & Test
     runs-on: ubuntu-latest
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -42,21 +44,45 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Run PHP Parallel Lint
-        run: composer run-script phplint
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
 
-      - name: Run PHP_CodeSniffer
-        run: composer run-script phpcs
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Install WP-CLI
+        run: |
+          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          chmod +x wp-cli.phar
+          sudo mv wp-cli.phar /usr/local/bin/wp
+
+      - name: Run PHP Lint
+        run: ./vendor/bin/parallel-lint --exclude .git --exclude vendor .
+
+      - name: Run PHPCS
+        run: composer run phpcs
+
+      - name: Run PHPCBF
+        run: composer run phpcbf
 
       - name: Run PHPStan
-        run: composer run-script phpstan
+        run: composer run phpstan
+
+      - name: Run PHP-CS-Fixer
+        run: composer run php-cs-fixer
+
+      - name: Run ESLint
+        run: npm run lint
 
       - name: Upload analysis results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: php-code-analysis-${{ matrix.php }}
+          name: code-analysis-${{ matrix.php }}
           path: |
             ./phpcs.xml
             ./phpstan-report.json
+            ./eslint-report.json
           retention-days: 7

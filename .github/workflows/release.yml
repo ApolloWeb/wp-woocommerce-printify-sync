@@ -3,37 +3,20 @@ name: Create Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
 
 jobs:
-  build:
-    name: Create Release
+  release:
+    name: Create GitHub Release
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'  # Updated to PHP 8.2
-          tools: composer:v2
-          coverage: none
-
-      - name: Install dependencies
-        run: composer install --no-dev --prefer-dist --no-progress
-
-      - name: Create zip file
-        run: |
-          mkdir wp-woocommerce-printify-sync
-          rsync -av --exclude={'.git','.github','.gitignore','vendor','composer.json','composer.lock','wp-woocommerce-printify-sync'} ./ wp-woocommerce-printify-sync/
-          zip -r wp-woocommerce-printify-sync.zip wp-woocommerce-printify-sync
+      - name: Set up GitHub CLI
+        uses: cli/gh-action@v2
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: wp-woocommerce-printify-sync.zip
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create $GITHUB_REF --title "Release $GITHUB_REF" --notes "Release notes for $GITHUB_REF"
