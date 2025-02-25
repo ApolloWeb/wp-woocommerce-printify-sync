@@ -1,0 +1,35 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, zip
+        coverage: none
+        tools: composer:v2
+
+    - name: Validate composer.json and composer.lock
+      if: hashFiles('composer.json') != ''
+      run: composer validate --strict
+
+    - name: Install dependencies
+      if: hashFiles('composer.json') != ''
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run tests
+      run: composer run-script test

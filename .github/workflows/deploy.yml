@@ -1,0 +1,30 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup SVN
+      run: sudo apt-get install -y subversion
+
+    - name: SVN Checkout
+      env:
+        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+      run: |
+        svn checkout --username $SVN_USERNAME --password $SVN_PASSWORD https://your.svn.repo.url/trunk
+
+    - name: Deploy to SVN
+      env:
+        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+      run: |
+        svn commit --username $SVN_USERNAME --password $SVN_PASSWORD -m "Deploying to SVN"
