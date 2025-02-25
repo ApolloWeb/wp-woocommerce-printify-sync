@@ -18,6 +18,9 @@
 !composer.json
 !composer.lock
 
+# Allow LICENSE file
+!LICENSE
+
 # Then allow only wp-content/plugins directory
 !/wp-content/
 /wp-content/*
