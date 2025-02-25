@@ -14,7 +14,8 @@
     "overtrue/phplint": "^9.0.0",
     "woocommerce/woocommerce-sniffs": "^0.1.0",
     "phpcsstandards/phpcsutils": "v1.0.12",
-    "phpcsstandards/phpcsextra": "v1.2.1"
+    "phpcsstandards/phpcsextra": "v1.2.1",
+    "wcm/git-php-hooks": "dev-master"
   },
   "scripts": {
     "phplint": "./vendor/bin/parallel-lint --exclude .git --exclude vendor .",
