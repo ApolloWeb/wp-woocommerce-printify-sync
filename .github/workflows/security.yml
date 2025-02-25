@@ -1,0 +1,37 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly scan
+
+jobs:
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run WordPress Security Scanner
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-zip: true
+
+      - name: Run Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'wp-woocommerce-printify-sync'
+          path: '.'
+          format: 'HTML'
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-scan-results
+          path: reports/
+          retention-days: 30

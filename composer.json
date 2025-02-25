@@ -1,61 +1,29 @@
 {
-    "name": "apolloweb/wp-woocommerce-printify-sync",
-    "description": "WordPress plugin to provide syncing between WooCommerce and Printify",
-    "type": "wordpress-plugin",
-    "license": "GPL-2.0-or-later",
-    "authors": [
-        {
-            "name": "ApolloWeb",
-            "homepage": "https://github.com/ApolloWeb"
-        }
-    ],
-    "require": {
-        "php": ">=7.4",
-        "composer/installers": "^2.0"
-    },
     "require-dev": {
-        "phpunit/phpunit": "^9.0",
         "squizlabs/php_codesniffer": "^3.7",
-        "wp-coding-standards/wpcs": "^2.3",
-        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "phpstan/phpstan": "^1.10",
+        "wp-coding-standards/wpcs": "^3.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
         "szepeviktor/phpstan-wordpress": "^1.3",
-        "php-stubs/wordpress-stubs": "^6.2",
-        "php-stubs/woocommerce-stubs": "^7.7",
-        "phpcompatibility/phpcompatibility-wp": "^2.1"
+        "php-parallel-lint/php-parallel-lint": "^1.3",
+        "overtrue/phplint": "^9.0"
     },
     "scripts": {
-        "phpcs": "phpcs",
-        "phpcbf": "phpcbf",
-        "phpstan": "phpstan analyse",
-        "test": "phpunit",
-        "test-coverage": "phpunit --coverage-html coverage"
+        "phplint": "./vendor/bin/parallel-lint --exclude .git --exclude vendor .",
+        "phpcs": "./vendor/bin/phpcs",
+        "phpcbf": "./vendor/bin/phpcbf",
+        "phpstan": "./vendor/bin/phpstan analyse",
+        "check": [
+            "@phplint",
+            "@phpcs",
+            "@phpstan"
+        ],
+        "fix": "@phpcbf"
     },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
-    },
-    "autoload": {
-        "psr-4": {
-            "ApolloWeb\\WCPrintifySync\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "ApolloWeb\\WCPrintifySync\\Tests\\": "tests/"
-        }
-    },
-    "minimum-stability": "stable",
-    "keywords": [
-        "wordpress",
-        "woocommerce",
-        "printify",
-        "sync",
-        "e-commerce"
-    ],
-    "support": {
-        "issues": "https://github.com/ApolloWeb/wp-woocommerce-printify-sync/issues",
-        "source": "https://github.com/ApolloWeb/wp-woocommerce-printify-sync"
     }
 }

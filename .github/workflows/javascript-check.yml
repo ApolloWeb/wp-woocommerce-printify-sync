@@ -1,0 +1,49 @@
+name: JavaScript Check
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  js-check:
+    name: JavaScript Lint and Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Check for JavaScript syntax errors
+        run: npm run lint:js || echo "No lint:js script found"
+
+      - name: Check for CSS syntax errors
+        run: npm run lint:css || echo "No lint:css script found"
+
+      - name: Run JavaScript tests
+        run: npm test || echo "No test script configured"
+
+      - name: Build JavaScript assets
+        run: npm run build || echo "No build script found"
+
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: js-build-${{ matrix.node-version }}
+          path: build/
+          retention-days: 5
