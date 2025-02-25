@@ -60,8 +60,8 @@ vendor/
 composer.phar
 
 # NPM/Yarn lock files
-package-lock.json
-yarn.lock
+!package.json
+!package-lock.json
 
 # Additional WordPress testing files
 wp-tests-config.php
