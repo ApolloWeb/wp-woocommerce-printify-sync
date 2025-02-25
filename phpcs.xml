@@ -5,6 +5,9 @@
     <rule ref="WordPress-Core"/>
     <rule ref="WordPress-Docs"/>
     <rule ref="WordPress-Extra"/>
+    <rule ref="WordPress-Theme"/>
+    <file>src</file>
+    <file>tests</file>
     <file>wp-content/plugins/wp-woocommerce-printify-sync</file>
     <exclude-pattern>*/vendor/*</exclude-pattern>
 </ruleset>
