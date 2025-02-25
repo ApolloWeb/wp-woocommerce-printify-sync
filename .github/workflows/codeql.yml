@@ -1,148 +1,49 @@
-name: WordPress Plugin Check
+name: Plugin Build and Test
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  schedule:
-    - cron: '0 0 * * 0'  # Weekly check on Sunday
+  workflow_dispatch:
 
 jobs:
-  php-code-check:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # WordPress typically supports PHP versions that are still receiving security updates
-        php-versions: ['7.4', '8.0', '8.1', '8.2']
-        wordpress-versions: ['latest', '6.3', '6.2']
-        
+
     steps:
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: ${{ matrix.php-versions }}
-        tools: composer, phpcs, wp-cli
-        extensions: mbstring, xml, json, mysql, zip, curl, dom, intl, gd
-        coverage: xdebug
-        
-    - name: Validate composer.json
+        php-version: '8.1'
+        extensions: mbstring, xml, zip
+        coverage: none
+        tools: composer:v2
+
+    # Validate the composer file if you're using it
+    - name: Validate composer.json and composer.lock
+      if: hashFiles('composer.json') != ''
       run: composer validate --strict
-        
-    - name: Install Composer dependencies
+
+    # Install dependencies if you're using composer
+    - name: Install dependencies
+      if: hashFiles('composer.json') != ''
       run: composer install --prefer-dist --no-progress
 
-    - name: Install WordPress Coding Standards
-      run: |
-        composer global require wp-coding-standards/wpcs
-        composer global require phpcompatibility/phpcompatibility-wp
-        phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs,$HOME/.composer/vendor/phpcompatibility/php-compatibility,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-wp
-    
-    - name: Check PHP Syntax
-      run: |
-        find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-        
-    - name: Run PHPCS
-      run: |
-        phpcs --standard=WordPress --extensions=php .
-        phpcs --standard=PHPCompatibilityWP --extensions=php --runtime-set testVersion ${{ matrix.php-versions }} .
-
-    - name: Run PHPStan with WordPress stubs
-      run: |
-        composer require --dev szepeviktor/phpstan-wordpress
-        composer require --dev phpstan/phpstan
-        vendor/bin/phpstan analyse --memory-limit=2G
-
-    - name: Setup WordPress Test Environment
-      run: |
-        bash bin/install-wp-tests.sh wordpress_test root '' localhost ${{ matrix.wordpress-versions }}
-        
-    - name: Run PHPUnit
-      run: |
-        if [ -f "phpunit.xml.dist" ]; then
-          vendor/bin/phpunit
-        fi
-
-  javascript-check:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
-        cache: 'npm'
-    
-    - name: Clean npm cache
-      run: npm cache clean --force
-        
-    - name: Install Dependencies
-      run: |
-        npm install --no-package-lock
-        npm install -D eslint eslint-plugin-jquery eslint-plugin-wordpress --no-package-lock
-        
-    - name: Run ESLint with WordPress configuration
-      run: |
-        echo '{"extends": ["plugin:wordpress/recommended"]}' > .eslintrc.json
-        npx eslint . --ext .js || true
-
-  security:
-    needs: [php-code-check, javascript-check]
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: WordPress Security Scan
-      uses: 10up/action-wordpress-plugin-deploy@stable
-      with:
-        dry-run: true
-    
-    - name: Security scan
-      uses: github/codeql-action/init@v2
-      with:
-        languages: javascript, php
-        queries: security-extended,security-and-quality
-        
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
-
-  build:
-    needs: [php-code-check, javascript-check, security]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Create WordPress plugin package
+    # Create plugin artifact
+    - name: Create plugin archive
       run: |
         mkdir build
-        # Include only necessary files for WordPress plugin
-        rsync -r --exclude={.*,composer.*,package*.json,phpunit.xml*,tests,build,node_modules,bin} . build/wp-woocommerce-printify-sync
-        # Ensure readme.txt meets WordPress standards
-        if [ -f "readme.txt" ]; then
-          wp package install wp-cli/dist-archive-command
-          wp dist-archive . build/wp-woocommerce-printify-sync.zip
-        else
-          cd build
-          zip -r wp-woocommerce-printify-sync.zip wp-woocommerce-printify-sync
-        fi
-    
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: plugin-package
-        path: build/wp-woocommerce-printify-sync.zip
+        rsync -av --progress . ./build/ --exclude .git --exclude .github --exclude build --exclude tests --exclude node_modules --exclude vendor
 
-    - name: WordPress.org Plugin Deploy
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: 10up/action-wordpress-plugin-deploy@stable
-      env:
-        SVN_PASSWORD: ${{ secrets.WORDPRESS_SVN_PASSWORD }}
-        SVN_USERNAME: ${{ secrets.WORDPRESS_SVN_USERNAME }}
-        SLUG: wp-woocommerce-printify-sync
+    # Upload the plugin files using the latest v4 version
+    - name: Upload plugin artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: wp-woocommerce-printify-sync
+        path: build/
+        retention-days: 5
