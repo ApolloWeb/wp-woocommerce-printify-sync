@@ -53,7 +53,7 @@ jobs:
 
       - name: Upload analysis results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: php-code-analysis-${{ matrix.php }}
           path: |
