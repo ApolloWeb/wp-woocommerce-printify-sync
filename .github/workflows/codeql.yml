@@ -16,6 +16,7 @@ jobs:
       with:
         fetch-depth: 0
 
+    #install PHP
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
