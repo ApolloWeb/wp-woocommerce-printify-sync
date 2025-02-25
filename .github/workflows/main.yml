@@ -2,11 +2,14 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ master ]
+    branches: 
+      - master
   pull_request:
-    branches: [ master ]
-  tags:
-    - 'v*.*.*'
+    branches: 
+      - master
+  release:
+    types: 
+      - created
 
 jobs:
   build:
