@@ -13,16 +13,11 @@ jobs:
     
     strategy:
       matrix:
-        php: ['7.4', '8.0', '8.1', '8.2']
+        php: ['8.2']
         wordpress: ['latest', '6.4', '6.3']
         include:
-          - php: '7.4'
-            wordpress: '5.9'
-          - php: '8.0'
-            wordpress: '6.0'
-        exclude:
           - php: '8.2'
-            wordpress: '5.9'
+            wordpress: '6.0'
 
     services:
       mysql:
@@ -45,6 +40,11 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, mysql, mysqli, pdo_mysql, bcmath, soap, intl, gd, exif, iconv, imagick
           coverage: none
           tools: composer:v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
 
       - name: Install WooCommerce
         run: |
@@ -81,8 +81,13 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.0'
+          php-version: '8.2'
           tools: composer:v2, cs2pr
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
 
       - name: Install Dependencies
         run: composer install --prefer-dist --no-progress
