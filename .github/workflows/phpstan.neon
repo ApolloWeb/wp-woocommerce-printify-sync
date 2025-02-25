@@ -1,0 +1,10 @@
+parameters:
+    level: max
+    paths:
+        - src
+        - wp-content/plugins/wp-woocommerce-printify-sync
+    excludePaths:
+        - vendor/*
+        - node_modules/*
+        - wp/*
+    ignoreErrors: []
