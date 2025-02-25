@@ -19,8 +19,8 @@
   "scripts": {
     "phplint": "./vendor/bin/parallel-lint --exclude .git --exclude vendor .",
     "phpcs": "./vendor/bin/phpcs --runtime-set ignore_warnings_on_exit 1 --runtime-set ignore_errors_on_exit 1",
-    "phpcbf": "./vendor/bin/phpcbf --no-progress",
-    "phpstan": "./vendor/bin/phpstan analyse --error-format=checkstyle --no-progress",
+    "phpcbf": "./vendor/bin/phpcbf --standard=WordPress --report=summary",
+    "phpstan": "./vendor/bin/phpstan analyse --error-format=table --no-progress",
     "check": [
       "@phplint",
       "@phpcs",
