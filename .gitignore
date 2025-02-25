@@ -37,7 +37,7 @@
 !eslint.config.js
 !phpcs.xml
 !.php_cs.dist
-!phpstan.neon
+
 # Development files
 .DS_Store
 node_modules/
