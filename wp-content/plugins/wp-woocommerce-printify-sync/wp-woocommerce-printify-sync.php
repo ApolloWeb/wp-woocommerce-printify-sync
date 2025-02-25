@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: WP WooCommerce Printify Sync
  * Plugin URI: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
@@ -17,30 +18,30 @@ use ApolloWeb\WooCommercePrintifySync\PluginDependencies;
 use ApolloWeb\WooCommercePrintifySync\UploadHandler;
 
 // Exit if accessed directly.
-if ( ! defined( 'ABSPATH' ) ) {
+if (! defined('ABSPATH')) {
     exit;
 }
 
 // Define plugin constants.
-define( 'WPS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'WPS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define('WPS_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('WPS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 // Autoloader expecting file names to mirror class names.
-spl_autoload_register(function($class) {
+spl_autoload_register(function ($class) {
     $prefix = __NAMESPACE__ . '\\';
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) {
         return;
     }
-    
+
     $relative_class = substr($class, $len);
     $directories = [
         __DIR__ . '/includes/',
         __DIR__ . '/admin/',
     ];
-    
+
     foreach ($directories as $base_dir) {
-        $file = $base_dir . str_replace('\\','/', $relative_class) . '.php';
+        $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
         if (file_exists($file)) {
             require $file;
             return;

@@ -1,23 +1,26 @@
 <?php
+
 namespace ApolloWeb\WooCommercePrintifySync;
 
 /**
  * Handle plugin dependencies using TGM Plugin Activation
  */
-class PluginDependencies {
-    
+class PluginDependencies
+{
     /**
      * Initialize the class
      */
-    public function __construct() {
-        require_once dirname( __FILE__ ) . '/class-tgm-plugin-activation.php';
-        add_action( 'tgmpa_register', array( $this, 'register_required_plugins' ) );
+    public function __construct()
+    {
+        require_once dirname(__FILE__) . '/class-tgm-plugin-activation.php';
+        add_action('tgmpa_register', array( $this, 'register_required_plugins' ));
     }
 
     /**
      * Register the required plugins for this plugin.
      */
-    public function register_required_plugins() {
+    public function register_required_plugins()
+    {
         $plugins = array(
             array(
                 'name'      => 'WooCommerce',
@@ -26,7 +29,7 @@ class PluginDependencies {
                 'version'   => '7.0.0' // Minimum version required
             )
         );
-        
+
         $config = array(
             'id'           => 'wp-woocommerce-printify-sync',    // Unique ID for TGMPA
             'default_path' => '',                                // Default absolute path
@@ -47,6 +50,6 @@ class PluginDependencies {
             )
         );
 
-        tgmpa( $plugins, $config );
+        tgmpa($plugins, $config);
     }
 }

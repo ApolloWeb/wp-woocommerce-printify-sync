@@ -11,14 +11,16 @@ define('COLOR_CYAN', "\033[36m");
 define('COLOR_RED', "\033[31m");
 
 // Helper: run a shell command and return output and exit code.
-function runCommand($command, &$output = null) {
+function runCommand($command, &$output = null)
+{
     echo COLOR_YELLOW . "Running: $command" . COLOR_RESET . "\n";
     exec($command, $output, $exitCode);
     return $exitCode;
 }
 
 // Helper: output styled text.
-function styledEcho($text, $color = COLOR_RESET) {
+function styledEcho($text, $color = COLOR_RESET)
+{
     echo $color . $text . COLOR_RESET . "\n";
 }
 
@@ -81,7 +83,8 @@ if (runCommand('composer install', $out) !== 0) {
 }
 
 // Determine local executable paths (adjust for Windows if needed)
-function getLocalPath($relativePath) {
+function getLocalPath($relativePath)
+{
     global $projectRoot;
     $path = $projectRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
     return file_exists($path) ? $path : null;
@@ -133,13 +136,15 @@ if (runCommand('eslint --version', $out) !== 0) {
 $ERROR_LOG = $projectRoot . DIRECTORY_SEPARATOR . "error_log.txt";
 
 // Define linter functions.
-function logError($message) {
+function logError($message)
+{
     global $ERROR_LOG;
     $timestamp = date("Y-m-d H:i:s");
     file_put_contents($ERROR_LOG, "[$timestamp] $message\n", FILE_APPEND);
 }
 
-function runLinter($label, $command) {
+function runLinter($label, $command)
+{
     styledEcho("[$label] Running...", COLOR_CYAN);
     $output = [];
     exec($command . " 2>&1", $output, $exitCode);
@@ -150,7 +155,8 @@ function runLinter($label, $command) {
     }
 }
 
-function runAllLinters() {
+function runAllLinters()
+{
     // Run PHP-CS-Fixer first to auto-fix code style issues.
     runLinter("PHP-CS-Fixer", escapeshellcmd($GLOBALS['phpCsFixerPath'] . " fix ."));
     runLinter("PHPCS", escapeshellcmd($GLOBALS['phpcsPath'] . " --standard=WordPress ."));
@@ -166,7 +172,8 @@ function runAllLinters() {
     styledEcho("All linters finished.", COLOR_GREEN);
 }
 
-function glob_recursive($pattern, $path) {
+function glob_recursive($pattern, $path)
+{
     $files = glob($path . DIRECTORY_SEPARATOR . $pattern);
     foreach (glob($path . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR) as $dir) {
         $files = array_merge($files, glob_recursive($pattern, $dir));
@@ -175,7 +182,8 @@ function glob_recursive($pattern, $path) {
 }
 
 // Display styled menu.
-function showMenu() {
+function showMenu()
+{
     echo COLOR_GREEN . "====================================\n" . COLOR_RESET;
     echo COLOR_CYAN . "      Code Checking Menu (PHP and JS Only)\n" . COLOR_RESET;
     echo COLOR_GREEN . "====================================\n" . COLOR_RESET;
@@ -243,12 +251,14 @@ while (true) {
             if (is_dir($vendorDir)) {
                 styledEcho("Deleting vendor directory...", COLOR_CYAN);
                 // Recursively remove vendor directory
-                function rrmdir($dir) {
+                function rrmdir($dir)
+                {
                     foreach (glob($dir . '/*') as $file) {
-                        if (is_dir($file))
+                        if (is_dir($file)) {
                             rrmdir($file);
-                        else
+                        } else {
                             unlink($file);
+                        }
                     }
                     rmdir($dir);
                 }

@@ -19,7 +19,7 @@
   "scripts": {
     "phplint": "./vendor/bin/parallel-lint --exclude .git --exclude vendor .",
     "phpcs": "./vendor/bin/phpcs --runtime-set ignore_warnings_on_exit 1 --runtime-set ignore_errors_on_exit 1",
-    "phpcbf": "./vendor/bin/phpcbf --standard=WordPress --report=summary wp-content/plugins/wp-woocommerce-printify-sync",
+    "phpcbf": "./vendor/bin/phpcbf -q --standard=WordPress --report=summary wp-content/plugins/wp-woocommerce-printify-sync",
     "phpstan": "./vendor/bin/phpstan analyse --error-format=table --no-progress",
     "check": [
       "@phplint",

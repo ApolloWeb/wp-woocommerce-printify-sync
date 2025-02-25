@@ -8,11 +8,13 @@ const COLOR_RESET = "\033[0m";
 
 $config_file = "config.json";
 
-function print_color($color, $message) {
+function print_color($color, $message)
+{
     echo $color . $message . COLOR_RESET . "\n";
 }
 
-function default_config($config_file) {
+function default_config($config_file)
+{
     if (!file_exists($config_file)) {
         $default_settings = [
             "setting1" => "default_value1",
@@ -27,18 +29,19 @@ function default_config($config_file) {
     return true;
 }
 
-function load_config($config_file) {
+function load_config($config_file)
+{
     if (!file_exists($config_file)) {
         print_color(COLOR_RED, "Error: Config file missing.");
         return null;
     }
-    
+
     $config_data = json_decode(file_get_contents($config_file), true);
     if (!is_array($config_data)) {
         print_color(COLOR_RED, "Error: Config file is invalid or corrupted.");
         return null;
     }
-    
+
     return $config_data;
 }
 
