@@ -60,6 +60,7 @@
             }
             
             const selectedShopId = this.$shopInput.val();
+            console.log('Current selected shop:', selectedShopId || 'none');
             
             // Display shops in a formatted table
             let html = '<div class="printify-shops-table-wrapper">';
@@ -91,23 +92,33 @@
             // Attach event handlers to select buttons
             $('.select-shop').on('click', this.selectShop.bind(this));
             
-            // Auto-select first shop if nothing is selected
+            // Auto-select first shop if no shop is currently selected
             if (!selectedShopId && shops.length > 0) {
-                console.log('No shop selected, auto-selecting first shop');
-                // Simulate click on first shop's select button
-                setTimeout(() => {
-                    $('.select-shop:first').trigger('click');
-                }, 500);
+                console.log('No shop selected, selecting first shop automatically');
+                this.autoSelectFirstShop(shops[0]);
             }
         },
         
+        // New method to handle automatic selection of first shop
+        autoSelectFirstShop: function(shop) {
+            if (!shop || !shop.id) return;
+            
+            console.log('Auto-selecting first shop:', shop.title, shop.id);
+            
+            // Update visual state
+            this.$shopInput.val(shop.id);
+            
+            // Save to database
+            this.saveSelectedShop(shop.id, shop.title, true);
+        },
+        
         selectShop: function(e) {
-            if (e) e.preventDefault();
+            e.preventDefault();
             const $button = $(e.currentTarget);
             const shopId = $button.data('shop-id');
             const shopName = $button.data('shop-name');
             
-            console.log('Shop selected:', shopName, shopId);
+            console.log('Shop selected manually:', shopName, shopId);
             
             // Update the hidden input with the selected shop ID
             this.$shopInput.val(shopId);
@@ -121,39 +132,73 @@
             $button.closest('tr').addClass('selected-shop');
             
             // Save the selection via AJAX
-            this.saveSelectedShop(shopId, shopName);
+            this.saveSelectedShop(shopId, shopName, false);
         },
         
-        saveSelectedShop: function(shopId, shopName) {
+        saveSelectedShop: function(shopId, shopName, isAutoSelected) {
+            console.log('Saving shop selection to database:', shopId, isAutoSelected ? '(auto-selected)' : '');
+            
             $.ajax({
                 url: PrintifySync.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'save_selected_shop',
                     nonce: PrintifySync.nonce,
-                    shop_id: shopId
+                    shop_id: shopId,
+                    auto_selected: isAutoSelected ? 1 : 0
                 },
-                success: function(response) {
+                success: (response) => {
+                    console.log('Save shop response:', response);
+                    
                     if (response.success) {
-                        // Show a success message
-                        $('.printify-shops-table-wrapper').prepend(
-                            `<div class="printify-notice printify-notice-success">
-                                Shop "${shopName}" selected successfully.
-                            </div>`
-                        );
+                        console.log('Shop saved successfully, ID:', response.data.shop_id);
                         
-                        // Remove the message after 3 seconds
-                        setTimeout(function() {
-                            $('.printify-notice-success').fadeOut('slow', function() {
-                                $(this).remove();
-                            });
-                        }, 3000);
+                        // If auto-selected, update UI to reflect the selection
+                        if (isAutoSelected) {
+                            // Update button appearance
+                            $('.select-shop').removeClass('button-primary selected').addClass('button-secondary').text('Select');
+                            $(`.select-shop[data-shop-id="${shopId}"]`)
+                                .removeClass('button-secondary')
+                                .addClass('button-primary selected')
+                                .text('Selected');
+                            
+                            // Update row highlighting
+                            $('.printify-shops-table tr').removeClass('selected-shop');
+                            $(`.select-shop[data-shop-id="${shopId}"]`).closest('tr').addClass('selected-shop');
+                        }
+                        
+                        // Show a success message for manual selections only
+                        if (!isAutoSelected) {
+                            $('.printify-shops-table-wrapper').prepend(
+                                `<div class="printify-notice printify-notice-success">
+                                    Shop "${shopName}" selected successfully.
+                                </div>`
+                            );
+                            
+                            // Remove the message after 3 seconds
+                            setTimeout(function() {
+                                $('.printify-notice-success').fadeOut('slow', function() {
+                                    $(this).remove();
+                                });
+                            }, 3000);
+                        }
+                        
+                        // Force refresh the products section if it exists
+                        if ($('#printify-products-results').length > 0) {
+                            $('#fetch-printify-products').prop('disabled', false);
+                        }
                     } else {
                         console.error('Error saving shop selection:', response.data.message);
+                        if (!isAutoSelected) {
+                            this.showError(`Failed to save shop selection: ${response.data.message}`);
+                        }
                     }
                 },
-                error: function(xhr, status, error) {
+                error: (xhr, status, error) => {
                     console.error('AJAX error saving shop selection:', error);
+                    if (!isAutoSelected) {
+                        this.showError(`AJAX error: ${error}`);
+                    }
                 }
             });
         },

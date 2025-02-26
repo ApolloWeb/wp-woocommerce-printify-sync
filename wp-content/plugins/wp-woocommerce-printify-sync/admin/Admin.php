@@ -98,7 +98,7 @@ class Admin
             'printify_sync_api_section'
         );
         
-        // Shop ID field is now hidden and managed via JS
+        // Removed shop dropdown from settings fields
     }
 
     /**
@@ -117,55 +117,6 @@ class Admin
         $apiKey = esc_attr(get_option($this->option_api_key, ''));
         echo '<input type="text" name="' . $this->option_api_key . '" value="' . $apiKey . '" class="regular-text" />';
         echo '<p class="description">' . __('You can find your API key in the Printify account settings', 'wp-woocommerce-printify-sync') . '</p>';
-    }
-
-    /**
-     * Shop selection dropdown HTML (kept for compatibility but not used directly)
-     */
-    public function shopDropdownFieldCallback()
-    {
-        $apiKey = trim(get_option($this->option_api_key, ''));
-        if (empty($apiKey)) {
-            echo '<p>' . __('Please enter your Printify API key first.', 'wp-woocommerce-printify-sync') . '</p>';
-            return;
-        }
-
-        $api = $this->getApi();
-        if (!$api) {
-            echo '<p style="color:red;">' . __('Error initializing API client.', 'wp-woocommerce-printify-sync') . '</p>';
-            return;
-        }
-
-        $response = $api->getShops();
-        if (is_wp_error($response)) {
-            echo '<p style="color:red;">' . __('Error fetching shops: ', 'wp-woocommerce-printify-sync') . esc_html($response->get_error_message()) . '</p>';
-            return;
-        }
-
-        // Handle different response structures
-        $shops = [];
-        if (isset($response['data'])) {
-            $shops = $response['data'];
-        } elseif (is_array($response)) {
-            $shops = $response;
-        }
-
-        if (empty($shops)) {
-            echo '<p style="color:red;">' . __('No shops data found.', 'wp-woocommerce-printify-sync') . '</p>';
-            return;
-        }
-
-        $selectedShop = esc_attr(get_option($this->option_shop_id, ''));
-        $isSingle = (count($shops) === 1);
-        echo '<select name="' . $this->option_shop_id . '" class="regular-text" ' . ($isSingle ? 'disabled' : '') . '>';
-        foreach ($shops as $shop) {
-            $selected = selected($selectedShop, $shop['id'], false);
-            echo '<option value="' . esc_attr($shop['id']) . '" ' . $selected . '>' . esc_html($shop['title']) . '</option>';
-        }
-        echo '</select>';
-        if ($isSingle && !empty($shops)) {
-            echo '<input type="hidden" name="' . $this->option_shop_id . '" value="' . esc_attr($shops[0]['id']) . '">';
-        }
     }
 
     /**
@@ -263,33 +214,26 @@ class Admin
      */
     public function fetchPrintifyShops()
     {
-        error_log('Fetch Printify Shops AJAX called');
-        
         // Check nonce
         if (!check_ajax_referer('printify_sync_nonce', 'nonce', false)) {
-            error_log('Nonce verification failed');
             wp_send_json_error(['message' => __('Security check failed', 'wp-woocommerce-printify-sync')]);
             return;
         }
         
         $apiKey = trim(get_option($this->option_api_key, ''));
         if (empty($apiKey)) {
-            error_log('API Key is missing');
             wp_send_json_error(['message' => __('API Key is missing', 'wp-woocommerce-printify-sync')]);
             return;
         }
 
         $api = $this->getApi();
         if (!$api) {
-            error_log('API initialization failed');
             wp_send_json_error(['message' => __('Error initializing API client', 'wp-woocommerce-printify-sync')]);
             return;
         }
 
-        error_log('Making API request to Printify for shops');
         $response = $api->getShops();
         if (is_wp_error($response)) {
-            error_log('API Error: ' . $response->get_error_message());
             wp_send_json_error(['message' => $response->get_error_message()]);
             return;
         }
@@ -303,8 +247,6 @@ class Admin
             $shops = $response;
         }
         
-        error_log('Shops found: ' . count($shops));
-        
         if (empty($shops)) {
             wp_send_json_error(['message' => __('No shops data found. Please check your API key.', 'wp-woocommerce-printify-sync')]);
         } else {
@@ -317,11 +259,8 @@ class Admin
      */
     public function fetchPrintifyProducts()
     {
-        error_log('Fetch Printify Products AJAX called');
-        
         // Check nonce
         if (!check_ajax_referer('printify_sync_nonce', 'nonce', false)) {
-            error_log('Products: Nonce verification failed');
             wp_send_json_error(['message' => __('Security check failed', 'wp-woocommerce-printify-sync')]);
             return;
         }
@@ -329,23 +268,19 @@ class Admin
         $apiKey = trim(get_option($this->option_api_key, ''));
         $shopId = trim(get_option($this->option_shop_id, ''));
         if (empty($apiKey) || empty($shopId)) {
-            error_log('Products: API Key or Shop ID is missing');
             wp_send_json_error(['message' => __('API Key or Shop ID is missing', 'wp-woocommerce-printify-sync')]);
             return;
         }
 
         $api = $this->getApi();
         if (!$api) {
-            error_log('Products: API initialization failed');
             wp_send_json_error(['message' => __('Error initializing API client', 'wp-woocommerce-printify-sync')]);
             return;
         }
 
-        error_log('Fetching Printify products for shop: ' . $shopId);
         $response = $api->getProducts($shopId, 10);
         
         if (is_wp_error($response)) {
-            error_log('Products API Error: ' . $response->get_error_message());
             wp_send_json_error(['message' => $response->get_error_message()]);
             return;
         }
@@ -358,8 +293,6 @@ class Admin
             // If response is an array itself, use it directly
             $products = $response;
         }
-        
-        error_log('Products found: ' . count($products));
         
         if (empty($products)) {
             wp_send_json_error(['message' => __('No products found in this shop.', 'wp-woocommerce-printify-sync')]);
@@ -381,8 +314,20 @@ class Admin
         }
         
         $shop_id = sanitize_text_field($_POST['shop_id']);
-        update_option($this->option_shop_id, $shop_id);
         
-        wp_send_json_success(['message' => __('Shop selected successfully', 'wp-woocommerce-printify-sync')]);
+        // Force update the option with autoload enabled for better persistence
+        delete_option($this->option_shop_id);
+        $result = add_option($this->option_shop_id, $shop_id, '', 'yes');
+        
+        if (!$result) {
+            // If option already exists, update it
+            $result = update_option($this->option_shop_id, $shop_id);
+        }
+        
+        if ($result) {
+            wp_send_json_success(['message' => __('Shop selected successfully', 'wp-woocommerce-printify-sync'), 'shop_id' => $shop_id]);
+        } else {
+            wp_send_json_error(['message' => __('Failed to save shop selection', 'wp-woocommerce-printify-sync')]);
+        }
     }
 }
