@@ -59,7 +59,8 @@
                 return;
             }
             
-            const selectedShopId = this.$shopInput.val();
+            // Get the currently selected shop ID (convert to string for consistent comparison)
+            const selectedShopId = String(this.$shopInput.val() || '');
             console.log('Current selected shop:', selectedShopId || 'none');
             
             // Display shops in a formatted table
@@ -70,13 +71,16 @@
             html += '<tbody>';
             
             shops.forEach(shop => {
-                const isSelected = selectedShopId === shop.id;
+                // Convert shop.id to string for consistent comparison
+                const shopId = String(shop.id);
+                const isSelected = selectedShopId === shopId;
+                
                 html += `<tr class="${isSelected ? 'selected-shop' : ''}">
                     <td>${this.escapeHTML(shop.title)}</td>
-                    <td>${this.escapeHTML(shop.id)}</td>
+                    <td>${this.escapeHTML(shopId)}</td>
                     <td>
                         <button class="button ${isSelected ? 'button-primary selected' : 'button-secondary'} select-shop" 
-                            data-shop-id="${shop.id}" 
+                            data-shop-id="${shopId}" 
                             data-shop-name="${this.escapeHTML(shop.title)}">
                             ${isSelected ? 'Selected' : 'Select'}
                         </button>
@@ -103,38 +107,62 @@
         autoSelectFirstShop: function(shop) {
             if (!shop || !shop.id) return;
             
-            console.log('Auto-selecting first shop:', shop.title, shop.id);
+            // Convert shop ID to string to ensure consistent comparison
+            const shopId = String(shop.id);
+            console.log('Auto-selecting first shop:', shop.title, shopId);
             
-            // Update visual state immediately before AJAX call
-            this.$shopInput.val(shop.id);
+            // Update hidden input value
+            this.$shopInput.val(shopId);
             
-            // Update UI immediately
-            this.updateSelectedShopUI(shop.id, shop.title);
-            
-            // Save to database
-            this.saveSelectedShop(shop.id, shop.title, true);
+            // IMPORTANT: Allow rendering to complete before updating UI
+            setTimeout(() => {
+                // Force UI update after a short delay to ensure DOM is ready
+                this.updateSelectedShopUI(shopId, shop.title);
+                
+                // Save to database
+                this.saveSelectedShop(shopId, shop.title, true);
+            }, 100);
         },
         
-        // New helper method to update UI for selected shop
+        // Updated UI helper with improved selectors and debugging
         updateSelectedShopUI: function(shopId, shopName) {
             console.log('Updating UI for selected shop:', shopName, shopId);
             
-            // Update button appearance
-            $('.select-shop').removeClass('button-primary selected').addClass('button-secondary').text('Select');
-            $(`.select-shop[data-shop-id="${shopId}"]`)
-                .removeClass('button-secondary')
-                .addClass('button-primary selected')
-                .text('Selected');
+            // More specific debugging to check if buttons exist
+            const allButtons = $('.printify-shops-table .select-shop').length;
+            const targetButton = $(`.printify-shops-table .select-shop[data-shop-id="${shopId}"]`).length;
+            console.log(`Found ${allButtons} total buttons, ${targetButton} matching shop ID ${shopId}`);
             
-            // Update row highlighting
-            $('.printify-shops-table tr').removeClass('selected-shop');
-            $(`.select-shop[data-shop-id="${shopId}"]`).closest('tr').addClass('selected-shop');
+            // Reset all buttons first
+            $('.printify-shops-table .select-shop')
+                .removeClass('button-primary selected')
+                .addClass('button-secondary')
+                .text('Select');
+                
+            // Get the specific button by shop ID
+            const $button = $(`.printify-shops-table .select-shop[data-shop-id="${shopId}"]`);
+            
+            if ($button.length) {
+                // Update button state
+                $button
+                    .removeClass('button-secondary')
+                    .addClass('button-primary selected')
+                    .text('Selected');
+                
+                // Update row highlighting
+                $('.printify-shops-table tr').removeClass('selected-shop');
+                $button.closest('tr').addClass('selected-shop');
+                
+                console.log('Button UI updated successfully');
+            } else {
+                console.error('Failed to find button for shop ID:', shopId);
+            }
         },
         
         selectShop: function(e) {
             e.preventDefault();
             const $button = $(e.currentTarget);
-            const shopId = $button.data('shop-id');
+            const shopId = String($button.data('shop-id'));
             const shopName = $button.data('shop-name');
             
             console.log('Shop selected manually:', shopName, shopId);
@@ -166,6 +194,9 @@
                     
                     if (response.success) {
                         console.log('Shop saved successfully, ID:', response.data.shop_id);
+                        
+                        // Update UI again after AJAX to be sure
+                        this.updateSelectedShopUI(shopId, shopName);
                         
                         // Show a success message for manual selections only
                         if (!isAutoSelected) {

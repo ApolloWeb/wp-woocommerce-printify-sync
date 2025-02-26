@@ -11,13 +11,16 @@
             console.log('Initializing PrintifyProducts module');
             this.cacheDOM();
             this.bindEvents();
+            
+            // Check initial shop selection status
+            this.checkShopSelection();
         },
 
         cacheDOM: function() {
             this.$fetchButton = $('#fetch-printify-products');
             console.log('Products button found:', this.$fetchButton.length > 0);
             this.$resultsContainer = $('#printify-products-results');
-            this.$shopSelect = $('select[name="printify_selected_shop"]');
+            this.$shopInput = $('#printify_selected_shop');
             this.$apiKeyField = $('input[name="printify_api_key"]');
         },
 
@@ -29,24 +32,48 @@
                 e.preventDefault();
                 this.fetchProducts();
             });
+            
+            // Monitor shop selection changes
+            $(document).on('printify:shop_selected', (e, shopId) => {
+                console.log('Shop selection changed event received:', shopId);
+                this.checkShopSelection();
+            });
+        },
+        
+        checkShopSelection: function() {
+            // Get the current shop ID from hidden input
+            const shopId = this.$shopInput.val();
+            console.log('Current shop ID for products:', shopId || 'none');
+            
+            if (shopId) {
+                // Enable button if shop is selected
+                this.$fetchButton.prop('disabled', false);
+                
+                // Update button text to include shop ID
+                this.$fetchButton.text('Fetch Products from Shop');
+            } else {
+                // Disable button if no shop is selected
+                this.$fetchButton.prop('disabled', true);
+                this.$resultsContainer.html(
+                    '<div class="printify-notice printify-notice-info">' + 
+                    'Please select a Printify shop first from the Shops section above.' + 
+                    '</div>'
+                );
+            }
         },
 
         fetchProducts: function() {
             console.log('fetchProducts function called');
+            const shopId = this.$shopInput.val();
             
-            // Check if API key and shop are selected
-            if (!this.$apiKeyField.val().trim()) {
-                this.showError('Please enter your Printify API key first');
-                return;
-            }
-            
-            if (!this.$shopSelect.val()) {
-                this.showError('Please select a shop first');
+            // Double-check if shop ID exists
+            if (!shopId) {
+                this.showError('No shop selected. Please select a shop first.');
                 return;
             }
             
             // Show loading indicator
-            this.$resultsContainer.html('<div class="printify-loading">Loading products...</div>');
+            this.$resultsContainer.html('<div class="printify-loading">Loading products from shop ID: ' + shopId + '...</div>');
             
             // Make AJAX request
             $.ajax({
@@ -54,7 +81,8 @@
                 type: 'POST',
                 data: {
                     action: 'fetch_printify_products',
-                    nonce: PrintifySync.nonce
+                    nonce: PrintifySync.nonce,
+                    shop_id: shopId // Pass the shop_id explicitly for clarity
                 },
                 success: this.handleSuccess.bind(this),
                 error: this.handleError.bind(this)
@@ -85,7 +113,7 @@
             products.forEach(product => {
                 const images = product.images || [];
                 const firstImage = images.length > 0 ? images[0].src : '';
-                const defaultImage = '//via.placeholder.com/150x150?text=No+Image';
+                const defaultImage = '//via.placeholder.com/300x300?text=No+Image';
                 const status = product.visible ? 'Published' : 'Draft';
                 const statusClass = product.visible ? 'published' : 'draft';
                 
@@ -113,14 +141,32 @@
             // Show the grid
             this.$resultsContainer.html(html);
             
-            // Attach event handlers to import buttons (for future implementation)
+            // Attach event handlers to import buttons
             $('.import-product').on('click', this.importProduct.bind(this));
         },
         
         importProduct: function(e) {
-            const productId = $(e.target).data('product-id');
+            e.preventDefault();
+            const $button = $(e.currentTarget);
+            const productId = $button.data('product-id');
+            
             console.log('Import requested for product ID:', productId);
-            alert('Product import functionality will be implemented in a future version.');
+            
+            // Disable the button and show loading state
+            $button.prop('disabled', true).text('Importing...');
+            
+            // Here you would make an AJAX request to import the product
+            // For now, just show a placeholder message
+            setTimeout(() => {
+                $button.text('Import Coming Soon');
+                
+                // Show placeholder message
+                $button.closest('.printify-product-details').append(
+                    '<div class="printify-notice printify-notice-info" style="margin-top: 10px;">' +
+                    'Product import functionality will be implemented in a future version.' +
+                    '</div>'
+                );
+            }, 1000);
         },
 
         handleError: function(xhr, status, error) {

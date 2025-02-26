@@ -242,3 +242,35 @@
 .printify-shops-table tr.selected-shop {
     background-color: #f0f7ff;
 }
+
+/**
+ * Green button style for selected shops
+ */
+.button-green {
+    background: #46b450 !important;
+    border-color: #46b450 !important;
+    color: #fff !important;
+    text-shadow: none !important;
+    box-shadow: 0 1px 0 rgba(70, 180, 80, 0.5) !important;
+}
+
+.button-green:hover,
+.button-green:focus,
+.button-green:active {
+    background: #389e42 !important;
+    border-color: #389e42 !important;
+    color: #fff !important;
+}
+
+.button-green:disabled,
+.button-green.disabled {
+    background: #46b450 !important;
+    border-color: #46b450 !important;
+    color: #fff !important;
+    opacity: 0.8;
+    cursor: default;
+}
+
+.printify-shops-table .selected-shop {
+    background-color: #f0f9f1;
+}
