@@ -167,7 +167,7 @@
                     </div>
                 `;
                 
-                // Add import all button
+                // Add import all button - Using this.currentShopId
                 html += `
                     <div class="printify-summary-actions">
                         <button class="button button-primary import-all-products" data-shop-id="${this.currentShopId}">
@@ -262,7 +262,7 @@
                     product_id: productId
                 },
                 success: (response) => {
-                    // Increment counter
+                    // Increment counter regardless of result
                     this.importedCount++;
                     
                     // Update progress bar
@@ -282,22 +282,37 @@
                             Product "${response.data.title}" imported successfully. 
                             <a href="${response.data.edit_url}" target="_blank">Edit in WooCommerce</a>
                         `);
+                        console.log('Product imported:', response.data);
                     } else {
                         // Error
                         $logItem.addClass('error');
                         $logItem.find('.log-icon').text('❌');
                         $logItem.find('.log-message').text(`Error: ${response.data.message || 'Unknown error'}`);
+                        console.error('Product import error:', response.data);
                     }
                     
                     // Process next product
                     this.processNextProduct(shopId);
                 },
                 error: (xhr, status, error) => {
+                    console.error('AJAX error during import:', error, xhr.responseText);
+                    
                     // Update log item
                     const $logItem = $('.import-log-item.processing').first();
                     $logItem.removeClass('processing').addClass('error');
                     $logItem.find('.log-icon').text('❌');
-                    $logItem.find('.log-message').text(`AJAX Error: ${error}`);
+                    
+                    // Try to parse response JSON if available
+                    let errorMsg = error;
+                    try {
+                        if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                            errorMsg = xhr.responseJSON.data.message;
+                        }
+                    } catch (e) {
+                        console.log('Could not parse error JSON');
+                    }
+                    
+                    $logItem.find('.log-message').text(`AJAX Error: ${errorMsg}`);
                     
                     // Increment counter even on error
                     this.importedCount++;
