@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
  * Description: WordPress plugin to synchronize WooCommerce products with Printify
  * Version: 1.0.0
- * Author: ApolloWeb
+ * Author: Rob Owen
  * Author URI: https://github.com/ApolloWeb
  * Text Domain: wp-woocommerce-printify-sync
  * Domain Path: /languages
@@ -19,7 +19,7 @@
 /*
  * Main Plugin File
  * 
- * Author: ApolloWeb
+ * Author: Rob Owen
  * 
  * Timestamp: 2024-02-26 18:15:00
  */
@@ -34,6 +34,13 @@ define('WPTFY_PLUGIN_FILE', __FILE__);
 define('WPTFY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPTFY_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPTFY_PLUGIN_VERSION', '1.0.0');
+
+add_action('before_woocommerce_init', function () {
+    if (class_exists('Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
+
 
 /**
  * Class WPWooCommercePrintifySync
