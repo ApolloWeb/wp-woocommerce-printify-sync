@@ -5,6 +5,7 @@ namespace ApolloWeb\WooCommercePrintifySync;
 /**
  * API Class for Printify API interactions
  */
+
 class Api {
     /**
      * API Base URL
