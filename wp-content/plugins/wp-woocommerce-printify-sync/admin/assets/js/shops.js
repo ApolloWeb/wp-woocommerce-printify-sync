@@ -90,13 +90,24 @@
             
             // Attach event handlers to select buttons
             $('.select-shop').on('click', this.selectShop.bind(this));
+            
+            // Auto-select first shop if nothing is selected
+            if (!selectedShopId && shops.length > 0) {
+                console.log('No shop selected, auto-selecting first shop');
+                // Simulate click on first shop's select button
+                setTimeout(() => {
+                    $('.select-shop:first').trigger('click');
+                }, 500);
+            }
         },
         
         selectShop: function(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
             const $button = $(e.currentTarget);
             const shopId = $button.data('shop-id');
             const shopName = $button.data('shop-name');
+            
+            console.log('Shop selected:', shopName, shopId);
             
             // Update the hidden input with the selected shop ID
             this.$shopInput.val(shopId);
@@ -115,7 +126,7 @@
         
         saveSelectedShop: function(shopId, shopName) {
             $.ajax({
-                url: ajaxurl,
+                url: PrintifySync.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'save_selected_shop',
