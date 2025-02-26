@@ -16,6 +16,14 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
+/*
+ * Main Plugin File
+ * 
+ * Author: ApolloWeb
+ * 
+ * Timestamp: 2024-02-26 18:15:00
+ */
+
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
