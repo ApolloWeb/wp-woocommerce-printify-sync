@@ -9,6 +9,9 @@
     const PrintifyProducts = {
         // Add property to store shop ID across methods
         currentShopId: null,
+        importQueue: [],
+        totalProducts: 0,
+        importedCount: 0,
 
         init: function() {
             console.log('Initializing PrintifyProducts module');
@@ -52,7 +55,7 @@
                 // Enable button if shop is selected
                 this.$fetchButton.prop('disabled', false);
                 
-                // Update button text to include shop ID
+                // Update button text
                 this.$fetchButton.text('Fetch Products from Shop');
             } else {
                 // Disable button if no shop is selected
@@ -164,17 +167,21 @@
                     </div>
                 `;
                 
-                // Add import all button - FIX: Use this.currentShopId instead of undefined shopId
+                // Add import all button
                 html += `
                     <div class="printify-summary-actions">
                         <button class="button button-primary import-all-products" data-shop-id="${this.currentShopId}">
-                            Import All Products
+                            Import All Products to WooCommerce
                         </button>
                     </div>
                 </div>`;
                 
                 // Show the summary
                 this.$resultsContainer.html(html);
+                
+                // Store products for later use
+                this.importQueue = products.map(p => p.id);
+                this.totalProducts = products.length;
                 
                 // Attach event handler to import all button
                 $('.import-all-products').on('click', this.importAllProducts.bind(this));
@@ -188,15 +195,122 @@
             
             console.log('Import all products requested for shop ID:', shopId);
             
-            // Disable the button and show loading state
-            $button.prop('disabled', true).text('Coming Soon');
+            // Disable the button
+            $button.prop('disabled', true).text('Importing...');
             
-            // For now, just show a placeholder message
-            $('.printify-summary-actions').append(
-                '<div class="printify-notice printify-notice-info" style="margin-top: 10px;">' +
-                'Bulk import functionality will be implemented in a future version.' +
-                '</div>'
-            );
+            // Reset counter
+            this.importedCount = 0;
+            
+            // Display progress container
+            this.$resultsContainer.html(`
+                <div class="printify-import-container">
+                    <h3>Importing Products to WooCommerce</h3>
+                    <div class="printify-progress-bar-container">
+                        <div class="printify-progress-bar" style="width: 0%;"></div>
+                    </div>
+                    <div class="printify-progress-counter">
+                        <span class="count-imported">0</span>
+                        of 
+                        <span class="count-total">${this.totalProducts}</span> 
+                        products imported
+                    </div>
+                    <div class="printify-import-log"></div>
+                </div>
+            `);
+            
+            // Start the import process
+            this.processNextProduct(shopId);
+        },
+        
+        processNextProduct: function(shopId) {
+            // Check if we have more products to process
+            if (this.importQueue.length === 0) {
+                // We're done
+                $('.printify-progress-counter').html(`
+                    <strong>Import Complete!</strong> ${this.importedCount} products imported.
+                `);
+                
+                // Add message about webhook sync
+                $('.printify-import-container').append(`
+                    <div class="printify-notice printify-notice-success" style="margin-top: 15px;">
+                        <p>Initial product import complete. Future updates will be automatically synchronized via webhooks.</p>
+                    </div>
+                `);
+                
+                return;
+            }
+            
+            // Get the next product ID
+            const productId = this.importQueue.shift();
+            
+            // Update log
+            $('.printify-import-log').prepend(`
+                <div class="import-log-item processing">
+                    <span class="log-icon">⏳</span>
+                    <span class="log-message">Importing product ID: ${productId}...</span>
+                </div>
+            `);
+            
+            // Make AJAX request to import the product
+            $.ajax({
+                url: PrintifySync.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'import_printify_product',
+                    nonce: PrintifySync.nonce,
+                    shop_id: shopId,
+                    product_id: productId
+                },
+                success: (response) => {
+                    // Increment counter
+                    this.importedCount++;
+                    
+                    // Update progress bar
+                    const progressPercent = Math.round((this.importedCount / this.totalProducts) * 100);
+                    $('.printify-progress-bar').css('width', `${progressPercent}%`);
+                    $('.count-imported').text(this.importedCount);
+                    
+                    // Update log item
+                    const $logItem = $('.import-log-item.processing').first();
+                    $logItem.removeClass('processing');
+                    
+                    if (response.success) {
+                        // Success
+                        $logItem.addClass('success');
+                        $logItem.find('.log-icon').text('✅');
+                        $logItem.find('.log-message').html(`
+                            Product "${response.data.title}" imported successfully. 
+                            <a href="${response.data.edit_url}" target="_blank">Edit in WooCommerce</a>
+                        `);
+                    } else {
+                        // Error
+                        $logItem.addClass('error');
+                        $logItem.find('.log-icon').text('❌');
+                        $logItem.find('.log-message').text(`Error: ${response.data.message || 'Unknown error'}`);
+                    }
+                    
+                    // Process next product
+                    this.processNextProduct(shopId);
+                },
+                error: (xhr, status, error) => {
+                    // Update log item
+                    const $logItem = $('.import-log-item.processing').first();
+                    $logItem.removeClass('processing').addClass('error');
+                    $logItem.find('.log-icon').text('❌');
+                    $logItem.find('.log-message').text(`AJAX Error: ${error}`);
+                    
+                    // Increment counter even on error
+                    this.importedCount++;
+                    
+                    // Update progress
+                    const progressPercent = Math.round((this.importedCount / this.totalProducts) * 100);
+                    $('.printify-progress-bar').css('width', `${progressPercent}%`);
+                    $('.count-imported').text(this.importedCount);
+                    
+                    // Process next product
+                    this.processNextProduct(shopId);
+                }
+            });
         },
 
         handleError: function(xhr, status, error) {

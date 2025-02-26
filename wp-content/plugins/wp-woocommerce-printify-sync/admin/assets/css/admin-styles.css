@@ -298,3 +298,50 @@
 .printify-summary-actions {
     margin-top: 25px;
 }
+
+/* Import Log Styles */
+.printify-import-container {
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.printify-import-log {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e5e5e5;
+    padding: 10px;
+    background: #f9f9f9;
+}
+
+.import-log-item {
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+}
+
+.import-log-item:last-child {
+    border-bottom: none;
+}
+
+.import-log-item .log-icon {
+    margin-right: 8px;
+    display: inline-block;
+    width: 16px;
+    text-align: center;
+}
+
+.import-log-item.processing {
+    background-color: #f0f6fc;
+}
+
+.import-log-item.success {
+    background-color: #f0f9f1;
+}
+
+.import-log-item.error {
+    background-color: #fef1f1;
+}
