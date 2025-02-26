@@ -7,6 +7,9 @@
     console.log('Printify Sync: Products script loaded');
 
     const PrintifyProducts = {
+        // Add property to store shop ID across methods
+        currentShopId: null,
+
         init: function() {
             console.log('Initializing PrintifyProducts module');
             this.cacheDOM();
@@ -66,14 +69,31 @@
             console.log('fetchProducts function called');
             const shopId = this.$shopInput.val();
             
+            // Store the shop ID for use in other methods
+            this.currentShopId = shopId;
+            
             // Double-check if shop ID exists
             if (!shopId) {
                 this.showError('No shop selected. Please select a shop first.');
                 return;
             }
             
-            // Show loading indicator
-            this.$resultsContainer.html('<div class="printify-loading">Loading products from shop ID: ' + shopId + '...</div>');
+            // Show loading indicator with progress bar
+            this.$resultsContainer.html(`
+                <div class="printify-loading-container">
+                    <div class="printify-progress-title">Fetching products from Shop ID: ${shopId}...</div>
+                    <div class="printify-progress-bar-container">
+                        <div class="printify-progress-bar" style="width: 5%;"></div>
+                    </div>
+                    <div class="printify-progress-counter">Initializing...</div>
+                </div>
+            `);
+            
+            // Set progress to "connecting" state
+            setTimeout(() => {
+                $('.printify-progress-bar').css('width', '20%');
+                $('.printify-progress-counter').text('Connecting to Printify API...');
+            }, 300);
             
             // Make AJAX request
             $.ajax({
@@ -82,7 +102,7 @@
                 data: {
                     action: 'fetch_printify_products',
                     nonce: PrintifySync.nonce,
-                    shop_id: shopId // Pass the shop_id explicitly for clarity
+                    shop_id: shopId
                 },
                 success: this.handleSuccess.bind(this),
                 error: this.handleError.bind(this)
@@ -91,6 +111,10 @@
 
         handleSuccess: function(response) {
             console.log('Products AJAX response received');
+            
+            // Update progress
+            $('.printify-progress-bar').css('width', '80%');
+            $('.printify-progress-counter').text('Processing response...');
             
             if (!response.success) {
                 this.showError(response.data.message || 'Error fetching products');
@@ -105,68 +129,74 @@
                 return;
             }
             
-            // Display products in a formatted grid
-            let html = '<div class="printify-products-wrapper">';
-            html += '<h3>Available Products in Selected Shop</h3>';
-            html += '<div class="printify-products-grid">';
+            // Complete the progress bar
+            $('.printify-progress-bar').css('width', '100%');
             
-            products.forEach(product => {
-                const images = product.images || [];
-                const firstImage = images.length > 0 ? images[0].src : '';
-                const defaultImage = '//via.placeholder.com/300x300?text=No+Image';
-                const status = product.visible ? 'Published' : 'Draft';
-                const statusClass = product.visible ? 'published' : 'draft';
+            // Short pause before showing results
+            setTimeout(() => {
+                // Display summary instead of individual products
+                let html = '<div class="printify-products-summary">';
+                html += `<h3>Products Found in Shop</h3>`;
+                
+                // Add product count with icon
+                html += `
+                    <div class="printify-summary-box">
+                        <div class="summary-icon">📦</div>
+                        <div class="summary-count">${products.length}</div>
+                        <div class="summary-label">Products Found</div>
+                    </div>
+                `;
+                
+                // Add status breakdown
+                const publishedProducts = products.filter(p => p.visible).length;
+                const draftProducts = products.length - publishedProducts;
                 
                 html += `
-                <div class="printify-product-card">
-                    <div class="printify-product-image">
-                        <img src="${firstImage || defaultImage}" alt="${this.escapeHTML(product.title)}">
+                    <div class="printify-summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Published:</span>
+                            <span class="stat-value">${publishedProducts}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Draft:</span>
+                            <span class="stat-value">${draftProducts}</span>
+                        </div>
                     </div>
-                    <div class="printify-product-details">
-                        <h4>${this.escapeHTML(product.title)}</h4>
-                        <p class="product-description">${this.truncateText(product.description || 'No description', 100)}</p>
-                        <div class="product-meta">
-                            <span class="product-id">ID: ${product.id}</span>
-                            <span class="product-status status-${statusClass}">${status}</span>
-                        </div>
-                        <div class="product-actions">
-                            <button class="button import-product" data-product-id="${product.id}">Import to WooCommerce</button>
-                        </div>
+                `;
+                
+                // Add import all button - FIX: Use this.currentShopId instead of undefined shopId
+                html += `
+                    <div class="printify-summary-actions">
+                        <button class="button button-primary import-all-products" data-shop-id="${this.currentShopId}">
+                            Import All Products
+                        </button>
                     </div>
                 </div>`;
-            });
-            
-            html += '</div></div>';
-            
-            // Show the grid
-            this.$resultsContainer.html(html);
-            
-            // Attach event handlers to import buttons
-            $('.import-product').on('click', this.importProduct.bind(this));
+                
+                // Show the summary
+                this.$resultsContainer.html(html);
+                
+                // Attach event handler to import all button
+                $('.import-all-products').on('click', this.importAllProducts.bind(this));
+            }, 500);
         },
         
-        importProduct: function(e) {
+        importAllProducts: function(e) {
             e.preventDefault();
             const $button = $(e.currentTarget);
-            const productId = $button.data('product-id');
+            const shopId = $button.data('shop-id');
             
-            console.log('Import requested for product ID:', productId);
+            console.log('Import all products requested for shop ID:', shopId);
             
             // Disable the button and show loading state
-            $button.prop('disabled', true).text('Importing...');
+            $button.prop('disabled', true).text('Coming Soon');
             
-            // Here you would make an AJAX request to import the product
             // For now, just show a placeholder message
-            setTimeout(() => {
-                $button.text('Import Coming Soon');
-                
-                // Show placeholder message
-                $button.closest('.printify-product-details').append(
-                    '<div class="printify-notice printify-notice-info" style="margin-top: 10px;">' +
-                    'Product import functionality will be implemented in a future version.' +
-                    '</div>'
-                );
-            }, 1000);
+            $('.printify-summary-actions').append(
+                '<div class="printify-notice printify-notice-info" style="margin-top: 10px;">' +
+                'Bulk import functionality will be implemented in a future version.' +
+                '</div>'
+            );
         },
 
         handleError: function(xhr, status, error) {
@@ -188,12 +218,6 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
-        },
-        
-        truncateText: function(text, maxLength) {
-            if (!text) return '';
-            if (text.length <= maxLength) return text;
-            return text.substr(0, maxLength) + '...';
         }
     };
 

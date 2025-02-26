@@ -198,3 +198,103 @@
     opacity: 0.8;
     cursor: default;
 }
+
+/* Progress Bar Styles */
+.printify-loading-container {
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 15px;
+}
+
+.printify-progress-title {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.printify-progress-bar-container {
+    height: 20px;
+    background-color: #f1f1f1;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.printify-progress-bar {
+    height: 100%;
+    background-color: #4CAF50;
+    width: 0;
+    transition: width 0.5s ease;
+}
+
+.printify-progress-counter {
+    font-size: 13px;
+    color: #666;
+    margin-top: 5px;
+    text-align: center;
+}
+
+/* Summary Box Styles */
+.printify-products-summary {
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.printify-summary-box {
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 250px;
+    text-align: center;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.summary-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.summary-count {
+    font-size: 48px;
+    font-weight: bold;
+    color: #2271b1;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.summary-label {
+    color: #666;
+    font-size: 16px;
+}
+
+.printify-summary-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 20px 0;
+}
+
+.stat-item {
+    padding: 10px 15px;
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.stat-label {
+    margin-right: 5px;
+    color: #666;
+}
+
+.stat-value {
+    font-weight: bold;
+}
+
+.printify-summary-actions {
+    margin-top: 25px;
+}
