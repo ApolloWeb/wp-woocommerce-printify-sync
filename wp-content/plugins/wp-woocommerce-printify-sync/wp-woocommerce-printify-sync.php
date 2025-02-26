@@ -16,8 +16,6 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
-namespace ApolloWeb\WooCommercePrintifySync;
-
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;

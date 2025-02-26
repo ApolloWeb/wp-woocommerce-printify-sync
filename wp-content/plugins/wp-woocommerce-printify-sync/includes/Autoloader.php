@@ -33,29 +33,32 @@ class Autoloader {
         // Get the relative class name
         $relative_class = substr($class_name, strlen($namespace));
         
-        // Create file path
-        // Convert class name to file path
-        // Example: Admin -> admin/class-admin.php
-        $path_parts = explode('\\', $relative_class);
-        $class_file = 'class-' . strtolower(array_pop($path_parts)) . '.php';
+        // Convert namespace separator to directory separator
+        $file_path = str_replace('\\', '/', $relative_class);
         
+        // Extract class name from path
+        $path_parts = explode('/', $file_path);
+        $class_file = array_pop($path_parts) . '.php'; // Use class name directly as file name
+        
+        // Build directory path
+        $directory = '';
         if (!empty($path_parts)) {
-            // If there are path parts (subdirectories), put the file in that directory
-            $directory = strtolower(implode('/', $path_parts));
-            $file = WPTFY_PLUGIN_DIR . $directory . '/' . $class_file;
-        } else {
-            // Check in includes directory first
-            $file = WPTFY_PLUGIN_DIR . 'includes/' . $class_file;
-            
-            // If not found in includes, check in admin directory
-            if (!file_exists($file)) {
-                $file = WPTFY_PLUGIN_DIR . 'admin/' . $class_file;
-            }
+            $directory = implode('/', $path_parts) . '/';
         }
-
-        // If the file exists, require it
-        if (file_exists($file)) {
-            require_once $file;
+        
+        // Check in multiple possible locations
+        $possible_locations = [
+            WPTFY_PLUGIN_DIR . $directory . $class_file,            // Direct path from namespace
+            WPTFY_PLUGIN_DIR . 'includes/' . $directory . $class_file, // In includes directory
+            WPTFY_PLUGIN_DIR . 'admin/' . $class_file,              // In admin directory
+        ];
+        
+        // Try to load the file from each possible location
+        foreach ($possible_locations as $file) {
+            if (file_exists($file)) {
+                require_once $file;
+                return;
+            }
         }
     }
 }
