@@ -105,11 +105,30 @@
             
             console.log('Auto-selecting first shop:', shop.title, shop.id);
             
-            // Update visual state
+            // Update visual state immediately before AJAX call
             this.$shopInput.val(shop.id);
+            
+            // Update UI immediately
+            this.updateSelectedShopUI(shop.id, shop.title);
             
             // Save to database
             this.saveSelectedShop(shop.id, shop.title, true);
+        },
+        
+        // New helper method to update UI for selected shop
+        updateSelectedShopUI: function(shopId, shopName) {
+            console.log('Updating UI for selected shop:', shopName, shopId);
+            
+            // Update button appearance
+            $('.select-shop').removeClass('button-primary selected').addClass('button-secondary').text('Select');
+            $(`.select-shop[data-shop-id="${shopId}"]`)
+                .removeClass('button-secondary')
+                .addClass('button-primary selected')
+                .text('Selected');
+            
+            // Update row highlighting
+            $('.printify-shops-table tr').removeClass('selected-shop');
+            $(`.select-shop[data-shop-id="${shopId}"]`).closest('tr').addClass('selected-shop');
         },
         
         selectShop: function(e) {
@@ -123,13 +142,8 @@
             // Update the hidden input with the selected shop ID
             this.$shopInput.val(shopId);
             
-            // Update all buttons to show only the selected one as primary
-            $('.select-shop').removeClass('button-primary selected').addClass('button-secondary').text('Select');
-            $button.removeClass('button-secondary').addClass('button-primary selected').text('Selected');
-            
-            // Highlight the selected row
-            $('.printify-shops-table tr').removeClass('selected-shop');
-            $button.closest('tr').addClass('selected-shop');
+            // Update UI
+            this.updateSelectedShopUI(shopId, shopName);
             
             // Save the selection via AJAX
             this.saveSelectedShop(shopId, shopName, false);
@@ -153,20 +167,6 @@
                     if (response.success) {
                         console.log('Shop saved successfully, ID:', response.data.shop_id);
                         
-                        // If auto-selected, update UI to reflect the selection
-                        if (isAutoSelected) {
-                            // Update button appearance
-                            $('.select-shop').removeClass('button-primary selected').addClass('button-secondary').text('Select');
-                            $(`.select-shop[data-shop-id="${shopId}"]`)
-                                .removeClass('button-secondary')
-                                .addClass('button-primary selected')
-                                .text('Selected');
-                            
-                            // Update row highlighting
-                            $('.printify-shops-table tr').removeClass('selected-shop');
-                            $(`.select-shop[data-shop-id="${shopId}"]`).closest('tr').addClass('selected-shop');
-                        }
-                        
                         // Show a success message for manual selections only
                         if (!isAutoSelected) {
                             $('.printify-shops-table-wrapper').prepend(
@@ -182,6 +182,9 @@
                                 });
                             }, 3000);
                         }
+                        
+                        // Trigger custom event that products.js can listen for
+                        $(document).trigger('printify:shop_selected', [response.data.shop_id]);
                         
                         // Force refresh the products section if it exists
                         if ($('#printify-products-results').length > 0) {
