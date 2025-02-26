@@ -2,8 +2,6 @@
 
 namespace ApolloWeb\WooCommercePrintifySync;
 
-use ApolloWeb\WooCommercePrintifySync\Api;
-
 /**
  * Printify Sync Admin Class
  * 
@@ -97,8 +95,6 @@ class Admin
             'printify-sync', 
             'printify_sync_api_section'
         );
-        
-        // Removed shop dropdown from settings fields
     }
 
     /**
@@ -306,14 +302,23 @@ class Admin
      */
     public function saveSelectedShop()
     {
-        check_ajax_referer('printify_sync_nonce', 'nonce');
+        error_log('Save Selected Shop AJAX called');
+        
+        // Check nonce
+        if (!check_ajax_referer('printify_sync_nonce', 'nonce', false)) {
+            error_log('Save Shop: Nonce verification failed');
+            wp_send_json_error(['message' => __('Security check failed', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
         
         if (empty($_POST['shop_id'])) {
+            error_log('Save Shop: No shop ID provided');
             wp_send_json_error(['message' => __('No shop ID provided', 'wp-woocommerce-printify-sync')]);
             return;
         }
         
         $shop_id = sanitize_text_field($_POST['shop_id']);
+        error_log('Saving shop ID: ' . $shop_id);
         
         // Force update the option with autoload enabled for better persistence
         delete_option($this->option_shop_id);
@@ -323,6 +328,8 @@ class Admin
             // If option already exists, update it
             $result = update_option($this->option_shop_id, $shop_id);
         }
+        
+        error_log('Save shop result: ' . ($result ? 'success' : 'failed'));
         
         if ($result) {
             wp_send_json_success(['message' => __('Shop selected successfully', 'wp-woocommerce-printify-sync'), 'shop_id' => $shop_id]);

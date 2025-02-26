@@ -79,9 +79,10 @@
                     <td>${this.escapeHTML(shop.title)}</td>
                     <td>${this.escapeHTML(shopId)}</td>
                     <td>
-                        <button class="button ${isSelected ? 'button-primary selected' : 'button-secondary'} select-shop" 
+                        <button class="button ${isSelected ? 'button-green selected' : 'button-secondary'} select-shop" 
                             data-shop-id="${shopId}" 
-                            data-shop-name="${this.escapeHTML(shop.title)}">
+                            data-shop-name="${this.escapeHTML(shop.title)}"
+                            ${isSelected ? 'disabled' : ''}>
                             ${isSelected ? 'Selected' : 'Select'}
                         </button>
                     </td>
@@ -103,7 +104,7 @@
             }
         },
         
-        // New method to handle automatic selection of first shop
+        // Method to handle automatic selection of first shop
         autoSelectFirstShop: function(shop) {
             if (!shop || !shop.id) return;
             
@@ -124,7 +125,7 @@
             }, 100);
         },
         
-        // Updated UI helper with improved selectors and debugging
+        // Updated UI helper with improved selectors and green disabled buttons
         updateSelectedShopUI: function(shopId, shopName) {
             console.log('Updating UI for selected shop:', shopName, shopId);
             
@@ -133,20 +134,22 @@
             const targetButton = $(`.printify-shops-table .select-shop[data-shop-id="${shopId}"]`).length;
             console.log(`Found ${allButtons} total buttons, ${targetButton} matching shop ID ${shopId}`);
             
-            // Reset all buttons first
+            // Reset all buttons first - enable and set to secondary style
             $('.printify-shops-table .select-shop')
-                .removeClass('button-primary selected')
+                .removeClass('button-green selected button-primary')
                 .addClass('button-secondary')
+                .prop('disabled', false)
                 .text('Select');
                 
             // Get the specific button by shop ID
             const $button = $(`.printify-shops-table .select-shop[data-shop-id="${shopId}"]`);
             
             if ($button.length) {
-                // Update button state
+                // Update button state - apply green style and disable
                 $button
                     .removeClass('button-secondary')
-                    .addClass('button-primary selected')
+                    .addClass('button-green selected')
+                    .prop('disabled', true)
                     .text('Selected');
                 
                 // Update row highlighting
