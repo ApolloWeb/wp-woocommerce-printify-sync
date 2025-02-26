@@ -12,7 +12,8 @@ class Admin
         add_action('admin_menu', [ $this, 'addSettingsPage' ]);
         add_action('admin_init', [ $this, 'registerSettings' ]);
         add_action('admin_enqueue_scripts', [ $this, 'enqueueAdminStyles' ]);
-        add_action('wp_ajax_test_printify_products', [ $this, 'testPrintifyProducts' ]);
+        add_action('wp_ajax_fetch_printify_shops', [ $this, 'fetchPrintifyShops' ]);
+        add_action('wp_ajax_fetch_printify_products', [ $this, 'fetchPrintifyProducts' ]);
     }
 
     public function addSettingsPage()
@@ -25,11 +26,8 @@ class Admin
         // Register settings to store Printify API key and selected shop.
         register_setting('printify_sync_settings', $this->option_api_key);
         register_setting('printify_sync_settings', $this->option_shop_id);
-// Add a section for API settings.
         add_settings_section('printify_sync_api_section', __('Printify API Settings', 'wp-woocommerce-printify-sync'), [ $this, 'apiSectionCallback' ], 'printify-sync');
-// API Key field.
         add_settings_field($this->option_api_key, __('Printify API Key', 'wp-woocommerce-printify-sync'), [ $this, 'apiKeyFieldCallback' ], 'printify-sync', 'printify_sync_api_section');
-// Shop dropdown field.
         add_settings_field($this->option_shop_id, __('Select Shop', 'wp-woocommerce-printify-sync'), [ $this, 'shopDropdownFieldCallback' ], 'printify-sync', 'printify_sync_api_section');
     }
 
@@ -52,7 +50,8 @@ class Admin
             return;
         }
 
-        $shops = $this->getPrintifyShops($apiKey);
+        $api = new Api($apiKey);
+        $shops = $api->getShops();
         if (is_wp_error($shops)) {
             echo '<p style="color:red;">' . __('Error fetching shops: ', 'wp-woocommerce-printify-sync') . esc_html($shops->get_error_message()) . '</p>';
             return;
@@ -62,7 +61,6 @@ class Admin
         $isSingle = ( count($shops) === 1 );
         echo '<select name="' . $this->option_shop_id . '" class="regular-text" ' . ( $isSingle ? 'disabled' : '' ) . '>';
         foreach ($shops as $shop) {
-        // Assuming the API returns shops with an "id" and "title" (store name).
             $selected = selected($selectedShop, $shop['id'], false);
             echo '<option value="' . esc_attr($shop['id']) . '" ' . $selected . '>' . esc_html($shop['title']) . '</option>';
         }
@@ -72,81 +70,13 @@ class Admin
         }
     }
 
-    /**
-     * Fetch shops from the Printify API.
-     *
-     * @param string $apiKey Your Printify API key.
-     * @return array|\WP_Error Array of shops or WP_Error on failure.
-     */
-    private function getPrintifyShops($apiKey)
-    {
-        $endpoint = 'https://api.printify.com/v1/shops.json';
-        $args = [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $apiKey,
-            ],
-            'timeout' => 10,
-        ];
-        $response = wp_remote_get($endpoint, $args);
-        if (is_wp_error($response)) {
-            return $response;
-        }
-
-        $code = wp_remote_retrieve_response_code($response);
-        if ($code !== 200) {
-            return new \WP_Error('printify_api_error', __('Unexpected response from Printify API', 'wp-woocommerce-printify-sync'));
-        }
-
-        $body = wp_remote_retrieve_body($response);
-        $shops = json_decode($body, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return new \WP_Error('json_error', __('Error decoding Printify API response', 'wp-woocommerce-printify-sync'));
-        }
-
-        return $shops;
-    }
-
-    /**
-     * Fetch products from the Printify API.
-     *
-     * @param string $apiKey Your Printify API key.
-     * @param string $shopId Your Printify shop ID.
-     * @return array|\WP_Error Array of products or WP_Error on failure.
-     */
-    private function getPrintifyProducts($apiKey, $shopId)
-    {
-        $endpoint = "https://api.printify.com/v1/shops/{$shopId}/products.json?limit=5";
-        $args = [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $apiKey,
-            ],
-            'timeout' => 10,
-        ];
-        $response = wp_remote_get($endpoint, $args);
-        if (is_wp_error($response)) {
-            return $response;
-        }
-
-        $code = wp_remote_retrieve_response_code($response);
-        if ($code !== 200) {
-            return new \WP_Error('printify_api_error', __('Unexpected response from Printify API', 'wp-woocommerce-printify-sync'));
-        }
-
-        $body = wp_remote_retrieve_body($response);
-        $products = json_decode($body, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return new \WP_Error('json_error', __('Error decoding Printify API response', 'wp-woocommerce-printify-sync'));
-        }
-
-        return $products;
-    }
-
     public function enqueueAdminStyles()
     {
-        // Enqueue any required styles and scripts.
-        wp_enqueue_style('printify-sync-admin', WPS_PLUGIN_URL . 'assets/css/admin-styles.css', [], '1.0.0');
-        wp_enqueue_script('printify-sync-admin', WPS_PLUGIN_URL . 'assets/js/admin-scripts.js', ['jquery'], '1.0.0', true);
-        wp_localize_script('printify-sync-admin', 'PrintifySync', [
+        wp_enqueue_script('printify-sync-fetch-shops', plugins_url('assets/js/fetch-shops.js', __FILE__), ['jquery'], '1.0.0', true);
+        wp_enqueue_script('printify-sync-fetch-products', plugins_url('assets/js/fetch-products.js', __FILE__), ['jquery'], '1.0.0', true);
+        wp_enqueue_script('printify-sync-dom', plugins_url('assets/js/dom-updates.js', __FILE__), ['jquery'], '1.0.0', true);
+        wp_enqueue_script('printify-sync-events', plugins_url('assets/js/event-handlers.js', __FILE__), ['jquery', 'printify-sync-fetch-shops', 'printify-sync-fetch-products', 'printify-sync-dom'], '1.0.0', true);
+        wp_localize_script('printify-sync-events', 'PrintifySync', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce'    => wp_create_nonce('printify_sync_nonce'),
         ]);
@@ -160,19 +90,40 @@ class Admin
             <form method="post" action="options.php">
                 <?php
                     settings_fields('printify_sync_settings');
-                do_settings_sections('printify-sync');
-                submit_button();
+                    do_settings_sections('printify-sync');
+                    submit_button();
                 ?>
             </form>
-            <button id="test-printify-products" class="button button-secondary">
-                <?php _e('Test Printify Products API', 'wp-woocommerce-printify-sync'); ?>
+            <button id="fetch-printify-shops" class="button button-secondary">
+                <?php _e('Fetch Printify Shops', 'wp-woocommerce-printify-sync'); ?>
+            </button>
+            <div id="printify-shops-results"></div>
+            <button id="fetch-printify-products" class="button button-secondary">
+                <?php _e('Fetch Printify Products', 'wp-woocommerce-printify-sync'); ?>
             </button>
             <div id="printify-products-results"></div>
         </div>
         <?php
     }
 
-    public function testPrintifyProducts()
+    public function fetchPrintifyShops()
+    {
+        check_ajax_referer('printify_sync_nonce', 'nonce');
+        $apiKey = trim(get_option($this->option_api_key, ''));
+        if (empty($apiKey)) {
+            wp_send_json_error(['message' => __('API Key is missing', 'wp-woocommerce-printify-sync')]);
+        }
+
+        $api = new Api($apiKey);
+        $shops = $api->getShops();
+        if (is_wp_error($shops)) {
+            wp_send_json_error(['message' => $shops->get_error_message()]);
+        }
+
+        wp_send_json_success($shops);
+    }
+
+    public function fetchPrintifyProducts()
     {
         check_ajax_referer('printify_sync_nonce', 'nonce');
         $apiKey = trim(get_option($this->option_api_key, ''));
@@ -181,7 +132,8 @@ class Admin
             wp_send_json_error(['message' => __('API Key or Shop ID is missing', 'wp-woocommerce-printify-sync')]);
         }
 
-        $products = $this->getPrintifyProducts($apiKey, $shopId);
+        $api = new Api($apiKey);
+        $products = $api->getProducts($shopId);
         if (is_wp_error($products)) {
             wp_send_json_error(['message' => $products->get_error_message()]);
         }
