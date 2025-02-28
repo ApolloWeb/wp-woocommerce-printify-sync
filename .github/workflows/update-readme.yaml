@@ -1,14 +1,9 @@
-name: Update README with OpenAI
+name: Update README with Changed Files
 
 on:
   push:
     branches:
       - '**'
-  pull_request:
-  workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   update-readme:
@@ -18,28 +13,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-
       - name: Install dependencies
         run: npm install
 
-      - name: Ensure relevant files are staged
-        run: |
-          git add README.md
-
       - name: Run update-readme script
+        run: node update-readme.js
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: node update-readme.js
 
       - name: Commit changes if any
         run: |
           git add README.md
-          git diff --cached --quiet || git commit -m "chore: update README with AI-generated descriptions"
-
-      - name: Push changes
-        run: git push origin HEAD
-
+          git diff --cached --quiet || git commit -m "chore: update README with changed files"
+          git push origin HEAD
