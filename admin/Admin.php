@@ -4,6 +4,7 @@
  * Author: Rob Owen
  *
  * Date: 2025-02-28
+ * Time: 02:20:39
  *
  * @package ApolloWeb\WooCommercePrintifySync
  */
@@ -11,40 +12,63 @@
 
 namespace ApolloWeb\WooCommercePrintifySync;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class Admin
 {
-    private $option_api_key = 'printify_api_key';
-    
-    private $option_shop_id = 'printify_selected_shop';
-    
-    private $api = null;
-
     public function __construct()
     {
-        // Admin menu and settings
-        add_action('admin_menu', [ $this, 'addSettingsPage' ]);
-        add_action('admin_init', [ $this, 'registerSettings' ]);
-        add_action('admin_enqueue_scripts', [ $this, 'enqueueAdminScripts' ]);
-        
-        // AJAX handlers
-        add_action('wp_ajax_fetch_printify_shops', [ $this, 'fetchPrintifyShops' ]);
-        add_action('wp_ajax_fetch_printify_products', [ $this, 'fetchPrintifyProducts' ]);
-        add_action('wp_ajax_save_selected_shop', [ $this, 'saveSelectedShop' ]);
+        // Load the Helper class
+        require_once plugin_dir_path(__FILE__) . 'includes/Helper.php';
+
+        add_action('admin_menu', [$this, 'registerSettingsPage']);
+        add_action('admin_init', [$this, 'registerSettings']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminScripts']);
     }
 
-    public function addSettingsPage()
+    public function registerSettingsPage()
     {
         add_options_page(
-            __('Printify Sync Settings', 'wp-woocommerce-printify-sync'), 
-            __('Printify Sync', 'wp-woocommerce-printify-sync'), 
-            'manage_options', 
-            'printify-sync', 
-            [ $this, 'renderSettingsPage' ]
+            __('Printify Sync Settings', 'wp-woocommerce-printify-sync'),
+            __('Printify Sync', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'printify-sync-settings',
+            [$this, 'renderSettingsPage']
         );
+    }
+
+    public function registerSettings()
+    {
+        register_setting('printify_sync_settings', 'printify_api_key');
+        register_setting('printify_sync_settings', 'printify_selected_shop');
     }
 
     public function renderSettingsPage()
     {
-        echo '<div class="wrap"><h1>Printify Sync Settings</h1></div>';
+        // Corrected template directory path
+        $template_dir = plugin_dir_path(__FILE__) . 'templates/';
+        $settings_page = $template_dir . 'settings-page.php';
+        $shops_section = $template_dir . 'shops-section.php';
+        $products_section = $template_dir . 'products-section.php';
+
+        if (file_exists($settings_page)) {
+            include $settings_page;
+        } else {
+            echo '<div class="error"><p>' . esc_html__('Template file missing: settings-page.php', 'wp-woocommerce-printify-sync') . '</p></div>';
+        }
+
+        if (file_exists($shops_section)) {
+            include $shops_section;
+        } else {
+            echo '<div class="error"><p>' . esc_html__('Template file missing: shops-section.php', 'wp-woocommerce-printify-sync') . '</p></div>';
+        }
+
+        if (file_exists($products_section)) {
+            include $products_section;
+        } else {
+            echo '<div class="error"><p>' . esc_html__('Template file missing: products-section.php', 'wp-woocommerce-printify-sync') . '</p></div>';
+        }
     }
 }

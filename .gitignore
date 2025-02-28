@@ -1,21 +1,8 @@
-# Ignore everything first (EXCEPT the allowed files below)
-*
-!.gitignore
-!.github/
-!.wp-env.json
-!wp-woocommerce-printify-sync.php
+# ✅ Ignore dependency folders
+vendor/
+node_modules/
 
-# ✅ Allow plugin directories
-!/admin/
-!/admin/*
-!/includes/
-!/includes/*
-!/assets/
-!/assets/*
-!/languages/
-!/languages/*
-
-# Allow Docker files
+# ✅ Keep Docker files (Ensure they are not ignored)
 !docker-compose.yaml
 !docker-compose.yml
 !Dockerfile
@@ -25,60 +12,37 @@
 !default.conf
 !docker-entrypoint-extras.sh
 
-# Allow Composer files
-!composer.json
-!composer.lock
-
-# Allow important project files
-!LICENSE
-!README.md
-!package.json
-!package-lock.jso
-
-# ✅ Ensure important config files are included
-!phpunit.xml.dist
-!phpcs.xml.dist
-!phpstan.neon
-!.php-cs-fixer.php
-!eslint.config.js
-
-# Development files to ignore
+# ✅ Ignore system & OS files
 .DS_Store
-node_modules/
-*.log
-vendor/
-!wait-for-it.sh
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# IDE specific files
+# ✅ Ignore log files
+*.log
+
+# ✅ Ignore environment & configuration files
+.env
+.env.*
+wp-config.php
+
+# ✅ Ignore IDE and editor settings
 .idea/
 .vscode/
 *.sublime-workspace
 *.sublime-project
 
-# Ignore environment files
-.env
-.env.*
-wp-config.php
-
-# Ignore test files and coverage
-/coverage/
+# ✅ Ignore testing & cache files
 .phpunit.result.cache
+/coverage/
 /wordpress-tests-lib/
-./tmp/
-./tests/coverage/
+/tmp/
+/tests/coverage/
 
-# Ignore build and dist files
+# ✅ Ignore build & distribution files
 /dist/
 /build/
 *.zip
 
-# Ignore operating system files
-Thumbs.db
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Desktop.ini
-
-# Ignore Zone.Identifier files permanently
+# ✅ Ignore Zone.Identifier files permanently
 *Zone.Identifier*
