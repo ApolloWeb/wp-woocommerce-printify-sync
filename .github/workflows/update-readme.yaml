@@ -3,7 +3,9 @@ name: Update README with Changed Files
 on:
   push:
     branches:
-      - '**'
+      - '**'  # Runs on all branches
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   update-readme:
@@ -12,6 +14,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Ensures the token has access to push changes to the repo
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
         run: npm install
@@ -26,3 +31,5 @@ jobs:
           git add README.md
           git diff --cached --quiet || git commit -m "chore: update README with changed files"
           git push origin HEAD
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
