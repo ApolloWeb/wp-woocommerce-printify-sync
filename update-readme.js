@@ -10,7 +10,11 @@ function getFileList(dir, parentDir = '') {
   if (!fs.existsSync(fullDir)) {
     return [];
   }
-  const files = fs.readdirSync(fullDir).map(file => {
+
+  // Define directories to ignore
+  const ignoreDirs = ['.git', 'node_modules', 'vendor'];
+
+  const files = fs.readdirSync(fullDir).filter(file => !ignoreDirs.includes(file)).map(file => {
     const fullPath = path.join(fullDir, file);
     const relativePath = path.join(parentDir, file);
     if (fs.statSync(fullPath).isDirectory()) {
@@ -33,16 +37,16 @@ function updateReadme() {
     return `- **${fileName}**: Description of ${fileName}`;
   }).join('\n');
 
-  const readmePath = path.join(baseDir, 'README.md');
-  if (!fs.existsSync(readmePath)) {
-    console.error('README.md not found at', readmePath);
+  const readmeTemplatePath = path.join(baseDir, 'README_TEMPLATE.txt'); // Path to the template
+  if (!fs.existsSync(readmeTemplatePath)) {
+    console.error('README_TEMPLATE.txt not found at', readmeTemplatePath);
     process.exit(1);
   }
 
-  const readmeContent = fs.readFileSync(readmePath, 'utf8');
+  const readmeTemplateContent = fs.readFileSync(readmeTemplatePath, 'utf8'); // Read the template
 
-  // Update the file structure and descriptions in the README between custom markers
-  const updatedContent = readmeContent
+  // Update the file structure and descriptions in the template content between custom markers
+  const updatedContent = readmeTemplateContent
     .replace(
       /(<!-- FILE-STRUCTURE-START -->)([\s\S]*?)(<!-- FILE-STRUCTURE-END -->)/,
       `$1\n${fileStructure}\n$3`
@@ -51,6 +55,8 @@ function updateReadme() {
       /(<!-- FILE-DESCRIPTIONS-START -->)([\s\S]*?)(<!-- FILE-DESCRIPTIONS-END -->)/,
       `$1\n${fileDescriptions}\n$3`
     );
+
+    const readmePath = path.join(baseDir, 'README.md');
 
   fs.writeFileSync(readmePath, updatedContent, 'utf8');
   console.log('README updated with file structure and descriptions.');

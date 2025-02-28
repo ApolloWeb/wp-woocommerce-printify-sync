@@ -2,6 +2,7 @@
 vendor/
 node_modules/
 .git
+README.md
 
 # ✅ Keep Docker files (Ensure they are not ignored)
 !docker-compose.yaml
