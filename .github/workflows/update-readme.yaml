@@ -1,18 +1,21 @@
 name: Commit and Push Changes
 
+# Trigger on all pushes (from any branch)
 on:
   push:
-    branches:
-      - mercury
+
+# Ensure the GITHUB_TOKEN has contents write permission
+permissions:
+  contents: write
 
 jobs:
   commit-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
       - name: Configure Git
@@ -23,12 +26,15 @@ jobs:
       - name: Show Git status
         run: git status
 
-      - name: Stage changes
+      - name: Stage package files
         run: git add package-lock.json package.json
 
-      - name: Commit changes if any
+      - name: Create commit if changes exist
         run: |
           git commit -m "chore: update package files" || echo "No changes to commit"
 
       - name: Push changes
-        run: git push
+        run: |
+          branch=${GITHUB_REF#refs/heads/}
+          echo "Pushing to branch: $branch"
+          git push origin HEAD:$branch
