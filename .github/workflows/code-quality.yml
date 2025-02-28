@@ -47,13 +47,13 @@ jobs:
     # ✅ 1️⃣ Run PHP Lint (Syntax Check) - ONLY in Plugin Directory
     - name: Run PHP Lint (Syntax Check)
       run: |
-        find wp-content/plugins/wp-woocommerce-printify-sync -name "*.php" -print | xargs -n1 php -l
+        find . -name "*.php" -print | xargs -n1 php -l
       continue-on-error: false
 
     # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards - ONLY in Plugin
     - name: Run PHP CodeSniffer (PHPCS)
       run: |
-        vendor/bin/phpcs --standard=WordPress-Core --extensions=php wp-content/plugins/wp-woocommerce-printify-sync
+        vendor/bin/phpcs --standard=WordPress-Core --extensions=php .
       continue-on-error: true
 
     # ✅ 3️⃣ Run PHP Code Beautifier (PHPCBF) to auto-fix PHPCS issues - ONLY in Plugin
@@ -71,11 +71,11 @@ jobs:
     # ✅ 5️⃣ Run PHPStan (Static Analysis) - ONLY in Plugin
     - name: Run PHPStan (Static Analysis)
       run: |
-        vendor/bin/phpstan analyse --configuration=.github/workflows/phpstan.neon --level=max --memory-limit=512M wp-content/plugins/wp-woocommerce-printify-sync
+        vendor/bin/phpstan analyse --configuration=phpstan.neon --level=max --memory-limit=512M .
       continue-on-error: true
 
     # ✅ 6️⃣ Run ESLint on Plugin JavaScript Files
     - name: Run ESLint (JavaScript Syntax Check)
       run: |
-        npx eslint --config .github/workflows/eslint.config.js wp-content/plugins/wp-woocommerce-printify-sync --fix
+        npx eslint --config eslint.config.js assets/js/ --fix
       continue-on-error: true

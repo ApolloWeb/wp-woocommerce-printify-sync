@@ -3,8 +3,6 @@
     <description>PHP_CodeSniffer rules for WordPress</description>
     <rule ref="WordPress-Core"/>
     <rule ref="WordPress-Docs"/>
-    <rule ref="WordPress-Extra"/>
-    <rule ref="WordPress-VIP-Go"/>
 
     <!-- Exclude unwanted directories -->
     <exclude-pattern>vendor/*</exclude-pattern>

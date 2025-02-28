@@ -33,13 +33,14 @@
 !LICENSE
 !README.md
 !package.json
-!package-lock.json
+!package-lock.jso
 
-# Allow development config files
-!.eslintrc.json
+# ✅ Ensure important config files are included
+!phpunit.xml.dist
+!phpcs.xml.dist
+!phpstan.neon
+!.php-cs-fixer.php
 !eslint.config.js
-!phpcs.xml
-!.php_cs.dist
 
 # Development files to ignore
 .DS_Store
@@ -78,3 +79,6 @@ Thumbs.db
 .Trashes
 ehthumbs.db
 Desktop.ini
+
+# Ignore Zone.Identifier files permanently
+*Zone.Identifier*
