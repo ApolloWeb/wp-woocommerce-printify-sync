@@ -1,12 +1,13 @@
 /**
- * wp-woocommerce-printify-sync class for Printify Sync plugin
- *
+ * Plugin Name: WP WooCommerce Printify Sync
+ * Plugin URI: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
+ * Description: Integrates Printify with WooCommerce for seamless synchronization of product data, orders, categories, images, and SEO metadata.
+ * Version: 1.0.0
  * Author: Rob Owen
- *
- * Date: 2025-02-28
- *
- * @package ApolloWeb\WooCommercePrintifySync
+ * Author URI: https://github.com/ApolloWeb
+ * Text Domain: wp-woocommerce-printify-sync
  */
+
 <?php
 
 // Exit if accessed directly

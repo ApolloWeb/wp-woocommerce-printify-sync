@@ -1,23 +1,23 @@
 {
-  "name": "apolloweb/wp-woocommerce-printify-sync",
+  "name": "wp-woocommerce-printify-sync",
   "version": "1.0.0",
-  "description": "WordPress plugin to provide syncing between Woocommerce and Printify.",
+  "description": "WordPress plugin to provide syncing between WooCommerce and Printify.",
   "main": "index.js",
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",
-    "check": [
-      "npm run lint"
-    ],
+    "check": "npm run lint",
     "update-readme": "node update-readme.js"
   },
   "author": "ApolloWeb",
   "license": "proprietary",
   "devDependencies": {
+    "@wordpress/eslint-plugin": "^4.1.0",
     "eslint": "^6.8.0",
-    "eslint-plugin-react": "^7.0.0",
-    "@wordpress/eslint-plugin": "^4.1.0"
+    "eslint-plugin-react": "^7.0.0"
   },
   "dependencies": {
-    "fs-extra": "^10.0.0"
+    "axios": "^1.8.1",
+    "fs-extra": "^10.0.0",
+    "node-fetch": "^2.7.0"
   }
 }

@@ -1,6 +1,8 @@
 # ✅ Ignore dependency folders
 vendor/
 node_modules/
+.git
+descriptionCache.json
 
 # ✅ Keep Docker files (Ensure they are not ignored)
 !docker-compose.yaml
@@ -38,6 +40,8 @@ wp-config.php
 /wordpress-tests-lib/
 /tmp/
 /tests/coverage/
+.header_exclude
+delete_workflows.sh
 
 # ✅ Ignore build & distribution files
 /dist/
@@ -46,7 +50,3 @@ wp-config.php
 
 # ✅ Ignore Zone.Identifier files permanently
 *Zone.Identifier*
-
-# Ignore ubused workflow files
-
-.gihub/workflows/*.yml.back
