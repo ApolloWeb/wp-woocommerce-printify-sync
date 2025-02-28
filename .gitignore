@@ -46,3 +46,7 @@ wp-config.php
 
 # ✅ Ignore Zone.Identifier files permanently
 *Zone.Identifier*
+
+# Ignore ubused workflow files
+
+.gihub/workflows/*.yml.back
