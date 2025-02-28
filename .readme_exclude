@@ -1,0 +1,14 @@
+# Exclude these files from README
+.readme_esclude
+node_modules/
+.vscode/
+config/local.json
+.env
+vendor/
+.git/
+.github/
+*.log
+.wp-env.json
+.gitignore
+README.md
+README_TEMPLATE.txt
