@@ -1,5 +1,5 @@
 # Exclude these files from README
-.readme_esclude
+.readme_exclude
 node_modules/
 .vscode/
 config/local.json
@@ -12,3 +12,4 @@ vendor/
 .gitignore
 README.md
 README_TEMPLATE.txt
+.header_exclude
