@@ -1,10 +1,8 @@
 name: Commit and Push Changes
 
-# Trigger on all pushes (from any branch)
 on:
   push:
 
-# Ensure the GITHUB_TOKEN has contents write permission
 permissions:
   contents: write
 
@@ -15,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: "${{ secrets.GITHUB_TOKEN }}"
           persist-credentials: true
 
       - name: Configure Git
@@ -23,15 +21,27 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run update-readme script
+        run: npm run update-readme
+
       - name: Show Git status
         run: git status
 
-      - name: Stage package files
-        run: git add package-lock.json package.json
-
-      - name: Create commit if changes exist
+      - name: Stage all changes
         run: |
-          git commit -m "chore: update package files" || echo "No changes to commit"
+          git add -A
+
+      - name: Commit changes if any
+        run: |
+          git commit -m "chore: update repository files" || echo "No changes to commit"
 
       - name: Push changes
         run: |
