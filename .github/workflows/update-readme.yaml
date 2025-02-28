@@ -3,7 +3,8 @@ name: Update README with Copilot
 on:
   push:
     branches:
-      - main
+      - '**'  # Run on all branches
+  pull_request:  # Also runs on PRs
   workflow_dispatch:  # Allows manual trigger
 
 permissions:
