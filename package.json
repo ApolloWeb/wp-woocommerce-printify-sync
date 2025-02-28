@@ -1,13 +1,11 @@
 {
-  "name": "apolloweb/wp-woocommerce-printify-sync",
+  "name": "wp-woocommerce-printify-sync",
   "version": "1.0.0",
-  "description": "WordPress plugin to provide syncing between Woocommerce and Printify.",
+  "description": "WordPress plugin to provide syncing between WooCommerce and Printify.",
   "main": "index.js",
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",
-    "check": [
-      "npm run lint"
-    ],
+    "check": "npm run lint",
     "update-readme": "node update-readme.js"
   },
   "author": "ApolloWeb",
