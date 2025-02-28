@@ -3,102 +3,52 @@
  *
  * Author: Rob Owen
  *
- * Last Update On: 2025-02-28 at 03:02:39
+ * Last Update On: 2025-02-28 at 03:30:11
  */
 const fs = require('fs');
 const path = require('path');
 
-const readmePath = path.join(__dirname, 'README.md');
-const includesDir = path.join(__dirname, 'includes');
-const adminIncludesDir = path.join(__dirname, 'admin/includes');
+// Define the base directory (repository root)
+const baseDir = process.cwd();
 
-const getFilesRecursively = (dir) => {
-  let results = [];
-  const list = fs.readdirSync(dir);
-  list.forEach((file) => {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(getFilesRecursively(filePath));
-    } else {
-      results.push(filePath);
-    }
-  });
-  return results;
-};
+// Example function to get files from a specific directory (for instance "src")
+function getFileList(dir) {
+  const fullDir = path.join(baseDir, dir);
+  if (!fs.existsSync(fullDir)) {
+    return [];
+  }
+  // Read all files in the directory (you can extend this to subdirectories if needed)
+  return fs.readdirSync(fullDir).map(file => path.join(fullDir, file));
+}
 
-const generateFileStructure = (dir, baseDir) => {
-  const files = getFilesRecursively(dir);
-  return files.map((file) => file.replace(baseDir, '').replace(/\/g, '/')).join('
-      │   ');
-};
+function updateReadme() {
+  // Get list of files from the "src" directory (change as needed)
+  const files = getFileList('src');
+  
+  // Remove the baseDir from the file paths and normalize slashes
+  const fileList = files
+    .map((file) => file.replace(baseDir, '').replace(/\/g, '/'))
+    .join('
+');
 
-const includesStructure = generateFileStructure(includesDir, __dirname);
-const adminIncludesStructure = generateFileStructure(adminIncludesDir, __dirname);
+  const readmePath = path.join(baseDir, 'README.md');
+  if (!fs.existsSync(readmePath)) {
+    console.error('README.md not found at', readmePath);
+    process.exit(1);
+  }
+  
+  const readmeContent = fs.readFileSync(readmePath, 'utf8');
+  
+  // Update the file list in the README between custom markers. Adjust regex and markers as needed.
+  const updatedContent = readmeContent.replace(
+    /(<!-- FILE-LIST-START -->)([\s\S]*?)(<!-- FILE-LIST-END -->)/,
+    `$1
+${fileList}
+$3`
+  );
+  
+  fs.writeFileSync(readmePath, updatedContent, 'utf8');
+  console.log('README updated with file list.');
+}
 
-const readmeContent = `
-# WP WooCommerce Printify Sync
-
-## Overview
-\`wp-woocommerce-printify-sync\` is a WordPress plugin that integrates WooCommerce with Printify, allowing seamless product synchronization.
-
-## File Structure
-The plugin's files are structured as follows:
-
-\`\`\`
-      │── wp-woocommerce-printify-sync.php
-      │
-      ├── admin/
-      │   ├── Admin.php
-      │   ├── assets/
-      │   │   ├── js/
-      │   │   │   ├── admin-script.js
-      │   │   │   ├── products.js
-      │   │   │   ├── shops.js
-      │   │   ├── css/
-      │   │   │   ├── admin-styles.css
-      │   ├── templates/
-      │   │   ├── products-section.php
-      │   │   ├── settings-page.php
-      │   │   ├── shops-section.php
-      │   ├── includes/
-      │   │   ├── Helper.php
-      │
-${adminIncludesStructure}
-      ├── includes/
-${includesStructure}
-      ├── .github/
-      │   ├── workflows/
-      │   │   ├── php.yml
-      │
-      ├── .gitignore
-      │
-      ├── .php-cs-fixer.php
-      │
-      ├── .phpcs.xml
-      │
-      ├── .wp-env.json
-      │
-      ├── LICENSE
-      │
-      ├── README.md
-      │
-      ├── composer.json
-      │
-      ├── composer.lock
-      │
-      ├── eslint.config.js
-      │
-      ├── package-lock.json
-      │
-      ├── package.json
-      │
-      ├── phpcs.xml.dist
-      │
-      ├── phpstan.neon
-      │
-      ├── phpunit.xml.dist
-\`\`\`
-
-## File Descriptions
-- **wp-woocommerce-printify-sync.php**: The main plugin file that initializes the plugin.
+updateReadme();
