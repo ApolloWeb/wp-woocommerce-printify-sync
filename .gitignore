@@ -5,6 +5,16 @@
 !.wp-env.json
 !wp-woocommerce-printify-sync.php
 
+# ✅ Allow plugin directories
+!/admin/
+!/admin/*
+!/includes/
+!/includes/*
+!/assets/
+!/assets/*
+!/languages/
+!/languages/*
+
 # Allow Docker files
 !docker-compose.yaml
 !docker-compose.yml
@@ -30,12 +40,6 @@
 !eslint.config.js
 !phpcs.xml
 !.php_cs.dist
-
-# Allow only necessary plugin directories
-!/includes/
-!/admin/
-!/assets/
-!/languages/
 
 # Development files to ignore
 .DS_Store
