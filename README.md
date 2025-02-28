@@ -6,45 +6,12 @@
 ## File Structure
 The plugin's files are structured as follows:
 
-```
-      │── wp-woocommerce-printify-sync.php
-      │
-      ├── admin/
-      │   ├── Admin.php
-      │   ├── assets/
-      │   │   ├── js/
-      │   │   │   ├── admin-script.js
-      │   │   │   ├── products.js
-      │   │   │   ├── shops.js
-      │   │   ├── css/
-      │   │   │   ├── admin-styles.css
-      │   ├── templates/
-      │   │   ├── products-section.php
-      │   │   ├── settings-page.php
-      │   │   ├── shops-section.php
-      │
-      ├── includes/
-      │   ├── Api.php
-      │   ├── Autoloader.php
-```
+<!-- FILE-STRUCTURE-START -->
+<!-- FILE-STRUCTURE-END -->
 
 ## File Descriptions
-- **wp-woocommerce-printify-sync.php**: The main plugin file that initializes the plugin.
-- **Admin.php**: Handles the admin panel functionality.
-- **assets/**:
-  - **js/**:
-    - `admin-script.js`: JavaScript file for admin interactions.
-    - `products.js`: Handles product-related JavaScript functionality.
-    - `shops.js`: Manages shop-related JavaScript actions.
-  - **css/**:
-    - `admin-styles.css`: Admin panel styles.
-- **templates/**:
-  - `products-section.php`: Template for the products section.
-  - `settings-page.php`: Template for the plugin settings page.
-  - `shops-section.php`: Template for managing shops.
-- **includes/**:
-  - `Api.php`: Handles API calls and interactions.
-  - `Autoloader.php`: Manages class autoloading for the plugin.
+<!-- FILE-DESCRIPTIONS-START -->
+<!-- FILE-DESCRIPTIONS-END -->
 
 ## Installation
 1. Upload the `wp-woocommerce-printify-sync` folder to the `wp-content/plugins/` directory.
@@ -55,4 +22,3 @@ The plugin's files are structured as follows:
 
 ## License
 This plugin is licensed under the [MIT License](LICENSE).
-
