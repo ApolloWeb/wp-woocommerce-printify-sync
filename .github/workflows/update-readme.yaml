@@ -1,11 +1,11 @@
-name: Update README with Copilot
+name: Update README with OpenAI
 
 on:
   push:
     branches:
-      - '**'  # Run on all branches
-  pull_request:  # Also runs on PRs
-  workflow_dispatch:  # Allows manual trigger
+      - '**'
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,16 +17,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
-          persist-credentials: true
-
-      - name: Install GitHub CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gh jq
-
-      # ✅ GitHub CLI will automatically use `GH_TOKEN`, no need for `gh auth login`
 
       - name: Install Node.js
         uses: actions/setup-node@v3
@@ -37,20 +27,14 @@ jobs:
         run: npm install
 
       - name: Run update-readme script
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node update-readme.js
-
-      - name: Show Git status
-        run: git status
-
-      - name: Stage README changes
-        run: git add README.md
 
       - name: Commit changes if any
         run: |
-          git commit -a -m "chore: update README with Copilot-generated descriptions" || echo "No changes to commit"
+          git add README.md
+          git commit -m "chore: update README with AI-generated descriptions" || echo "No changes to commit"
 
       - name: Push changes
-        run: |
-          branch=${GITHUB_REF#refs/heads/}
-          echo "Pushing to branch: $branch"
-          git push origin HEAD:$branch
+        run: git push origin HEAD
