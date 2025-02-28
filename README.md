@@ -14,12 +14,6 @@
 The plugin's files are structured as follows:
 
 <!-- FILE-STRUCTURE-START -->
-      .github/ISSUE_TEMPLATE/ISSUE_TEMPLATE_bug_report.md
-      .github/ISSUE_TEMPLATE/dependabot.yml
-      .github/dependabot.yml
-      .github/labels.yml
-      .github/release-drafter.yml
-      .github/workflows/update-readme.yaml
       .gitignore
       .header_exclude
       .php-cs-fixer.php
@@ -64,12 +58,6 @@ The plugin's files are structured as follows:
 
 ## File Descriptions
 <!-- FILE-DESCRIPTIONS-START -->
-- **ISSUE_TEMPLATE_bug_report.md**: Description of ISSUE_TEMPLATE_bug_report.md
-- **dependabot.yml**: Description of dependabot.yml
-- **dependabot.yml**: Description of dependabot.yml
-- **labels.yml**: Description of labels.yml
-- **release-drafter.yml**: Description of release-drafter.yml
-- **update-readme.yaml**: Description of update-readme.yaml
 - **.gitignore**: Description of .gitignore
 - **.header_exclude**: Description of .header_exclude
 - **.php-cs-fixer.php**: Description of .php-cs-fixer.php
