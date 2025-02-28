@@ -38,6 +38,7 @@ wp-config.php
 /wordpress-tests-lib/
 /tmp/
 /tests/coverage/
+.header_exclude
 
 # ✅ Ignore build & distribution files
 /dist/
