@@ -1,22 +1,21 @@
-name: Create Release
-
-on:
-  push:
-    tags:
-      - 'v*.*.*'
+# release.yml
+# Uncomment the following lines to re-enable the workflow
+# on:
+#   push:
+#     tags:
+#       - 'v*.*.*'
 
 jobs:
   release:
-    name: Create GitHub Release
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up GitHub CLI
-        uses: cli/gh-action@v2
-
-      - name: Create Release
-        run: |
-          gh release create $GITHUB_REF --title "Release $GITHUB_REF" --notes "Release notes for $GITHUB_REF"
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+      - name: Create release
+        run: npm run release

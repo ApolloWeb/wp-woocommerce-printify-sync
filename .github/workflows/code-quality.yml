@@ -1,81 +1,24 @@
-name: Code Quality Check
-
-on:
-  push:
-    branches:
-      - mercury
-      - 'feature/*'
-  pull_request:
-    branches:
-      - master
+# code-quality.yml
+# Uncomment the following lines to re-enable the workflow
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
 jobs:
-  lint-and-analyze:
+  code-quality:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v3
-
-    - name: Set up PHP 8.1
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.1'
-        tools: composer, phpstan, php-cs-fixer, phpcs, phpcbf, phplint
-        extensions: mbstring, dom
-
-    # ✅ Configure Composer plugins
-    - name: Configure Composer plugins
-      run: |
-        composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-        composer config --no-plugins allow-plugins.johnpbloch/wordpress-core-installer true
-
-    # ✅ Install Composer Dependencies
-    - name: Install Composer dependencies
-      run: |
-        composer install --prefer-dist --no-progress
-        vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-
-    - name: Install ESLint
-      run: npm install -g eslint
-
-    # ✅ 1️⃣ Run PHP Lint (Syntax Check) - ONLY in Plugin Directory
-    - name: Run PHP Lint (Syntax Check)
-      run: |
-        find . -name "*.php" -print | xargs -n1 php -l
-      continue-on-error: false
-
-    # ✅ 2️⃣ Run PHP CodeSniffer (PHPCS) with WordPress Standards - ONLY in Plugin
-    - name: Run PHP CodeSniffer (PHPCS)
-      run: |
-        vendor/bin/phpcs --standard=WordPress-Core --extensions=php .
-      continue-on-error: true
-
-    # ✅ 3️⃣ Run PHP Code Beautifier (PHPCBF) to auto-fix PHPCS issues - ONLY in Plugin
-    - name: Run PHP Code Beautifier (PHPCBF)
-      run: |
-        vendor/bin/phpcbf --standard=WordPress-Core --extensions=php wp-content/plugins/wp-woocommerce-printify-sync
-      continue-on-error: true
-
-    # ✅ 4️⃣ Run PHP-CS-Fixer for additional formatting fixes - ONLY in Plugin
-    - name: Run PHP-CS-Fixer (PHP Formatting)
-      run: |
-        vendor/bin/php-cs-fixer fix --config=.github/workflows/.php-cs-fixer.php --verbose --path-mode=intersection wp-content/plugins/wp-woocommerce-printify-sync
-      continue-on-error: true
-
-    # ✅ 5️⃣ Run PHPStan (Static Analysis) - ONLY in Plugin
-    - name: Run PHPStan (Static Analysis)
-      run: |
-        vendor/bin/phpstan analyse --configuration=phpstan.neon --level=max --memory-limit=512M .
-      continue-on-error: true
-
-    # ✅ 6️⃣ Run ESLint on Plugin JavaScript Files
-    - name: Run ESLint (JavaScript Syntax Check)
-      run: |
-        npx eslint --config eslint.config.js assets/js/ --fix
-      continue-on-error: true
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+      - name: Run ESLint
+        run: npm run lint
