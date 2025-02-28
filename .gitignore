@@ -1,8 +1,9 @@
-# First ignore everything
-/*
-
-# Allow GitHub workflows and config
+# Ignore everything first (EXCEPT the allowed files below)
+*
+!.gitignore
 !.github/
+!.wp-env.json
+!wp-woocommerce-printify-sync.php
 
 # Allow Docker files
 !docker-compose.yaml
@@ -18,27 +19,25 @@
 !composer.json
 !composer.lock
 
-# Allow LICENSE file
+# Allow important project files
 !LICENSE
+!README.md
+!package.json
+!package-lock.json
 
-# Then allow only wp-content/plugins directory
-!/wp-content/
-/wp-content/*
-!/wp-content/plugins/
-/wp-content/plugins/*
-!/wp-content/plugins/wp-woocommerce-printify-sync/
-!wp-config-project.php
-
-# Allow .neon files in the wp-content/plugins/wp-woocommerce-printify-sync/ directory
-!/wp-content/plugins/wp-woocommerce-printify-sync/*.neon
-
-# Allow additional config files
+# Allow development config files
 !.eslintrc.json
 !eslint.config.js
 !phpcs.xml
 !.php_cs.dist
 
-# Development files
+# Allow only necessary plugin directories
+!/includes/
+!/admin/
+!/assets/
+!/languages/
+
+# Development files to ignore
 .DS_Store
 node_modules/
 *.log
@@ -51,38 +50,24 @@ vendor/
 *.sublime-workspace
 *.sublime-project
 
-# Environment files (keep these private)
-!.env
+# Ignore environment files
+.env
 .env.*
+wp-config.php
 
-# SARIF reports from code scanning
-*-results.sarif
-
-# Test coverage
+# Ignore test files and coverage
 /coverage/
 .phpunit.result.cache
 /wordpress-tests-lib/
-/tmp/
-/tests/coverage/
+./tmp/
+./tests/coverage/
 
-# Composer generated files
-composer.phar
-
-# NPM/Yarn lock files
-!package.json
-!package-lock.json
-
-# Additional WordPress testing files
-wp-tests-config.php
-/wordpress/
-local-phpinfo.php
-
-# Build and dist files
+# Ignore build and dist files
 /dist/
 /build/
 *.zip
 
-# Operating system files
+# Ignore operating system files
 Thumbs.db
 ._*
 .Spotlight-V100

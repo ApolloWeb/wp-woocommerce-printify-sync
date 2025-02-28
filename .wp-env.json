@@ -1,0 +1,10 @@
+{
+  "core": "https://en-gb.wordpress.org/latest-en_GB.zip",
+  "plugins": [ "/home/apolloweb/projects/wordpress/wp-content/plugins/wp-woocommerce-printify-sync", 
+  "https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip", 
+  "https://downloads.wordpress.org/plugin/classic-editor.1.6.7.zip" ],
+  "themes": [],
+  "config": {
+    "WP_DEBUG": true
+  }
+}
