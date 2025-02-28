@@ -13,12 +13,10 @@
 ## File Structure
 The plugin's files are structured as follows:
 
-<!-- FILE-STRUCTURE-START -->
-<!-- FILE-STRUCTURE-END -->
+<!-- FILE-STRUCTURE-START --><!-- FILE-STRUCTURE-END -->
 
 ## File Descriptions
-<!-- FILE-DESCRIPTIONS-START -->
-<!-- FILE-DESCRIPTIONS-END -->
+<!-- FILE-DESCRIPTIONS-START --><!-- FILE-DESCRIPTIONS-END -->
 
 ## Installation
 1.  Upload the `wp-woocommerce-printify-sync` folder to the `wp-content/plugins/` directory.
