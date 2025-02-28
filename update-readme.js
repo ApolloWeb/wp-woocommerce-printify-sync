@@ -23,7 +23,7 @@ function getExcludedFiles() {
 // Function to get the list of changed files from git
 function getChangedFiles() {
   try {
-    // Try to get the diff between the current HEAD and the previous commit
+    // Get the diff between the current HEAD and the previous commit
     let output = execSync('git diff --name-only HEAD^ HEAD', { encoding: 'utf-8' });
     
     // If HEAD^ fails (e.g., on a fresh repository), fall back to using HEAD~1

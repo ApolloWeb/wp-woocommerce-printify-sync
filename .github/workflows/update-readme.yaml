@@ -15,7 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Ensures the token has access to push changes to the repo
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
