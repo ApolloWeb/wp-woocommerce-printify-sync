@@ -6,7 +6,7 @@ const { execSync } = require("child_process");
 // Define base directory
 const baseDir = process.cwd();
 
-// Load excluded files from `.readme_exclude`
+// Load excluded files from `.readme_exclude` (in the root directory)
 const excludeFilePath = path.join(baseDir, ".readme_exclude");
 let excludeFiles = new Set([".gitignore", ".header_exclude", ".vscode/settings.json", ".wp-env.json", "update-readme.js"]);
 
@@ -23,6 +23,13 @@ function getStagedFiles() {
   try {
     const output = execSync("git diff --cached --name-only", { encoding: "utf-8" });
     const files = output.split("\n").filter(file => file.trim() !== "" && !excludeFiles.has(file));
+
+    if (files.length === 0) {
+      console.log("⚠️ No files to update for README. Skipping...");
+    } else {
+      console.log("📂 Staged files: " + files.join(", "));
+    }
+
     return files;
   } catch (error) {
     console.error("❌ Error getting staged files. Skipping README update.");

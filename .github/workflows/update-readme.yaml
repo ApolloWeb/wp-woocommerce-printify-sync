@@ -26,8 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Ensure files are staged
-        run: git add .
+      - name: Ensure relevant files are staged
+        run: |
+          git add README.md
 
       - name: Run update-readme script
         env:
@@ -41,3 +42,4 @@ jobs:
 
       - name: Push changes
         run: git push origin HEAD
+
