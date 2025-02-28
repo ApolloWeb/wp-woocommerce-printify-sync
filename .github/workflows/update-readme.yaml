@@ -41,7 +41,7 @@ jobs:
 
       - name: Commit changes if any
         run: |
-          git commit -m "chore: update repository files" || echo "No changes to commit"
+          git commit -a -m "chore: update repository files" || echo "No changes to commit"
 
       - name: Push changes
         run: |
