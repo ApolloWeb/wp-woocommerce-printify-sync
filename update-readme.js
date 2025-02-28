@@ -27,21 +27,23 @@ function getFileList(dir, parentDir = "") {
   return files.flat();
 }
 
-// Function to generate Copilot-based file descriptions
+// Function to generate file descriptions using GitHub Copilot CLI
 function getFileDescription(file) {
-  const filePath = path.join(baseDir, file);
-
-  // Read first few lines of the file
-  let content = "";
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-    content = fs.readFileSync(filePath, "utf8").split("\n").slice(0, 10).join(" ");
-  }
-
   console.log(`🔍 Generating description for: ${file}`);
-  
+
   try {
-    const prompt = `Describe this file: ${file} based on the following content: ${content}`;
-    const description = execSync(`echo "${prompt}" | gh copilot suggest --comment`, {
+    // Read first few lines of the file
+    const filePath = path.join(baseDir, file);
+    let content = "";
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      content = fs.readFileSync(filePath, "utf8").split("\n").slice(0, 10).join(" ");
+    }
+
+    // Construct a Copilot prompt
+    const prompt = `Describe the purpose of this file: ${file} based on the following content:\n${content}`;
+
+    // Call Copilot CLI
+    const description = execSync(`gh copilot suggest -t shell "${prompt}"`, {
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "ignore"],
     }).trim();
@@ -56,19 +58,21 @@ function getFileDescription(file) {
 // Update README file
 function updateReadme() {
   const files = getFileList("");
-  
+
   // Generate file structure and descriptions
   const fileStructure = files.map((file) => `      ${file}`).join("\n");
   const fileDescriptions = files.map((file) => getFileDescription(file)).join("\n");
 
+  // Read README template
   const readmeTemplatePath = path.join(baseDir, "README_TEMPLATE.txt");
   if (!fs.existsSync(readmeTemplatePath)) {
-    console.error("README_TEMPLATE.txt not found at", readmeTemplatePath);
+    console.error("❌ README_TEMPLATE.txt not found.");
     process.exit(1);
   }
 
   const readmeTemplateContent = fs.readFileSync(readmeTemplatePath, "utf8");
 
+  // Replace placeholders in README
   const updatedContent = readmeTemplateContent
     .replace(
       /(<!-- FILE-STRUCTURE-START -->)([\s\S]*?)(<!-- FILE-STRUCTURE-END -->)/,
@@ -79,10 +83,12 @@ function updateReadme() {
       `$1\n${fileDescriptions}\n$3`
     );
 
+  // Write to README.md
   const readmePath = path.join(baseDir, "README.md");
   fs.writeFileSync(readmePath, updatedContent, "utf8");
 
   console.log("📄 README updated with file structure and Copilot-generated descriptions.");
 }
 
+// Run the script
 updateReadme();
