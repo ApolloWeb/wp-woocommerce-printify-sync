@@ -1,10 +1,3 @@
-/**
- * JavaScript file: update-readme.js for Printify Sync plugin
- *
- * Author: Rob Owen
- *
- * Last Update On: 2025-02-28 at 03:30:11
- */
 const fs = require('fs');
 const path = require('path');
 
