@@ -123,8 +123,10 @@ async function getFileDescriptionsBatch(files) {
         }
       });
     } catch (error) {
-      console.warn(`⚠️ Failed to generate descriptions for batch ${i / batchSize + 1}. Using fallback.`);
+      console.warn(`⚠️ Failed to generate descriptions for batch ${i / batchSize + 1}. Retrying...`);
+      console.error(error.message);
       batch.forEach(file => descriptions[file] = "(No description available)");
+      await new Promise(res => setTimeout(res, 2000));  // Wait before retrying
     }
   }
 
