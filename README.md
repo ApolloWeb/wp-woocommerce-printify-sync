@@ -7,7 +7,6 @@
 The plugin's files are structured as follows:
 
 ```
-wp-content/plugins/wp-woocommerce-printify-sync/
       │── wp-woocommerce-printify-sync.php
       │
       ├── admin/
