@@ -6,15 +6,9 @@ const { execSync } = require("child_process");
 // Define base directory
 const baseDir = process.cwd();
 
-// Load excluded files from `.readme_exclude` if it exists
+// Load excluded files from `.readme_exclude`
 const excludeFilePath = path.join(baseDir, ".readme_exclude");
-let excludeFiles = new Set([
-  ".gitignore",
-  ".header_exclude",
-  ".vscode/settings.json",
-  ".wp-env.json",
-  "update-readme.js"
-]);
+let excludeFiles = new Set([".gitignore", ".header_exclude", ".vscode/settings.json", ".wp-env.json", "update-readme.js"]);
 
 if (fs.existsSync(excludeFilePath)) {
   const fileContent = fs.readFileSync(excludeFilePath, "utf8")
@@ -56,7 +50,7 @@ function getExistingDescriptions(readmePath) {
   return descriptions;
 }
 
-// Function to get the entire file structure while preserving hierarchy
+// Function to get file list while preserving hierarchy
 function getFileList(dir = "", parentDir = "") {
   const fullDir = path.join(baseDir, dir);
   if (!fs.existsSync(fullDir)) return [];
@@ -78,73 +72,63 @@ function getFileList(dir = "", parentDir = "") {
   return files;
 }
 
-// Function to generate concise file descriptions using OpenAI
-async function getFileDescription(file) {
-  console.log(`🔍 Generating concise description for: ${file}`);
+// Function to batch API requests
+async function getFileDescriptionsBatch(files) {
+  if (files.length === 0) return {};
 
-  try {
-    if (!process.env.OPENAI_API_KEY) {
-      console.warn("⚠️ OpenAI API key is missing. Using fallback.");
-      return `(No description available)`;
-    }
+  console.log(`🔍 Generating descriptions for ${files.length} files in batches...`);
 
-    // Read first 2 lines of the file (reduce token usage)
-    const filePath = path.join(baseDir, file);
-    let content = "";
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-      content = fs.readFileSync(filePath, "utf8").split("\n").slice(0, 2).join(" ");
-    }
+  let descriptions = {};
+  let batchSize = 10;  // Adjust batch size to balance API efficiency
+  for (let i = 0; i < files.length; i += batchSize) {
+    const batch = files.slice(i, i + batchSize);
+    
+    let batchContent = batch.map(file => `- **${file}**:`).join("\n");
 
-    // Call OpenAI API with a request for a **concise** description
-    const response = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-4",
-        messages: [
-          { role: "system", content: `Provide a concise 1-line description for this file:\n${file}\nContent:\n${content}` }
-        ],
-        temperature: 0.5,
-        max_tokens: 30
-      },
-      {
-        headers: {
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        }
+    console.log(`📦 Sending batch ${i / batchSize + 1}: ${batch.length} files`);
+
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        console.warn("⚠️ OpenAI API key is missing. Using fallback.");
+        batch.forEach(file => descriptions[file] = "(No description available)");
+        continue;
       }
-    );
 
-    let description = response.data.choices[0].message.content.trim();
+      const response = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: `You are an AI that generates concise 1-line descriptions for files in a project.` },
+            { role: "user", content: `Provide descriptions for these files:\n\n${batchContent}\n\nFormat each as "- **filename**: description"` }
+          ],
+          temperature: 0.5,
+          max_tokens: 300
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
-    // Enforce 50-character max length (truncate at word boundary)
-    if (description.length > 50) {
-      description = description.substring(0, 47).trim();
-      description = description.replace(/\s+\S*$/, "..."); // Trim to last full word and add "..."
+      const responseText = response.data.choices[0].message.content.trim();
+      console.log("📥 AI Response:", responseText);
+
+      responseText.split("\n").forEach(line => {
+        const match = line.match(/- \*\*(.*?)\*\*: (.*)/);
+        if (match) {
+          descriptions[match[1]] = match[2];
+        }
+      });
+    } catch (error) {
+      console.warn(`⚠️ Failed to generate descriptions for batch ${i / batchSize + 1}. Using fallback.`);
+      batch.forEach(file => descriptions[file] = "(No description available)");
     }
-
-    return description || `(No description available)`;
-  } catch (error) {
-    console.warn(`⚠️ Failed to generate description for ${file}, using fallback.`);
-    return `(No description available)`;
-  }
-}
-
-// Generate structured README content with indentation
-function generateStructuredReadme(files, descriptions, indent = 0) {
-  let result = "";
-  const indentation = " ".repeat(indent * 2);
-
-  for (const file of files) {
-    if (file.type === "folder") {
-      result += `${indentation}- **${file.name}/**\n`;
-      result += generateStructuredReadme(file.children, descriptions, indent + 1);
-    } else {
-      const desc = descriptions[file.name] || "(No description available)";
-      result += `${indentation}- **${file.name}**: ${desc}\n`;
-    }
   }
 
-  return result;
+  return descriptions;
 }
 
 // Update README file while preserving structure
@@ -166,33 +150,27 @@ async function updateReadme() {
     return;
   }
 
-  // Generate descriptions only for staged files
-  for (const file of stagedFiles) {
-    existingDescriptions[file] = await getFileDescription(file);
-  }
+  // Generate descriptions for staged files in batches
+  const newDescriptions = await getFileDescriptionsBatch(stagedFiles);
+  existingDescriptions = { ...existingDescriptions, ...newDescriptions };
 
-  // Generate file structure
+  // Generate structured README
   const structuredFiles = getFileList();
-  const structuredReadme = generateStructuredReadme(structuredFiles, existingDescriptions);
+  const structuredReadme = structuredFiles
+    .map(file => `- **${file.name}**: ${existingDescriptions[file.name] || "(No description available)"}`)
+    .join("\n");
 
   // Read README template
   const readmeTemplateContent = fs.readFileSync(readmeTemplatePath, "utf8");
 
   // Replace placeholders in README
   const updatedContent = readmeTemplateContent
-    .replace(
-      /(<!-- FILE-STRUCTURE-START -->)([\s\S]*?)(<!-- FILE-STRUCTURE-END -->)/,
-      `$1\n${structuredReadme}\n$3`
-    )
-    .replace(
-      /(<!-- FILE-DESCRIPTIONS-START -->)([\s\S]*?)(<!-- FILE-DESCRIPTIONS-END -->)/,
-      `$1\n${structuredReadme}\n$3`
-    );
+    .replace(/(<!-- FILE-DESCRIPTIONS-START -->)([\s\S]*?)(<!-- FILE-DESCRIPTIONS-END -->)/, `$1\n${structuredReadme}\n$3`);
 
   // Write to README.md
   fs.writeFileSync(readmePath, updatedContent, "utf8");
 
-  console.log("📄 README updated while preserving file structure and tracking only staged changes.");
+  console.log("📄 README updated successfully!");
 }
 
 // Run the script
