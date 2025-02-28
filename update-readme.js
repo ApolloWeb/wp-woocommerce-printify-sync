@@ -12,7 +12,7 @@ function getFileList(dir, parentDir = '') {
   }
 
   // Define directories to ignore
-  const ignoreDirs = ['.git', 'node_modules', 'vendor'];
+  const ignoreDirs = ['.git', '.github', 'node_modules', 'vendor'];
 
   const files = fs.readdirSync(fullDir).filter(file => !ignoreDirs.includes(file)).map(file => {
     const fullPath = path.join(fullDir, file);
