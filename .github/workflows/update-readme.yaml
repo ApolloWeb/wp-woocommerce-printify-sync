@@ -1,47 +1,56 @@
-name: Commit and Push Changes
+name: Update README with Copilot
 
 on:
   push:
+    branches:
+      - main
+  workflow_dispatch:  # Allows manual trigger
 
 permissions:
   contents: write
 
 jobs:
-  commit-and-push:
+  update-readme:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           persist-credentials: true
 
-      - name: Configure Git
+      - name: Install GitHub CLI
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          sudo apt-get update
+          sudo apt-get install -y gh jq
+
+      - name: Authenticate GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "${GH_TOKEN}" | gh auth login --with-token
 
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: "16"
 
       - name: Install dependencies
         run: npm install
 
       - name: Run update-readme script
-        run: npm run update-readme
+        run: node update-readme.js
 
       - name: Show Git status
         run: git status
 
-      - name: Stage all changes
-        run: |
-          git add README.md
+      - name: Stage README changes
+        run: git add README.md
 
       - name: Commit changes if any
         run: |
-          git commit -a -m "chore: update repository files" || echo "No changes to commit"
+          git commit -a -m "chore: update README with Copilot-generated descriptions" || echo "No changes to commit"
 
       - name: Push changes
         run: |
