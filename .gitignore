@@ -1,6 +1,7 @@
 # ✅ Ignore dependency folders
 vendor/
 node_modules/
+.git
 
 # ✅ Keep Docker files (Ensure they are not ignored)
 !docker-compose.yaml
