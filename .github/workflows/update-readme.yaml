@@ -37,7 +37,7 @@ jobs:
 
       - name: Stage all changes
         run: |
-          git add .
+          git add README.md
 
       - name: Commit changes if any
         run: |
