@@ -1,41 +1,10 @@
 version: 2
 updates:
-  - package-ecosystem: "composer"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    target-branch: "master"
-    labels:
-      - "dependencies"
-      - "php"
-    versioning-strategy: "increase"
-    commit-message:
-      prefix: "composer"
-      prefix-development: "composer dev"
-      include: "scope"
-
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-    target-branch: "master"
-    labels:
-      - "dependencies"
-      - "javascript"
-    versioning-strategy: "increase"
-    commit-message:
-      prefix: "npm"
-      prefix-development: "npm dev"
-      include: "scope"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    target-branch: "master"
-    labels:
-      - "dependencies"
-      - "github-actions"
-    commit-message:
-      prefix: "github-actions"
-      include: "scope"

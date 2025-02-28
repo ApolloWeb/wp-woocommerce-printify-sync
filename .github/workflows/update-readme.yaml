@@ -8,7 +8,7 @@ on:
       - 'includes/**'
       - 'admin/includes/**'
       - 'README.md'
-      - '.github/workflows/update-readme.yml'
+      - '.github/**'
 
 jobs:
   update-readme:
