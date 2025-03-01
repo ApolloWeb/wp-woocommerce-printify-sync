@@ -1,85 +1,184 @@
 /**
- * JavaScript file: products.js for Printify Sync plugin
- *
- * Author: Rob Owen
- *
- * Date: 2025-02-28
- * Time: 02:14:58
+ * Products page JavaScript for WP WooCommerce Printify Sync
  */
-(function($) {
+jQuery(document).ready(function($) {
     'use strict';
-
-    const PrintifyProducts = {
-        cachedProducts: null,
-
-        init: function() {
-            this.cacheDOM();
-            this.bindEvents();
-        },
-
-        cacheDOM: function() {
-            this.$fetchButton = $('#fetch-printify-products');
-            this.$resultsContainer = $('#printify-products-results');
-            this.$shopInput = $('#printify_selected_shop');
-        },
-
-        bindEvents: function() {
-            this.$fetchButton.on('click', (e) => {
-                e.preventDefault();
-                this.fetchProducts();
-            });
-        },
-
-        fetchProducts: function() {
-            const shopId = this.$shopInput.val();
-
-            if (!shopId) {
-                this.showError('No shop selected.');
-                return;
-            }
-
-            this.$resultsContainer.html('<div class="loading">Fetching products...</div>');
-
+    
+    var importButton = $('#wpwps-import-products');
+    var clearButton = $('#wpwps-clear-products');
+    var progressContainer = $('#wpwps-import-progress');
+    var progressBar = progressContainer.find('.wpwps-progress-bar');
+    var progressPercent = progressContainer.find('.wpwps-progress-percent');
+    var progressCount = progressContainer.find('.wpwps-progress-count');
+    var messageContainer = $('#wpwps-products-message');
+    var progressInterval;
+    
+    /**
+     * Start import
+     */
+    importButton.on('click', function() {
+        var button = $(this);
+        
+        if (confirm('Are you sure you want to import products from Printify? This might take a while.')) {
+            wpwps.showLoading(button, true);
+            clearButton.prop('disabled', true);
+            
             $.ajax({
-                url: PrintifySync.ajax_url,
+                url: wpwps.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'fetch_printify_products',
-                    nonce: PrintifySync.nonce,
-                    shop_id: shopId
+                    action: 'wpwps_import_products',
+                    nonce: wpwps.nonce
                 },
-                success: (response) => {
-                    if (!response.success) {
-                        this.showError(response.data.message || 'Error fetching products');
-                        return;
+                success: function(response) {
+                    if (response.success) {
+                        wpwps.showMessage(response.data.message, 'success', messageContainer);
+                        
+                        // Show progress bar and start monitoring progress
+                        progressContainer.show();
+                        startProgressMonitor();
+                    } else {
+                        wpwps.showMessage(response.data.message, 'error', messageContainer);
+                        wpwps.showLoading(button, false);
+                        clearButton.prop('disabled', false);
                     }
-
-                    this.cachedProducts = response.data;
-                    this.displayProductsSummary();
                 },
-                error: () => {
-                    this.showError('AJAX error occurred.');
+                error: function() {
+                    wpwps.showMessage('An error occurred while starting import.', 'error', messageContainer);
+                    wpwps.showLoading(button, false);
+                    clearButton.prop('disabled', false);
                 }
             });
-        },
-
-        displayProductsSummary: function() {
-            let html = `<h3>Products Found (${this.cachedProducts.length})</h3>`;
-            html += '<ul>';
-            this.cachedProducts.forEach(product => {
-                html += `<li>${product.title}</li>`;
-            });
-            html += '</ul>';
-            this.$resultsContainer.html(html);
-        },
-
-        showError: function(message) {
-            this.$resultsContainer.html(`<div class="error">${message}</div>`);
         }
-    };
-
-    $(document).ready(function() {
-        PrintifyProducts.init();
     });
-
-})(jQuery);
+    
+    /**
+     * Clear all products
+     */
+    clearButton.on('click', function() {
+        var button = $(this);
+        
+        if (confirm('Are you sure you want to delete all imported Printify products? This action cannot be undone.')) {
+            wpwps.showLoading(button, true);
+            importButton.prop('disabled', true);
+            
+            $.ajax({
+                url: wpwps.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'wpwps_clear_products',
+                    nonce: wpwps.nonce
+                },
+                success: function(response) {
+                    wpwps.showLoading(button, false);
+                    importButton.prop('disabled', false);
+                    
+                    if (response.success) {
+                        wpwps.showMessage(response.data.message, 'success', messageContainer);
+                    } else {
+                        wpwps.showMessage(response.data.message, 'error', messageContainer);
+                    }
+                },
+                error: function() {
+                    wpwps.showLoading(button, false);
+                    importButton.prop('disabled', false);
+                    wpwps.showMessage('An error occurred while clearing products.', 'error', messageContainer);
+                }
+            });
+        }
+    });
+    
+    /**
+     * Monitor import progress
+     */
+    function startProgressMonitor() {
+        // Check progress every 3 seconds
+        progressInterval = setInterval(checkProgress, 3000);
+        checkProgress();
+    }
+    
+    /**
+     * Check import progress
+     */
+    function checkProgress() {
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_get_import_progress',
+                nonce: wpwps.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    updateProgressUI(response.data);
+                    
+                    // If import is complete, stop monitoring
+                    if (!response.data.in_progress) {
+                        stopProgressMonitor();
+                    }
+                } else {
+                    // Error getting progress, stop monitoring
+                    stopProgressMonitor();
+                }
+            },
+            error: function() {
+                // Error getting progress, stop monitoring
+                stopProgressMonitor();
+            }
+        });
+    }
+    
+    /**
+     * Update progress UI
+     */
+    function updateProgressUI(progress) {
+        var percent = progress.percent || 0;
+        
+        // Update progress bar
+        progressBar.css('width', percent + '%');
+        progressPercent.text(percent + '%');
+        
+        // Update count
+        progressCount.text(progress.processed + ' / ' + progress.total);
+        
+        // If complete, show success message
+        if (percent >= 100) {
+            wpwps.showMessage('Product import completed successfully!', 'success', messageContainer);
+        }
+    }
+    
+    /**
+     * Stop progress monitor
+     */
+    function stopProgressMonitor() {
+        clearInterval(progressInterval);
+        wpwps.showLoading(importButton, false);
+        clearButton.prop('disabled', false);
+    }
+    
+    // Check if import is already in progress when page loads
+    function checkInitialProgress() {
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_get_import_progress',
+                nonce: wpwps.nonce
+            },
+            success: function(response) {
+                if (response.success && response.data.in_progress) {
+                    // Import is already in progress
+                    progressContainer.show();
+                    updateProgressUI(response.data);
+                    
+                    wpwps.showLoading(importButton, true);
+                    clearButton.prop('disabled', true);
+                    startProgressMonitor();
+                }
+            }
+        });
+    }
+    
+    // Check initial progress on page load
+    checkInitialProgress();
+});

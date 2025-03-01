@@ -1,153 +1,486 @@
 /**
- * CSS file: admin-styles.css for Printify Sync plugin
- *
- * Author: Rob Owen
- *
- * Date: 2025-02-28
- * Time: 02:14:58
+ * Enhanced Admin Styles for WP WooCommerce Printify Sync
+ * Author: ApolloWeb
+ * Version: 1.0.0
+ * Last Updated: 2025-03-01
  */
 
-.printify-notice {
-    padding: 10px 15px;
-    margin: 10px 0;
-    border-left: 4px solid #72aee6;
+/* === Global Styles === */
+.wpwps-wrap {
+    --wpwps-primary: #6C63FF;
+    --wpwps-primary-dark: #5A52D5;
+    --wpwps-secondary: #FF6B6B;
+    --wpwps-light: #F8F9FA;
+    --wpwps-dark: #343A40;
+    --wpwps-gray: #6C757D;
+    --wpwps-success: #28A745;
+    --wpwps-warning: #FFC107;
+    --wpwps-danger: #DC3545;
+    --wpwps-info: #17A2B8;
+    --wpwps-border-radius: 6px;
+    --wpwps-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    
+    margin: 20px 20px 0 2px;
     background: #fff;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+    border-radius: var(--wpwps-border-radius);
+    box-shadow: var(--wpwps-box-shadow);
+    padding: 30px;
+    color: var(--wpwps-dark);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    max-width: 1600px;
 }
 
-.printify-notice-success {
-    border-left-color: #46b450;
-    background-color: #f0f9f1;
+.wpwps-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
-.printify-notice-error {
-    border-left-color: #dc3232;
-    background-color: #fef1f1;
+.wpwps-header-icon {
+    margin-right: 15px;
+    background: var(--wpwps-primary);
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(108, 99, 255, 0.2);
 }
 
-.printify-notice-info {
-    border-left-color: #00a0d2;
-    background-color: #f0f6fc;
+.wpwps-header-icon svg {
+    width: 26px;
+    height: 26px;
+    fill: white;
 }
 
-.printify-shops-table-wrapper {
-    margin-top: 15px;
+.wpwps-header-title {
+    flex-grow: 1;
 }
 
-.printify-shops-table {
+.wpwps-header-title h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--wpwps-dark);
+}
+
+.wpwps-header-title .wpwps-version {
+    font-size: 12px;
+    color: var(--wpwps-gray);
+    margin-top: 2px;
+}
+
+.wpwps-nav {
+    display: flex;
+    background: var(--wpwps-light);
+    border-radius: var(--wpwps-border-radius);
+    margin-bottom: 30px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.wpwps-nav-item {
+    padding: 15px 25px;
+    color: var(--wpwps-dark);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.wpwps-nav-item:hover {
+    background: rgba(108, 99, 255, 0.05);
+    color: var(--wpwps-primary);
+}
+
+.wpwps-nav-item.active {
+    color: var(--wpwps-primary);
+    background: rgba(108, 99, 255, 0.1);
+    font-weight: 600;
+}
+
+.wpwps-nav-item.active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--wpwps-primary);
+}
+
+/* === Cards === */
+.wpwps-card {
+    background: #fff;
+    border-radius: var(--wpwps-border-radius);
+    box-shadow: var(--wpwps-box-shadow);
+    margin-bottom: 30px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.wpwps-card-header {
+    padding: 20px 25px;
+    background: var(--wpwps-light);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+}
+
+.wpwps-card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--wpwps-dark);
+    flex-grow: 1;
+}
+
+.wpwps-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wpwps-card-body {
+    padding: 25px;
+}
+
+/* === Forms === */
+.wpwps-form-row {
+    margin-bottom: 20px;
+}
+
+.wpwps-form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--wpwps-dark);
+}
+
+.wpwps-form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: var(--wpwps-border-radius);
+    border: 1px solid rgba(0,0,0,0.1);
+    background: white;
+    color: var(--wpwps-dark);
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.wpwps-form-input:focus {
+    border-color: var(--wpwps-primary);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+    outline: none;
+}
+
+.wpwps-form-description {
+    margin-top: 8px;
+    color: var(--wpwps-gray);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.wpwps-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* === Buttons === */
+.wpwps-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: var(--wpwps-border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-size: 14px;
+    min-height: 42px;
+    text-decoration: none;
+}
+
+.wpwps-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+}
+
+.wpwps-button-icon {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+}
+
+.wpwps-button-primary {
+    background: var(--wpwps-primary);
+    color: white;
+}
+
+.wpwps-button-primary:hover {
+    background: var(--wpwps-primary-dark);
+    color: white;
+}
+
+.wpwps-button-secondary {
+    background: var(--wpwps-light);
+    color: var(--wpwps-dark);
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.wpwps-button-secondary:hover {
+    background: #e9ecef;
+    color: var(--wpwps-dark);
+}
+
+.wpwps-button-danger {
+    background: var(--wpwps-danger);
+    color: white;
+}
+
+.wpwps-button-danger:hover {
+    background: #c82333;
+    color: white;
+}
+
+.wpwps-button-success {
+    background: var(--wpwps-success);
+    color: white;
+}
+
+.wpwps-button-success:hover {
+    background: #218838;
+    color: white;
+}
+
+.wpwps-button.disabled,
+.wpwps-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.wpwps-button .wpwps-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: wpwps-spin 1s ease-in-out infinite;
+    margin-left: 10px;
+    margin-right: -5px;
+}
+
+@keyframes wpwps-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* === Tables === */
+.wpwps-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
 }
 
-.printify-shops-table th {
+.wpwps-table thead th {
+    padding: 15px;
+    background: var(--wpwps-light);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
     text-align: left;
-    padding: 10px;
-    border-bottom: 1px solid #ccd0d4;
-    font-weight: bold;
+    font-weight: 600;
+    color: var(--wpwps-dark);
 }
 
-.printify-shops-table td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #f1f1f1;
+.wpwps-table tbody td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
-.printify-shops-table .selected-shop {
-    background-color: #f0f9f1;
+.wpwps-table tbody tr:hover {
+    background: rgba(108, 99, 255, 0.02);
 }
 
-.printify-debug-info {
-    background: #f8f8f8;
-    padding: 10px 15px;
-    border-left: 4px solid #646970;
-    margin: 10px 0;
-    font-family: monospace;
+.wpwps-table tbody tr.selected {
+    background: rgba(108, 99, 255, 0.05);
+    border-left: 3px solid var(--wpwps-primary);
 }
 
-.button-green {
-    background: #46b450 !important;
-    border-color: #46b450 !important;
-    color: #fff !important;
-    text-shadow: none !important;
-    box-shadow: 0 1px 0 rgba(70, 180, 80, 0.5) !important;
-}
-
-.button-green:hover,
-.button-green:focus,
-.button-green:active {
-    background: #389e42 !important;
-    border-color: #389e42 !important;
-    color: #fff !important;
-}
-
-.button-green:disabled,
-.button-green.disabled {
-    background: #46b450 !important;
-    border-color: #46b450 !important;
-    color: #fff !important;
-    opacity: 0.8;
-    cursor: default;
-}
-
-.printify-products-summary {
-    padding: 20px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-top: 15px;
-    text-align: center;
-}
-
-.printify-summary-box {
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 250px;
-    text-align: center;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.summary-icon {
-    font-size: 36px;
-    margin-bottom: 10px;
-}
-
-.summary-count {
-    font-size: 48px;
-    font-weight: bold;
-    color: #2271b1;
-    line-height: 1;
-    margin-bottom: 5px;
-}
-
-.summary-label {
-    color: #666;
-    font-size: 16px;
-}
-
-.printify-summary-stats {
+/* === Shop List === */
+.wpwps-shop-item {
     display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin: 20px 0;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.2s;
 }
 
-.stat-item {
-    padding: 10px 15px;
-    background: #f1f1f1;
+.wpwps-shop-item:hover {
+    background: rgba(108, 99, 255, 0.02);
+}
+
+.wpwps-shop-item.selected {
+    background: rgba(108, 99, 255, 0.05);
+    border-left: 3px solid var(--wpwps-primary);
+}
+
+.wpwps-shop-logo {
+    width: 48px;
+    height: 48px;
+    background: var(--wpwps-light);
+    border-radius: 8px;
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--wpwps-primary);
+    font-weight: 600;
+    font-size: 20px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.wpwps-shop-info {
+    flex-grow: 1;
+}
+
+.wpwps-shop-name {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: var(--wpwps-dark);
+}
+
+.wpwps-shop-meta {
+    font-size: 13px;
+    color: var(--wpwps-gray);
+}
+
+.wpwps-shop-status {
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.wpwps-status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.wpwps-status-active {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--wpwps-success);
+}
+
+.wpwps-status-inactive {
+    background: rgba(108, 117, 125, 0.1);
+    color: var(--wpwps-gray);
+}
+
+/* === Messages === */
+.wpwps-message {
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: var(--wpwps-border-radius);
+    display: flex;
+    align-items: center;
+    border-left: 4px solid transparent;
+    background: #fff;
+    box-shadow: var(--wpwps-box-shadow);
+}
+
+.wpwps-message-icon {
+    margin-right: 15px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.wpwps-message-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.wpwps-message-content {
+    flex-grow: 1;
+}
+
+.wpwps-message-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.wpwps-message-body {
+    color: var(--wpwps-gray);
+    font-size: 14px;
+}
+
+.wpwps-message-success {
+    border-left-color: var(--wpwps-success);
+    background: rgba(40, 167, 69, 0.05);
+}
+
+.wpwps-message-success .wpwps-message-icon {
+    color: var(--wpwps-success);
+}
+
+.wpwps-message-warning {
+    border-left-color: var(--wpwps-warning);
+    background: rgba(255, 193, 7, 0.05);
+}
+
+.wpwps-message-warning .wpwps-message-icon {
+    color: var(--wpwps-warning);
+}
+
+.wpwps-message-error {
+    border-left-color: var(--wpwps-danger);
+    background: rgba(220, 53, 69, 0.05);
+}
+
+.wpwps-message-error .wpwps-message-icon {
+    color: var(--wpwps-danger);
+}
+
+.wpwps-message-info {
+    border-left-color: var(--wpwps-info);
+    background: rgba(23, 162, 184, 0.05);
+}
+
+.wpwps-message-info .wpwps-message-icon {
+    color: var(--wpwps-info);
+}
+
+/* === Progress Bar === */
+.wpwps-progress {
+    margin: 30px 0;
+}
+
+.wpwps-progress-container {
+    height: 8px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 15px 0;
+}
+
+.wpwps-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--wpwps-primary) 0%, #8F88FF 100%);
+    transition: width 0.3s ease;
+    width: 0%;
     border-radius: 4px;
 }
 
-.stat-label {
-    margin-right: 5px;
-    color: #666;
-}
-
-.stat-value {
-    font-weight: bold;
-}
-
-.printify-summary-actions {
-    margin-top: 25px;
-}
+.wpwps-progress-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;

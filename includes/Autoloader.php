@@ -1,49 +1,53 @@
-/**
- * Autoloader class for Printify Sync plugin
- *
- * Author: Rob Owen
- *
- * Date: 2025-02-28
- *
- * @package ApolloWeb\WooCommercePrintifySync
- */
 <?php
-
 namespace ApolloWeb\WooCommercePrintifySync;
 
+/**
+ * Autoloader for WP WooCommerce Printify Sync
+ */
 class Autoloader {
-    public function register() {
-        spl_autoload_register([$this, 'autoload']);
+    /**
+     * Register the autoloader
+     *
+     * @return void
+     */
+    public static function register() {
+        spl_autoload_register([self::class, 'loadClass']);
     }
 
-    public function autoload($class_name) {
-        // Define base namespace
-        $namespace = 'ApolloWeb\WooCommercePrintifySync\';
-
-        // Ensure the class belongs to our plugin namespace
-        if (strpos($class_name, $namespace) !== 0) {
+    /**
+     * Autoload function for class loading
+     *
+     * @param string $class The class name to load
+     * @return void
+     */
+    public static function loadClass($class) {
+        // Check if class is in our namespace
+        $namespace = 'ApolloWeb\\WooCommercePrintifySync\\';
+        if (strpos($class, $namespace) !== 0) {
             return;
         }
 
-        // Get the relative class path
-        $relative_class = str_replace($namespace, '', $class_name);
-        $file_path = str_replace('\', DIRECTORY_SEPARATOR, $relative_class) . '.php';
-
-        // Define possible file locations
-        $possible_locations = [
-            WPTFY_PLUGIN_DIR . 'includes/' . $file_path, // Includes directory
-            WPTFY_PLUGIN_DIR . 'admin/' . $file_path,    // Admin directory
-        ];
-
-        // Try to load the file
-        foreach ($possible_locations as $file) {
-            if (file_exists($file)) {
-                require_once $file;
-                return;
-            }
+        // Remove namespace from class name
+        $relative_class = substr($class, strlen($namespace));
+        
+        // Handle different directories based on class naming
+        if ($relative_class === 'Admin') {
+            // Admin main class is in the admin directory
+            $file = WPWPS_PLUGIN_DIR . 'admin/Admin.php';
+        } elseif (strpos($relative_class, 'Admin\\') === 0) {
+            // Admin subnamespace classes
+            $file = WPWPS_PLUGIN_DIR . 'admin/' . substr($relative_class, strlen('Admin\\')) . '.php';
+        } elseif (strpos($relative_class, 'Helpers\\') === 0) {
+            // Helper classes
+            $file = WPWPS_PLUGIN_DIR . 'includes/Helpers/' . substr($relative_class, strlen('Helpers\\')) . '.php';
+        } else {
+            // Default - in the includes directory
+            $file = WPWPS_PLUGIN_DIR . 'includes/' . str_replace('\\', '/', $relative_class) . '.php';
         }
 
-        // Debugging: Log if the file was not found
-        error_log("Autoloader could not find: " . $file_path);
+        // Include the file if it exists
+        if (file_exists($file)) {
+            require_once $file;
+        }
     }
 }
