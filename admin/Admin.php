@@ -2,28 +2,29 @@
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
 class Admin {
-    public static function init() {
-        add_action('admin_menu', [__CLASS__, 'add_admin_menu']);
-        add_action('admin_init', [__CLASS__, 'settings_init']);
-        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_scripts']);
-        add_action('wp_ajax_printify_sync_import_products', [__CLASS__, 'import_products']);
-        add_action('wp_ajax_printify_sync_clear_products', [__CLASS__, 'clear_products']);
+    public function __construct() {
+        add_action('admin_menu', [$this, 'add_admin_menu']);
+        add_action('admin_init', [$this, 'settings_init']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
+        add_action('wp_ajax_printify_sync_import_products', [$this, 'import_products']);
+        add_action('wp_ajax_printify_sync_clear_products', [$this, 'clear_products']);
+        add_action('wp_ajax_fetch_printify_shops', [$this, 'fetch_printify_shops']);
     }
 
-    public static function add_admin_menu() {
+    public function add_admin_menu() {
         add_menu_page(
             'Printify Sync',
             'Printify Sync',
             'manage_options',
             'printify-sync',
-            [__CLASS__, 'settings_page'],
+            [$this, 'settings_page'],
             'dashicons-admin-generic'
         );
     }
 
-    public static function settings_init() {
+    public function settings_init() {
         register_setting('printify-sync', 'wp_woocommerce_printify_sync_api_key', [
-            'sanitize_callback' => [__CLASS__, 'sanitize_api_key']
+            'sanitize_callback' => [$this, 'sanitize_api_key']
         ]);
         register_setting('printify-sync', 'wp_woocommerce_printify_sync_selected_shop');
 
@@ -37,7 +38,7 @@ class Admin {
         add_settings_field(
             'printify-sync_api_key',
             __('API Key', 'wp-woocommerce-printify-sync'),
-            [__CLASS__, 'api_key_render'],
+            [$this, 'api_key_render'],
             'printify-sync',
             'printify-sync_section'
         );
@@ -45,7 +46,7 @@ class Admin {
         add_settings_field(
             'printify-sync_selected_shop',
             __('Select Shop', 'wp-woocommerce-printify-sync'),
-            [__CLASS__, 'shop_selection_render'],
+            [$this, 'shop_selection_render'],
             'printify-sync',
             'printify-sync_section'
         );
@@ -53,45 +54,26 @@ class Admin {
         add_settings_field(
             'printify-sync_import_button',
             __('Manual Import', 'wp-woocommerce-printify-sync'),
-            [__CLASS__, 'import_button_render'],
+            [$this, 'import_button_render'],
             'printify-sync',
             'printify-sync_section'
         );
     }
 
-    public static function sanitize_api_key($api_key) {
+    public function sanitize_api_key($api_key) {
         return encrypt_decrypt('encrypt', $api_key);
     }
 
-    public static function api_key_render() {
+    public function api_key_render() {
         $api_key = encrypt_decrypt('decrypt', get_option('wp_woocommerce_printify_sync_api_key'));
         echo '<input type="text" name="wp_woocommerce_printify_sync_api_key" value="' . esc_attr($api_key) . '">';
     }
 
-    public static function shop_selection_render() {
-        $api = new PrintifyAPI();
-        $shops = $api->get_shops();
-        $selected_shop = get_option('wp_woocommerce_printify_sync_selected_shop');
-
-        if (is_wp_error($shops)) {
-            echo '<p>' . esc_html__('Unable to fetch shops. Please check your API key.', 'wp-woocommerce-printify-sync') . '</p>';
-            return;
-        }
-
-        if (empty($shops)) {
-            echo '<p>' . esc_html__('No shops available.', 'wp-woocommerce-printify-sync') . '</p>';
-            return;
-        }
-
-        echo '<select name="wp_woocommerce_printify_sync_selected_shop">';
-        foreach ($shops as $shop) {
-            $selected = selected($selected_shop, $shop['id'], false);
-            echo '<option value="' . esc_attr($shop['id']) . '" ' . $selected . '>' . esc_html($shop['title']) . '</option>';
-        }
-        echo '</select>';
+    public function shop_selection_render() {
+        require_once plugin_dir_path(__FILE__) . '../templates/shops-section.php';
     }
 
-    public static function import_button_render() {
+    public function import_button_render() {
         echo '<button id="printify-sync-import-btn" class="button button-primary">' . __('Import Products', 'wp-woocommerce-printify-sync') . '</button>';
         echo '<div id="printify-sync-import-progress" style="display:none;">';
         echo '<progress id="printify-sync-import-progress-bar" value="0" max="100"></progress>';
@@ -101,13 +83,14 @@ class Admin {
         echo '<button id="printify-sync-clear-products-btn" class="button button-secondary">' . __('Clear All Products', 'wp-woocommerce-printify-sync') . '</button>';
     }
 
-    public static function settings_page() {
+    public function settings_page() {
         require_once plugin_dir_path(__FILE__) . '../templates/settings-page.php';
     }
 
-    public static function enqueue_admin_scripts() {
-        wp_enqueue_style('wp-woocommerce-printify-sync-admin', plugin_dir_url(__FILE__) . '../assets/css/admin-styles.css');
-        wp_enqueue_script('wp-woocommerce-printify-sync-admin', plugin_dir_url(__FILE__) . '../assets/js/admin.js', ['jquery'], null, true);
+    public function enqueue_admin_scripts() {
+        wp_enqueue_style('wp-woocommerce-printify-sync-admin', plugin_dir_url(__FILE__) . 'assets/css/admin-styles.css');
+        wp_enqueue_script('wp-woocommerce-printify-sync-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', ['jquery'], null, true);
+        wp_enqueue_script('wp-woocommerce-printify-sync-shops', plugin_dir_url(__FILE__) . 'assets/js/shops.js', ['jquery'], null, true);
 
         wp_localize_script('wp-woocommerce-printify-sync-admin', 'printifySync', [
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -115,7 +98,7 @@ class Admin {
         ]);
     }
 
-    public static function import_products() {
+    public function import_products() {
         check_ajax_referer('printify_sync_nonce', 'security');
 
         $importer = new ProductImport();
@@ -128,7 +111,7 @@ class Admin {
         wp_send_json_success(['total_chunks' => $result]);
     }
 
-    public static function clear_products() {
+    public function clear_products() {
         check_ajax_referer('printify_sync_nonce', 'security');
 
         $products = wc_get_products(['limit' => -1]);
@@ -137,6 +120,19 @@ class Admin {
         }
 
         wp_send_json_success();
+    }
+
+    public function fetch_printify_shops() {
+        check_ajax_referer('printify_sync_nonce', 'security');
+
+        $api = new PrintifyAPI();
+        $shops = $api->get_shops();
+
+        if (is_wp_error($shops)) {
+            wp_send_json_error($shops->get_error_message());
+        }
+
+        wp_send_json_success($shops);
     }
 }
 

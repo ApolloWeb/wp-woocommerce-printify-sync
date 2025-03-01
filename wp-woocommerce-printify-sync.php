@@ -29,7 +29,7 @@ function wp_woocommerce_printify_sync_init() {
     load_plugin_textdomain( 'wp-woocommerce-printify-sync', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
     // Initialize admin settings
-    ApolloWeb\WPWooCommercePrintifySync\Admin::init();
+    new ApolloWeb\WPWooCommercePrintifySync\Admin();
 
     // Schedule cron jobs
     ApolloWeb\WPWooCommercePrintifySync\ProductImportCron::init();
@@ -41,7 +41,7 @@ register_activation_hook( __FILE__, 'wp_woocommerce_printify_sync_activate' );
 register_deactivation_hook( __FILE__, 'wp_woocommerce_printify_sync_deactivate' );
 
 function wp_woocommerce_printify_sync_activate() {
-    ApolloWeb\WPWooCommercePrintifySync\ProductImportCron::schedule();
+    // No cron scheduling needed
 }
 
 function wp_woocommerce_printify_sync_deactivate() {
