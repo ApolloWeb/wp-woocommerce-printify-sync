@@ -1,0 +1,125 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
+@import url('https://pixinvent.com/materialize-material-design-admin-template/css/vertical-modern-menu-template/materialize.css');
+@import url('https://pixinvent.com/materialize-material-design-admin-template/css/vertical-modern-menu-template/style.css');
+@import url('https://pixinvent.com/materialize-material-design-admin-template/css/vertical-modern-menu-template/custom.css');
+
+/* Custom Styles */
+body {
+    background-color: #f5f5f5;
+    font-family: 'Roboto', sans-serif;
+}
+
+.wrap {
+    margin: 20px;
+}
+
+.test-mode-banner {
+    background-color: #e74c3c;
+    color: #ffffff;
+    text-align: center;
+    font-size: 16px;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.card-icon {
+    font-size: 3rem;
+    color: #42a5f5;
+}
+
+.stats-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.stats-box .stat-icon {
+    font-size: 2.5rem;
+    color: #42a5f5;
+}
+
+.stats-box .stat-info {
+    text-align: right;
+}
+
+.stats-box .stat-info h3 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.stats-box .stat-info p {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+}
+
+#product-import-progress {
+    margin: auto;
+    width: 150px;
+    height: 150px;
+}
+
+.shop-item {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.shop-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shop-item .card-content {
+    text-align: center;
+}
+
+.shop-item .card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.shop-item .card-text {
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+.api-key-wrapper {
+    position: relative;
+}
+
+.api-key-wrapper input {
+    padding-right: 40px;
+}
+
+.api-key-wrapper .toggle-visibility {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}

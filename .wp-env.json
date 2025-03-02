@@ -1,0 +1,13 @@
+{
+    "core": "https://en-gb.wordpress.org/latest-en_GB.zip",
+    "config": {
+        "WP_DEBUG": true,
+        "WPLANG": "en_GB"
+    },
+    "plugins": [ 
+        ".",
+        "https://downloads.wordpress.org/plugin/woocommerce.9.7.0.zip",
+        "https://downloads.wordpress.org/plugin/wordpress-seo.24.5.zip",
+        "https://downloads.wordpress.org/plugin/classic-editor.1.6.7.zip"
+     ]
+}
