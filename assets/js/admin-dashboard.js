@@ -1,35 +1,46 @@
 /**
  * Dashboard JavaScript - Chart Rendering and Dashboard Functionality
  * 
- * Version: 1.0.7
- * Date: 2025-03-03
+ * Version: 1.2.0
+ * Date: 2025-03-03 12:28:57
+ * Author: ApolloWeb
  */
+
+// Store chart instances globally for reference
+var printifySyncCharts = {};
+
 jQuery(function($) {
-    console.log('Dashboard JS loaded on: 2025-03-03 11:45:42');
+    console.log('Dashboard JS loaded, timestamp:', new Date().toISOString());
+    console.log('User:', printifySyncData ? printifySyncData.currentUser : 'ApolloWeb');
     
-    // Wait for DOM to be fully loaded plus a short delay
-    setTimeout(function() {
-        console.log('Initializing charts now...');
-        initializeCharts();
-    }, 500);
+    // Wait until window is fully loaded for chart initialization
+    $(window).on('load', function() {
+        console.log('Window fully loaded, initializing charts');
+        setTimeout(initializeCharts, 300);
+    });
     
-    // Function to initialize all charts on the page
     function initializeCharts() {
-        console.log('Chart initialization started');
+        console.log('Starting chart initialization...');
         
-        // Make sure Chart.js is loaded
+        // Check if Chart.js exists
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js not found - charts cannot be initialized');
+            console.error('Chart.js is not loaded!');
             return;
         }
         
-        // Sales Chart
-        var salesChartEl = document.getElementById('sales-chart');
-        if (salesChartEl) {
+        // 1. Sales Chart
+        var salesCanvas = document.getElementById('sales-chart');
+        if (salesCanvas) {
+            console.log('Found sales chart element');
+            
             try {
-                console.log('Found sales chart element, initializing...');
-                var ctx = salesChartEl.getContext('2d');
-                var salesChart = new Chart(ctx, {
+                // Clear any existing chart
+                if (printifySyncCharts.salesChart) {
+                    printifySyncCharts.salesChart.destroy();
+                }
+                
+                var ctx = salesCanvas.getContext('2d');
+                printifySyncCharts.salesChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -46,34 +57,44 @@ jQuery(function($) {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: {
+                                display: false
+                            }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
                             },
                             x: {
-                                grid: { display: false }
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
                 });
                 console.log('Sales chart initialized');
-            } catch(e) {
+            } catch (e) {
                 console.error('Error initializing sales chart:', e);
             }
-        } else {
-            console.log('Sales chart element not found');
         }
         
-        // Categories Chart
-        var categoriesChartEl = document.getElementById('product-categories-chart');
-        if (categoriesChartEl) {
+        // 2. Categories Chart
+        var categoriesCanvas = document.getElementById('product-categories-chart');
+        if (categoriesCanvas) {
+            console.log('Found categories chart element');
+            
             try {
-                console.log('Found categories chart element, initializing...');
-                var ctx = categoriesChartEl.getContext('2d');
-                var categoriesChart = new Chart(ctx, {
+                // Clear any existing chart
+                if (printifySyncCharts.categoriesChart) {
+                    printifySyncCharts.categoriesChart.destroy();
+                }
+                
+                var ctx = categoriesCanvas.getContext('2d');
+                printifySyncCharts.categoriesChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         labels: ['T-Shirts', 'Mugs', 'Posters', 'Phone Cases', 'Other'],
@@ -95,27 +116,33 @@ jQuery(function($) {
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                labels: { padding: 20 }
+                                labels: {
+                                    padding: 20
+                                }
                             }
                         },
                         cutout: '70%'
                     }
                 });
                 console.log('Categories chart initialized');
-            } catch(e) {
+            } catch (e) {
                 console.error('Error initializing categories chart:', e);
             }
-        } else {
-            console.log('Categories chart element not found');
         }
         
-        // API Chart
-        var apiChartEl = document.getElementById('api-performance-chart');
-        if (apiChartEl) {
+        // 3. API Chart
+        var apiCanvas = document.getElementById('api-performance-chart');
+        if (apiCanvas) {
+            console.log('Found API chart element');
+            
             try {
-                console.log('Found API chart element, initializing...');
-                var ctx = apiChartEl.getContext('2d');
-                var apiChart = new Chart(ctx, {
+                // Clear any existing chart
+                if (printifySyncCharts.apiChart) {
+                    printifySyncCharts.apiChart.destroy();
+                }
+                
+                var ctx = apiCanvas.getContext('2d');
+                printifySyncCharts.apiChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -129,32 +156,40 @@ jQuery(function($) {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: {
+                                display: false
+                            }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
                             },
                             x: {
-                                grid: { display: false }
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
                 });
                 console.log('API chart initialized');
-            } catch(e) {
+            } catch (e) {
                 console.error('Error initializing API chart:', e);
             }
-        } else {
-            console.log('API chart element not found');
         }
         
-        // Sync Progress
+        // 4. Sync Progress
         var syncProgressEl = document.getElementById('sync-success-progress');
         if (syncProgressEl && typeof ProgressBar !== 'undefined') {
+            console.log('Found sync progress element');
+            
             try {
-                console.log('Found sync progress element, initializing...');
+                // Clear any existing content
+                syncProgressEl.innerHTML = '';
+                
                 var syncProgress = new ProgressBar.Circle(syncProgressEl, {
                     color: '#7f54b3',
                     strokeWidth: 6,
@@ -162,7 +197,9 @@ jQuery(function($) {
                     trailColor: '#e2e8f0',
                     easing: 'easeInOut',
                     duration: 1400,
-                    text: { autoStyleContainer: false },
+                    text: {
+                        autoStyleContainer: false
+                    },
                     from: { color: '#7f54b3', width: 6 },
                     to: { color: '#7f54b3', width: 6 },
                     step: function(state, circle) {
@@ -170,13 +207,14 @@ jQuery(function($) {
                         circle.path.setAttribute('stroke-width', state.width);
                     }
                 });
+                
                 syncProgress.animate(0.982);
                 console.log('Sync progress initialized');
-            } catch(e) {
+            } catch (e) {
                 console.error('Error initializing sync progress:', e);
             }
-        } else {
-            console.log('Sync progress element not found or ProgressBar not loaded');
         }
+        
+        console.log('All charts initialized');
     }
 });
