@@ -1,0 +1,21 @@
+.widget-content {
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+}
+.dashboard-widgets-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.dashboard-widget {
+    flex: 1 1 30%;
+    border: 1px solid #ddd;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.dashboard-widget h2 {
+    margin-top: 0;
+}
