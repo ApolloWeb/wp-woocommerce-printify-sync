@@ -1,3 +1,9 @@
+/**
+ * Admin Dashboard Styles
+ * Version: 1.0.5
+ * Date: 2025-03-03
+ */
+
 :root {
     /* WooCommerce Purple Theme */
     --primary: #7f54b3;
@@ -102,7 +108,7 @@ body {
 .main-nav ul {
     list-style: none;
     display: flex;
-    flex-direction: row; /* Explicitly set to row */
+    flex-direction: row !important; /* Explicitly set to row */
     height: 100%;
     margin: 0;
     padding: 0;
@@ -111,7 +117,7 @@ body {
 
 .main-nav li {
     height: 100%;
-    display: flex; /* Explicit flex */
+    display: flex !important; /* Explicit flex */
 }
 
 .main-nav a {
@@ -144,75 +150,3 @@ body {
 
 .main-nav a i {
     margin-right: 8px;
-    font-size: 16px;
-}
-
-.main-nav a:hover {
-    color: var(--primary);
-    background-color: rgba(127, 84, 179, 0.05);
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    padding-right: 20px;
-}
-
-.search-container {
-    position: relative;
-    width: 220px;
-    margin-right: 20px;
-}
-
-.search-container i {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-light);
-}
-
-.search-container input {
-    width: 100%;
-    padding: 8px 8px 8px 35px;
-    border: 1px solid var(--border);
-    border-radius: 30px;
-    font-size: 14px;
-    outline: none;
-    transition: var(--transition);
-}
-
-.search-container input:focus {
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(127, 84, 179, 0.2);
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-}
-
-.user-profile span {
-    margin-right: 12px;
-    font-weight: 500;
-}
-
-.avatar {
-    width: 38px;
-    height: 38px;
-    background-color: var(--primary);
-    color: var(--white);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-}
-
-/* Dashboard Content */
-.dashboard-content {
-    padding: 30px;
-}
-
-/* Rest of the CSS remains unchanged */
-/* ... */

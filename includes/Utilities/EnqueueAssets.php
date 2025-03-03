@@ -17,14 +17,14 @@ class EnqueueAssets {
      *
      * @var string
      */
-    private static $version = '1.0.3';
+    private static $version = '1.0.7';
     
     /**
      * Current date and time for script data
      *
      * @var string
      */
-    private static $current_datetime = '2025-03-03 11:28:02';
+    private static $current_datetime = '2025-03-03 11:45:42';
     
     /**
      * Register the class hooks
@@ -34,6 +34,74 @@ class EnqueueAssets {
     public static function register() {
         add_action('admin_enqueue_scripts', [self::class, 'enqueueAdminAssets']);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueFrontendAssets']);
+        add_action('admin_head', [self::class, 'outputCriticalStyles']);
+        add_action('admin_footer', [self::class, 'outputGlobalData']);
+    }
+    
+    /**
+     * Output critical CSS styles for immediate layout rendering
+     */
+    public static function outputCriticalStyles() {
+        if (!is_admin()) return;
+        
+        $screen = get_current_screen();
+        if (!$screen || strpos($screen->id, 'printify-sync') === false) return;
+        
+        echo '<style id="printify-sync-critical-css">
+            /* Basic layout styles */
+            .dashboard.no-sidebar { display: block; }
+            .main-content.full-width { width: 100%; }
+            .header-left { display: flex; align-items: center; flex: 1; }
+            .logo-container {
+                padding: 0 20px; height: 70px; display: flex; align-items: center;
+                background: linear-gradient(90deg, #674399 0%, #7f54b3 100%);
+            }
+            .site-logo { color: white; font-weight: 600; font-size: 20px; }
+            .site-logo span { font-weight: 300; }
+            
+            /* Horizontal menu */
+            .main-nav { height: 70px; flex: 1; }
+            .main-nav ul {
+                display: flex; flex-direction: row !important;
+                list-style: none; margin: 0; padding: 0;
+                height: 100%;
+            }
+            .main-nav li { height: 100%; display: flex !important; }
+            .main-nav a { 
+                display: flex; align-items: center; height: 100%; 
+                padding: 0 15px; text-decoration: none; 
+                color: #2D3748; font-weight: 500; 
+            }
+            .main-nav a i { margin-right: 8px; }
+            .main-nav li.active a {
+                color: #7f54b3; position: relative;
+            }
+            .main-nav li.active a::after {
+                content: ""; position: absolute; bottom: 0;
+                left: 0; width: 100%; height: 3px; background-color: #7f54b3;
+            }
+        </style>';
+    }
+    
+    /**
+     * Output global data in admin footer - centralized to avoid duplication
+     */
+    public static function outputGlobalData() {
+        if (!is_admin()) return;
+        
+        $screen = get_current_screen();
+        if (!$screen || strpos($screen->id, 'printify-sync') === false) return;
+        
+        // Output global data - NOW ONLY DONE HERE to avoid duplication
+        echo '<script>
+            var printifySyncData = {
+                currentDateTime: "' . self::$current_datetime . '",
+                currentUser: "ApolloWeb",
+                debug: true
+            };
+            
+            console.log("Global Data Loaded", printifySyncData);
+        </script>';
     }
     
     /**
@@ -45,30 +113,69 @@ class EnqueueAssets {
     public static function enqueueAdminAssets($hook) {
         // Only load on our plugin pages
         if (strpos($hook, 'printify-sync') !== false) {
-            self::enqueueCommonStyles();
-            self::enqueueCommonScripts();
+            // First deregister any potentially conflicting scripts
+            wp_deregister_script('printify-sync-admin-dashboard');
             
-            // Admin dashboard styles and scripts
-            wp_enqueue_style('printify-sync-admin-css', plugin_dir_url(dirname(__DIR__)) . 'assets/css/admin-dashboard.css', [], self::$version);
-            wp_enqueue_script('printify-sync-admin-js', plugin_dir_url(dirname(__DIR__)) . 'assets/js/admin-dashboard.js', ['jquery', 'chart-js', 'progressbar-js'], self::$version, true);
+            // Font Awesome
+            wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', [], '5.15.4');
             
-            // Settings page specific scripts
-            if ($hook === 'printify-sync_page_printify-sync-settings') {
-                wp_enqueue_style('printify-sync-settings-css', plugin_dir_url(dirname(__DIR__)) . 'assets/css/settings.css', [], self::$version);
-                wp_enqueue_script('printify-sync-settings-js', plugin_dir_url(dirname(__DIR__)) . 'assets/js/settings.js', [], self::$version, true);
+            // Google Fonts
+            wp_enqueue_style('google-fonts-poppins', 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap', [], null);
+            
+            // Main admin CSS
+            wp_enqueue_style(
+                'printify-sync-admin-dashboard', 
+                plugin_dir_url(dirname(__DIR__)) . 'assets/css/admin-dashboard.css',
+                [],
+                self::$version
+            );
+            
+            // Enqueue jQuery first
+            wp_enqueue_script('jquery');
+            
+            // Enqueue Chart.js before our admin script
+            wp_enqueue_script(
+                'chart-js',
+                'https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js',
+                ['jquery'],
+                '3.7.0',
+                true
+            );
+            
+            // Enqueue ProgressBar.js before our admin script
+            wp_enqueue_script(
+                'progressbar-js',
+                'https://cdn.jsdelivr.net/npm/progressbar.js@1.1.0/dist/progressbar.min.js',
+                ['jquery'],
+                '1.1.0',
+                true
+            );
+            
+            // Finally enqueue our admin script
+            wp_enqueue_script(
+                'printify-sync-admin-dashboard',
+                plugin_dir_url(dirname(__DIR__)) . 'assets/js/admin-dashboard.js',
+                ['jquery', 'chart-js', 'progressbar-js'],
+                self::$version,
+                true
+            );
+            
+            // Add additional page-specific resources
+            if (strpos($hook, 'printify-sync-settings') !== false) {
+                wp_enqueue_style(
+                    'printify-sync-settings',
+                    plugin_dir_url(dirname(__DIR__)) . 'assets/css/settings.css',
+                    [],
+                    self::$version
+                );
                 
-                // Add data to the script
-                wp_localize_script('printify-sync-settings-js', 'printifySyncData', [
-                    'ajaxUrl' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('printify_sync_settings'),
-                    'currentDateTime' => self::$current_datetime,
-                    'currentUser' => self::getCurrentUser()
-                ]);
-            }
-            
-            // Log viewer specific styles
-            if ($hook === 'printify-sync_page_printify-sync-logs') {
-                wp_enqueue_style('printify-sync-logs-css', plugin_dir_url(dirname(__DIR__)) . 'assets/css/logs.css', [], self::$version);
+                wp_enqueue_script(
+                    'printify-sync-settings',
+                    plugin_dir_url(dirname(__DIR__)) . 'assets/js/settings.js',
+                    ['jquery'],
+                    self::$version,
+                    true
+                );
             }
         }
     }
@@ -79,50 +186,6 @@ class EnqueueAssets {
      * @return void
      */
     public static function enqueueFrontendAssets() {
-        // Frontend assets would be enqueued here if needed
-        // Currently the plugin is admin-only
-    }
-    
-    /**
-     * Enqueue common styles used across the plugin
-     *
-     * @return void
-     */
-    private static function enqueueCommonStyles() {
-        // Google Fonts - Poppins
-        wp_enqueue_style('google-fonts-poppins', 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap', [], null);
-        
-        // Font Awesome
-        wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css', [], '6.0.0-beta3');
-    }
-    
-    /**
-     * Enqueue common scripts used across the plugin
-     *
-     * @return void
-     */
-    private static function enqueueCommonScripts() {
-        // Chart.js for graphs and charts
-        wp_enqueue_script('chart-js', 'https://cdn.jsdelivr.net/npm/chart.js', [], '3.7.0', true);
-        
-        // ProgressBar.js for circular progress indicators
-        wp_enqueue_script('progressbar-js', 'https://cdn.jsdelivr.net/npm/progressbar.js', [], '1.1.0', true);
-        
-        // Localize common data for all admin scripts
-        wp_localize_script('jquery', 'printifySyncGlobal', [
-            'currentDateTime' => self::$current_datetime,
-            'currentUser' => self::getCurrentUser(),
-            'ajaxUrl' => admin_url('admin-ajax.php')
-        ]);
-    }
-    
-    /**
-     * Get the current WordPress user's display name
-     *
-     * @return string
-     */
-    private static function getCurrentUser() {
-        $current_user = wp_get_current_user();
-        return $current_user->exists() ? $current_user->display_name : 'ApolloWeb';
+        // Frontend assets would go here
     }
 }

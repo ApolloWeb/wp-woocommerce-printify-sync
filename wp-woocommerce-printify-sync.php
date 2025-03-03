@@ -3,7 +3,7 @@
  * Plugin Name: WP WooCommerce Printify Sync
  * Description: Sync products from Printify to WooCommerce
  * Plugin URI: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
- * Version: 1.0.0
+ * Version: 1.0.7
  * Author: ApolloWeb
  * Author URI: https://github.com/ApolloWeb
  * Text Domain: wp-woocommerce-printify-sync
@@ -18,6 +18,22 @@
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
+
+// Set to true to enable debug output
+define('PRINTIFY_SYNC_DEBUG', true);
+
+// Simple debugging function
+function printify_sync_debug($message) {
+    if (defined('PRINTIFY_SYNC_DEBUG') && PRINTIFY_SYNC_DEBUG) {
+        if (is_array($message) || is_object($message)) {
+            error_log(print_r($message, true));
+        } else {
+            error_log($message);
+        }
+    }
+}
+
+printify_sync_debug('Plugin loading: WP WooCommerce Printify Sync');
 
 require_once plugin_dir_path(__FILE__) . 'includes/Autoloader.php';
 
@@ -46,6 +62,8 @@ if (file_exists(plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php')) {
 add_action('init', function() {
     // Remove the class register methods that add menu items
     remove_all_actions('admin_menu', 10); // Standard priority for most menu registrations
+    
+    printify_sync_debug('Removed default admin menu actions');
 });
 
 // SECOND: Register our custom admin menu 
@@ -61,6 +79,7 @@ add_action('admin_menu', function() {
         'manage_options',
         'printify-sync-dashboard',
         function() {
+            printify_sync_debug('Loading dashboard template');
             include plugin_dir_path(__FILE__) . 'templates/admin/admin-dashboard.php';
         },
         'dashicons-dashboard',
@@ -144,10 +163,14 @@ add_action('admin_menu', function() {
             include plugin_dir_path(__FILE__) . 'templates/admin/settings-page.php';
         }
     );
+    
+    printify_sync_debug('Admin menu registered');
+    
 }, 11); // Higher priority to run after potential other menu registrations
 
 add_action('plugins_loaded', function () {
     Autoloader::register();
+    printify_sync_debug('Autoloader registered');
     
     // Register these without their menu items
     AdminDashboard::register();
@@ -160,17 +183,7 @@ add_action('plugins_loaded', function () {
     
     // Register the EnqueueAssets class to handle all asset loading
     EnqueueAssets::register();
+    printify_sync_debug('All classes registered');
 });
 
-// Pass user data to JavaScript - Keeping this here as it's a global concern
-add_action('admin_footer', function() {
-    if (!is_admin()) return;
-    ?>
-    <script>
-        const printifySyncData = {
-            currentDateTime: "2025-03-03 11:18:50",
-            currentUser: "ApolloWeb"
-        };
-    </script>
-    <?php
-});
+// REMOVED: The duplicate printifySyncData declaration from admin_footer

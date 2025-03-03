@@ -8,7 +8,7 @@ defined('ABSPATH') || exit;
 <nav class="main-nav">
     <ul>
         <li class="<?php echo (isset($_GET['page']) && $_GET['page'] === 'printify-sync-dashboard') ? 'active' : ''; ?>">
-            <a href="admin.php?page=printify-sync-dashboard"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="admin.php?page=printify-sync-dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
         </li>
         <li class="<?php echo (isset($_GET['page']) && $_GET['page'] === 'printify-sync-products') ? 'active' : ''; ?>">
             <a href="admin.php?page=printify-sync-products"><i class="fas fa-shopping-cart"></i> Products</a>
