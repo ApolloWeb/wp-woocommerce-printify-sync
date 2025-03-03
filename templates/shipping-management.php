@@ -1,4 +1,0 @@
-<div class="wrap">
-    <h1><?php esc_html_e('Shipping Management', 'wp-woocommerce-printify-sync'); ?></h1>
-    <!-- HTML template for managing shipping -->
-</div>
