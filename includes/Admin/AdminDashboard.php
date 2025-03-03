@@ -74,8 +74,8 @@ class AdminDashboard
             return;
         }
 
-        wp_enqueue_script('admin-dashboard', plugins_url('../../assets/js/admin/admin-dashboard.js', __FILE__), ['jquery'], '1.0.0', true);
-        wp_enqueue_style('admin-dashboard', plugins_url('../../assets/css/admin/admin-dashboard.css', __FILE__), [], '1.0.0');
+       wp_enqueue_script('admin-dashboard', plugins_url('../../assets/js/admin-dashboard.js', __FILE__), ['jquery'], '1.0.0', true);
+        wp_enqueue_style('admin-dashboard', plugins_url('../../assets/css/admin-dashboard.css', __FILE__), [], '1.0.0');
     }
 
     public static function renderDashboard()
