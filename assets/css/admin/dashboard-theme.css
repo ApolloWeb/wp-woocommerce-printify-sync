@@ -1,0 +1,465 @@
+/**
+ * WooCommerce Printify Sync - Admin Dashboard Theme
+ * 
+ * A modern, clean theme using WooCommerce purple and Bootstrap-style components
+ */
+
+:root {
+  /* WooCommerce Colors */
+  --woo-purple: #7F54B3;
+  --woo-purple-dark: #644090;
+  --woo-purple-light: #9e77cc;
+  --woo-purple-lighter: #e6ddf2;
+  
+  /* Bootstrap-style colors */
+  --ps-primary: var(--woo-purple);
+  --ps-secondary: #6c757d;
+  --ps-success: #28a745;
+  --ps-warning: #ffc107;
+  --ps-danger: #dc3545;
+  --ps-info: #17a2b8;
+  --ps-light: #f8f9fa;
+  --ps-dark: #343a40;
+  
+  /* Card and content backgrounds */
+  --ps-bg-card: #ffffff;
+  --ps-bg-main: #f8f9fa;
+  
+  /* Typography */
+  --ps-text-main: #333333;
+  --ps-text-light: #6c757d;
+  --ps-text-lighter: #adb5bd;
+  
+  /* Borders */
+  --ps-border-color: #e9ecef;
+  --ps-border-radius: 0.25rem;
+  
+  /* Shadows */
+  --ps-shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+  --ps-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+  
+  /* Spacing */
+  --ps-spacing-1: 0.25rem;
+  --ps-spacing-2: 0.5rem;
+  --ps-spacing-3: 1rem;
+  --ps-spacing-4: 1.5rem;
+  --ps-spacing-5: 3rem;
+}
+
+/* ======== GLOBAL STYLES ======== */
+
+.printify-dashboard-page {
+  background-color: var(--ps-bg-main);
+  margin: 0;
+  padding: var(--ps-spacing-4);
+  color: var(--ps-text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.printify-dashboard-page a {
+  color: var(--woo-purple);
+  text-decoration: none;
+}
+
+.printify-dashboard-page a:hover {
+  color: var(--woo-purple-dark);
+  text-decoration: underline;
+}
+
+.printify-content {
+  background-color: var(--ps-bg-card);
+  border-radius: var(--ps-border-radius);
+  box-shadow: var(--ps-shadow-sm);
+  padding: var(--ps-spacing-4);
+  margin-bottom: var(--ps-spacing-4);
+}
+
+/* ======== HEADER & NAVIGATION ======== */
+
+.printify-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--ps-spacing-4);
+  margin-bottom: var(--ps-spacing-4);
+  border-bottom: 1px solid var(--ps-border-color);
+}
+
+.printify-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+}
+
+.printify-header h1 i {
+  margin-right: var(--ps-spacing-2);
+  color: var(--woo-purple);
+}
+
+.printify-header .user-info {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--ps-text-light);
+}
+
+.printify-header .user-info i {
+  margin-right: var(--ps-spacing-1);
+  color: var(--woo-purple);
+}
+
+.printify-header .datetime {
+  margin-right: var(--ps-spacing-3);
+}
+
+/* Tabs Navigation */
+.printify-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--ps-border-color);
+  margin-bottom: var(--ps-spacing-4);
+  overflow-x: auto;
+}
+
+.printify-tabs .tab-item {
+  padding: var(--ps-spacing-2) var(--ps-spacing-3);
+  margin-right: var(--ps-spacing-1);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.printify-tabs .tab-item:hover {
+  color: var(--woo-purple);
+  border-bottom-color: var(--woo-purple-lighter);
+}
+
+.printify-tabs .tab-item.active {
+  color: var(--woo-purple);
+  border-bottom-color: var(--woo-purple);
+}
+
+/* Mobile Navigation Toggle */
+.printify-mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--woo-purple);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .printify-mobile-menu-toggle {
+    display: block;
+  }
+  
+  .printify-tabs {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: var(--ps-bg-card);
+    box-shadow: var(--ps-shadow);
+    z-index: 100;
+    border-bottom: none;
+  }
+  
+  .printify-tabs.mobile-visible {
+    display: flex;
+  }
+  
+  .printify-tabs .tab-item {
+    margin: 0;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+    padding: var(--ps-spacing-2) var(--ps-spacing-3);
+  }
+  
+  .printify-tabs .tab-item.active {
+    border-bottom: none;
+    border-left: 3px solid var(--woo-purple);
+    background-color: var(--woo-purple-lighter);
+  }
+}
+
+/* ======== DASHBOARD GRID ======== */
+
+.printify-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--ps-spacing-3);
+  margin-bottom: var(--ps-spacing-4);
+}
+
+.printify-dashboard-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--ps-spacing-3);
+  margin-bottom: var(--ps-spacing-3);
+}
+
+.printify-col-12 { grid-column: span 12; }
+.printify-col-8 { grid-column: span 8; }
+.printify-col-6 { grid-column: span 6; }
+.printify-col-4 { grid-column: span 4; }
+.printify-col-3 { grid-column: span 3; }
+
+@media (max-width: 992px) {
+  .printify-col-md-12 { grid-column: span 12; }
+  .printify-col-md-6 { grid-column: span 6; }
+  .printify-col-md-4 { grid-column: span 4; }
+}
+
+@media (max-width: 768px) {
+  .printify-col-sm-12 { grid-column: span 12; }
+  .printify-col-sm-6 { grid-column: span 6; }
+}
+
+/* ======== STAT BOXES & CARDS ======== */
+
+.stat-box {
+  background-color: var(--ps-bg-card);
+  border-radius: var(--ps-border-radius);
+  box-shadow: var(--ps-shadow-sm);
+  padding: var(--ps-spacing-3);
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-box:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ps-shadow);
+}
+
+.stat-box .icon {
+  width: 48px;
+  height: 48px;
+  background-color: var(--woo-purple-lighter);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--ps-spacing-3);
+}
+
+.stat-box .icon i {
+  font-size: 1.5rem;
+  color: var(--woo-purple);
+}
+
+.stat-box .content {
+  flex: 1;
+}
+
+.stat-box .value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.stat-box .label {
+  color: var(--ps-text-light);
+  font-size: 0.9rem;
+}
+
+.stat-box .change {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+}
+
+.stat-box .change.positive {
+  color: var(--ps-success);
+}
+
+.stat-box .change.negative {
+  color: var(--ps-danger);
+}
+
+/* Dashboard Cards */
+.dashboard-widget {
+  background-color: var(--ps-bg-card);
+  border-radius: var(--ps-border-radius);
+  box-shadow: var(--ps-shadow-sm);
+  margin-bottom: var(--ps-spacing-3);
+  overflow: hidden;
+}
+
+.dashboard-widget h3 {
+  background-color: var(--ps-light);
+  border-bottom: 1px solid var(--ps-border-color);
+  padding: var(--ps-spacing-2) var(--ps-spacing-3);
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  color: var(--ps-text-main);
+}
+
+.dashboard-widget h3 i {
+  margin-right: var(--ps-spacing-2);
+  color: var(--woo-purple);
+}
+
+.widget-content {
+  padding: var(--ps-spacing-3);
+}
+
+/* ======== BOOTSTRAP-STYLE NOTIFICATIONS ======== */
+
+.printify-alert {
+  position: relative;
+  padding: var(--ps-spacing-2) var(--ps-spacing-3);
+  margin-bottom: var(--ps-spacing-3);
+  border: 1px solid transparent;
+  border-radius: var(--ps-border-radius);
+}
+
+.printify-alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.printify-alert-info {
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+
+.printify-alert-warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+
+.printify-alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.printify-alert-dismissible {
+  padding-right: 4rem;
+}
+
+.printify-alert-dismissible .close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: var(--ps-spacing-2) var(--ps-spacing-3);
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+/* Toast Notifications */
+.printify-toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+.printify-toast {
+  max-width: 350px;
+  background-color: var(--ps-bg-card);
+  box-shadow: var(--ps-shadow);
+  border-radius: var(--ps-border-radius);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s;
+}
+
+.printify-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.printify-toast-header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid var(--ps-border-color);
+}
+
+.printify-toast-header .icon {
+  margin-right: 0.5rem;
+}
+
+.printify-toast-header .title {
+  font-weight: 500;
+  flex: 1;
+}
+
+.printify-toast-header .close {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: 0;
+  margin-left: 0.5rem;
+}
+
+.printify-toast-body {
+  padding: 0.75rem;
+}
+
+/* ======== TABLES ======== */
+
+.printify-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--ps-spacing-3);
+}
+
+.printify-table th,
+.printify-table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid var(--ps-border-color);
+}
+
+.printify-table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid var(--ps-border-color);
+  background-color: var(--ps-light);
+  font-weight: 500;
+  color: var(--ps-text-main);
+  text-align: left;
+}
+
+.printify-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Status Badges */
+.printify-badge {
+  display: inline-block;
+  padding: 0.25em 0.6em;
+  font-size: 75%;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
+}
+
+.printify-badge-primary { background-color: var(--woo-purple); color: #fff; }
+.printify-badge-success { background-color: var(--ps-success); color: #fff; }
+.printify-badge-warning { background-color: var(--ps-warning); color: #212529; }
+.printify-badge-danger { background-color: var(--ps-danger); color: #fff; }
+.printify-badge-info { background-color: var(--ps-info); color: #fff; }
+.printify-badge-light { background-color: var(--ps-light); color: #212529; }
+.printify-badge-dark { background-color: var(--ps-dark); color:
