@@ -1,0 +1,54 @@
+/**
+ * Improved Dashboard Styling
+ * 
+ * Compatible with WordPress admin styling conventions
+ * No Bootstrap dependencies required
+ */
+
+/* Main dashboard layout */
+.printify-dashboard-page {
+    margin: 20px 20px 0 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.printify-content {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    padding: 20px;
+}
+
+.dashboard-header {
+    margin-bottom: 20px;
+}
+
+.dashboard-header h2 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 23px;
+    font-weight: 400;
+}
+
+.dashboard-header .subtitle {
+    margin: 0;
+    color: #646970;
+}
+
+/* Stats boxes */
+.stats-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px 20px;
+}
+
+.stat-box {
+    flex: 1;
+    min-width: 200px;
+    margin: 0 10px 20px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    text-align: center;
+    position: relative;
+}

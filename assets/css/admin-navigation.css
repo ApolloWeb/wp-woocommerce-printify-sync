@@ -1,0 +1,175 @@
+/**
+ * Admin Navigation Styles
+ * For WP WooCommerce Printify Sync
+ */
+
+/* Plugin header */
+.printify-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.plugin-branding {
+    display: flex;
+    align-items: center;
+}
+
+.plugin-logo {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+}
+
+.plugin-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.header-info-item {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+    font-size: 13px;
+    color: #666;
+}
+
+.header-info-item i {
+    margin-right: 5px;
+    color: #7f54b3;
+}
+
+.header-actions .button {
+    margin-left: 8px;
+}
+
+/* Plugin navigation */
+.printify-navigation {
+    display: flex;
+    background: white;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+}
+
+.nav-tab-wrapper {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.nav-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.nav-tab:hover {
+    color: #23282d;
+    background: #f8f9fa;
+    border-bottom-color: #e0e0e0;
+}
+
+.nav-tab.nav-tab-active {
+    color: #7f54b3;
+    border-bottom-color: #7f54b3;
+    background: rgba(127, 84, 179, 0.05);
+}
+
+.nav-tab i {
+    margin-right: 8px;
+}
+
+/* Mobile hamburger menu */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.hamburger-line {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #333;
+    margin: 4px 0;
+    transition: 0.3s;
+}
+
+/* Responsive styles */
+@media (max-width: 782px) {
+    .printify-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header-right {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .mobile-menu-toggle {
+        display: block;
+    }
+    
+    .printify-navigation {
+        display: none;
+    }
+    
+    .printify-navigation.mobile-visible {
+        display: block;
+    }
+    
+    .nav-tab-wrapper {
+        flex-direction: column;
+    }
+    
+    .nav-tab {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+    }
+    
+    .nav-tab.nav-tab-active {
+        border-bottom: none;
+        border-left-color: #7f54b3;
+    }
+}
+
+@media (max-width: 600px) {
+    .header-info {
+        display: none;
+    }
+}
