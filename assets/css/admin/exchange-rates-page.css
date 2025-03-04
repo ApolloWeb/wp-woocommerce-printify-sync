@@ -1,1 +1,143 @@
-/* Styles for the exchange rates page */
+/**
+ * Exchange Rates Page Styles
+ */
+
+.exchange-rates-container {
+    max-width: 960px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.exchange-rates-container h2 {
+    margin-top: 0;
+}
+
+/* Rates table */
+.exchange-rates-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.exchange-rates-table th,
+.exchange-rates-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.exchange-rates-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.exchange-rates-table td input[type="number"] {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.exchange-rates-table .update-rate {
+    margin-left: 5px;
+}
+
+.exchange-rates-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Exchange actions */
+.exchange-actions {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+/* Loading state */
+.rates-loading {
+    text-align: center;
+    padding: 20px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rates-loading .spinner {
+    float: none;
+    margin: 0 auto;
+    visibility: visible;
+}
+
+/* Status messages */
+.update-status {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.update-status.success {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+.update-status.error {
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+/* Exchange rate provider section */
+.provider-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.provider-options {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.provider-option {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    flex: 1;
+    max-width: 200px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.provider-option.selected {
+    border-color: #0073aa;
+    background-color: #f0f7fb;
+}
+
+.provider-option img {
+    max-width: 100px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 782px) {
+    .provider-options {
+        flex-direction: column;
+    }
+    
+    .provider-option {
+        max-width: none;
+    }
+    
+    .exchange-rates-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

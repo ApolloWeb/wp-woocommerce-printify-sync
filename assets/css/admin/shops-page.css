@@ -1,1 +1,159 @@
-/* Styles for the shops page */
+/**
+ * Shops Page Styles
+ */
+
+.shops-container {
+    max-width: 1200px;
+}
+
+/* Shop cards */
+.shop-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.shop-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.shop-header {
+    padding: 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.shop-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.shop-status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.shop-status.connected {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+.shop-status.disconnected {
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+.shop-details {
+    padding: 15px;
+}
+
+.shop-details p {
+    margin: 0 0 10px 0;
+}
+
+.shop-actions {
+    padding: 15px;
+    background: #f8f9fa;
+    border-top: 1px solid #ddd;
+    text-align: right;
+}
+
+.shop-actions .button {
+    margin-left: 10px;
+}
+
+/* Connect shop form */
+.connect-shop-form {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    max-width: 600px;
+}
+
+.form-row {
+    margin-bottom: 15px;
+}
+
+.form-row label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.form-row input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-row .description {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.form-actions {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* Loading state */
+.shop-loading {
+    text-align: center;
+    padding: 20px;
+}
+
+.shop-loading .spinner {
+    float: none;
+    margin: 0 auto;
+    visibility: visible;
+}
+
+/* Empty state */
+.no-shops {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    margin-bottom: 30px;
+}
+
+.no-shops h3 {
+    margin-top: 0;
+}
+
+.no-shops p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .shop-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-actions {
+        text-align: center;
+    }
+    
+    .shop-actions .button {
+        display: block;
+        margin: 5px 0;
+        text-align: center;
+    }
+}

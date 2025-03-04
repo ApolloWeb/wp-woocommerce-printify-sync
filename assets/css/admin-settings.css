@@ -1,0 +1,282 @@
+/**
+ * Printify Sync Admin Settings Styles
+ */
+
+.settings-header {
+    margin-bottom: 30px;
+}
+
+.settings-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.settings-header h1 i {
+    margin-right: 10px;
+    color: #7f54b3;
+}
+
+.settings-header p {
+    color: #6c757d;
+    font-size: 16px;
+    margin: 0;
+}
+
+.settings-notifications {
+    margin-bottom: 20px;
+}
+
+.settings-notification {
+    padding: 15px;
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.settings-notification.success {
+    background-color: rgba(70, 180, 80, 0.1);
+    color: #2e7d32;
+    border-left: 4px solid #46b450;
+}
+
+.settings-notification.error {
+    background-color: rgba(220, 50, 50, 0.1);
+    color: #c62828;
+    border-left: 4px solid #dc3232;
+}
+
+.settings-notification.hidden {
+    display: none;
+}
+
+.settings-notification i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.settings-notification .close-notification {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.6;
+    font-size: 14px;
+}
+
+.settings-notification .close-notification:hover {
+    opacity: 1;
+}
+
+.settings-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.settings-card-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+    position: relative;
+}
+
+.settings-card-header h2 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.settings-card-description {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.settings-card-content {
+    padding: 25px;
+}
+
+.settings-form-row {
+    margin-bottom: 20px;
+    display: flex;
+}
+
+.settings-form-label {
+    flex: 0 0 200px;
+    padding-right: 20px;
+    padding-top: 8px;
+}
+
+.settings-form-label label {
+    font-weight: 500;
+    color: #212529;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.tooltip-icon {
+    color: #6c757d;
+    cursor: help;
+    margin-left: 5px;
+}
+
+.settings-form-input {
+    flex: 1;
+    position: relative;
+}
+
+.settings-form-input input,
+.settings-form-input select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #212529;
+}
+
+.settings-form-input input[type="password"] {
+    padding-right: 40px;
+}
+
+.settings-form-input input:focus,
+.settings-form-input select:focus {
+    border-color: #7f54b3;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(127, 84, 179, 0.2);
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #6c757d;
+    cursor: pointer;
+}
+
+.toggle-password:hover {
+    color: #212529;
+}
+
+.settings-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.toggle-switch-container {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #7f54b3;
+}
+
+input:focus + .toggle-slider {
+    box-shadow: 0 0 1px #7f54b3;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.toggle-label {
+    font-weight: 500;
+}
+
+.toggle-label.production {
+    color: #5cb85c;
+}
+
+.toggle-label.development {
+    color: #f0ad4e;
+}
+
+.environment-info {
+    margin: 20px 0;
+}
+
+.environment-warning {
+    display: flex;
+    padding: 15px;
+    border-radius: 4px;
+    align-items: flex-start;
+}
+
+.environment-warning i {
+    margin-right: 10px;
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.environment-warning strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.environment-warning p {
+    margin: 0;
+    font-size: 13px;
+}
+
+.environment-warning.development {
+    background-color: #fff8e1;
+    color: #ff8f00;
+}
+
+.environment-warning.production {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}

@@ -1,3 +1,129 @@
+/**
+ * Admin Widget Styles
+ */
+
+.widget-container {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.widget-header {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.widget-header h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
 .widget-content {
+    padding: 15px;
+    min-height: 100px;
+}
+
+.widget-footer {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    border-top: 1px solid #ddd;
+    text-align: right;
+}
+
+/* Specific widget styling */
+.shop-info-widget .shop-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.shop-info-widget .shop-detail-item {
+    flex: 1;
+    min-width: 150px;
+    background: #f8f9fa;
     padding: 10px;
+    border-radius: 4px;
+}
+
+.shop-info-widget .detail-label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.shop-info-widget .detail-value {
+    font-size: 1.1em;
+}
+
+.product-sync-widget .sync-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.product-sync-widget .stat-item {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.product-sync-widget .stat-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    display: block;
+}
+
+.product-sync-widget .stat-label {
+    color: #555;
+}
+
+.orders-widget .recent-orders {
+    margin-top: 10px;
+}
+
+.orders-widget .order-count {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+}
+
+.widget-empty-state {
+    text-align: center;
+    padding: 20px 0;
+    color: #757575;
+}
+
+.widget-empty-state .dashicons {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 10px;
+}
+
+/* Widget loading state */
+.widget-loading {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.widget-loading .spinner {
+    float: none;
+    margin: 0 auto;
+    visibility: visible;
+}
+
+/* Responsive adjustments */
+@media (max-width: 782px) {
+    .shop-info-widget .shop-details,
+    .product-sync-widget .sync-stats {
+        flex-direction: column;
+    }
 }

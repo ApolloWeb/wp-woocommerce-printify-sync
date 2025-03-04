@@ -1,0 +1,149 @@
+/**
+ * Admin Dashboard Tables
+ */
+
+/* Generic table styles */
+.printify-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    background: #fff;
+}
+
+.printify-table th,
+.printify-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.printify-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.printify-table tr:last-child td {
+    border-bottom: none;
+}
+
+.printify-table tr:hover td {
+    background-color: #f9f9f9;
+}
+
+/* Specific table variations */
+.printify-table.striped tr:nth-child(even) td {
+    background-color: #f8f9fa;
+}
+
+.printify-table.bordered {
+    border: 1px solid #e5e5e5;
+}
+
+.printify-table.bordered th,
+.printify-table.bordered td {
+    border: 1px solid #e5e5e5;
+}
+
+/* Status column styling */
+.printify-table .column-status {
+    width: 100px;
+}
+
+.printify-table .status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.printify-table .status-published {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+.printify-table .status-draft {
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+}
+
+.printify-table .status-pending {
+    background-color: #d9edf7;
+    color: #31708f;
+}
+
+.printify-table .status-error {
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+/* Action buttons */
+.printify-table .row-actions {
+    visibility: hidden;
+    font-size: 12px;
+    color: #777;
+}
+
+.printify-table tr:hover .row-actions {
+    visibility: visible;
+}
+
+.printify-table .row-actions span {
+    margin-right: 8px;
+}
+
+.printify-table .row-actions a {
+    text-decoration: none;
+}
+
+/* Responsive tables */
+@media screen and (max-width: 782px) {
+    .printify-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .printify-table thead,
+    .printify-table tbody,
+    .printify-table th,
+    .printify-table td,
+    .printify-table tr {
+        display: block;
+    }
+    
+    .printify-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .printify-table tr {
+        border: 1px solid #e5e5e5;
+        margin-bottom: 15px;
+    }
+    
+    .printify-table td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 40%;
+    }
+    
+    .printify-table td:before {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 35%;
+        padding-right: 10px;
+        white-space: nowrap;
+        content: attr(data-title);
+        font-weight: 600;
+    }
+    
+    .printify-table td:last-child {
+        border-bottom: 0;
+    }
+}

@@ -1,0 +1,8 @@
+update-filelist.php
+files.txt
+excluded_files.txt
+removed_files.txt
+update-change-summary.php
+.git
+.wp-env.json
+printify_sync_files_list.txt

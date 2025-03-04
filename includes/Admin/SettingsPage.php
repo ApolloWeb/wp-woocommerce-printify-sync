@@ -1,42 +1,53 @@
 <?php
+/**
+ * @deprecated 1.0.8 Use ApolloWeb\WPWooCommercePrintifySync\Settings\SettingsPage instead
+ * @package ApolloWeb\WPWooCommercePrintifySync\Admin
+ */
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Admin;
 
-class SettingsPage
-{
-    public static function register()
-    {
-        add_action('admin_init', [__CLASS__, 'registerSettings']);
-    }
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
 
-    public static function registerSettings()
-    {
-        register_setting('printify_sync_settings', 'printify_sync_postman_api_key');
-
-        add_settings_section(
-            'printify_sync_settings_section',
-            'Printify Sync Settings',
-            null,
-            'printify_sync_settings'
-        );
-
-        add_settings_field(
-            'printify_sync_postman_api_key',
-            'Postman API Key',
-            [__CLASS__, 'renderPostmanApiKeyField'],
-            'printify_sync_settings',
-            'printify_sync_settings_section'
+/**
+ * Class SettingsPage
+ * 
+ * @deprecated 1.0.8 Use ApolloWeb\WPWooCommercePrintifySync\Settings\SettingsPage instead
+ */
+class SettingsPage {
+    /**
+     * Constructor
+     */
+    public function __construct() {
+        _deprecated_file(
+            __FILE__,
+            '1.0.8',
+            'includes/Settings/SettingsPage.php',
+            'This file is deprecated. Please use ApolloWeb\WPWooCommercePrintifySync\Settings\SettingsPage instead.'
         );
     }
 
-    public static function renderPostmanApiKeyField()
-    {
-        $apiKey = get_option('printify_sync_postman_api_key');
-        echo '<input type="text" name="printify_sync_postman_api_key" value="' . esc_attr($apiKey) . '" />';
-    }
+    /**
+     * Render the settings page
+     * 
+     * @deprecated 1.0.8 Use ApolloWeb\WPWooCommercePrintifySync\Settings\SettingsPage::render() instead
+     */
+    public function render() {
+        // Forward to the proper settings page class
+        if (class_exists('ApolloWeb\WPWooCommercePrintifySync\Settings\SettingsPage')) {
+            $settings = new \ApolloWeb\WPWooCommercePrintifySync\Settings\SettingsPage();
+            if (method_exists($settings, 'render')) {
+                $settings->render();
+                return;
+            }
+        }
 
-    public static function renderPage()
-    {
-        include plugin_dir_path(__FILE__) . '../../templates/admin/settings-page.php';
+        // Fallback if the proper class isn't available
+        echo '<div class="wrap">';
+        echo '<h1><i class="fas fa-cog"></i> Settings</h1>';
+        echo '<div class="notice notice-warning"><p><strong>Notice:</strong> This settings page is deprecated. Please update your code.</p></div>';
+        echo '<p>Configure plugin settings here.</p>';
+        echo '</div>';
     }
 }
