@@ -1,0 +1,40 @@
+/* Additional responsive styles for smaller screens */
+@media (max-width: 600px) {
+    .dashboard-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .printify-dashboard__search {
+        display: none;
+    }
+    
+    .datetime-display {
+        display: none;
+    }
+    
+    .notification-dropdown {
+        right: -80px;
+    }
+    
+    .user-profile-menu {
+        right: -80px;
+    }
+    
+    .printify-dashboard__content {
+        padding: calc(var(--header-height) + 20px) 16px 16px;
+    }
+    
+    .printify-dashboard__header {
+        padding: 0 16px;
+    }
+}
+
+/* Spinning animation for refresh buttons */
+@keyframes spinning {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinning {
+    animation: spinning 1s linear infinite;
+}
