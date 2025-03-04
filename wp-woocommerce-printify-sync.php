@@ -38,6 +38,7 @@ printify_sync_debug('Plugin loading: WP WooCommerce Printify Sync');
 require_once plugin_dir_path(__FILE__) . 'includes/Autoloader.php';
 
 use ApolloWeb\WPWooCommercePrintifySync\Autoloader;
+use ApolloWeb\WPWooCommercePrintifySync\Admin\AdminMenu;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\AdminDashboard;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\ShopsPage;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\ProductImport;
@@ -57,123 +58,14 @@ if (file_exists(plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php')) {
     require_once plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php';
 }
 
-// FIRST: Disable other menu registrations to prevent duplicates
-// This needs to run before plugins_loaded, which is when other classes register their menus
-add_action('init', function() {
-    // Remove the class register methods that add menu items
-    remove_all_actions('admin_menu', 10); // Standard priority for most menu registrations
-    
-    printify_sync_debug('Removed default admin menu actions');
-});
-
-// SECOND: Register our custom admin menu 
-add_action('admin_menu', function() {
-    // Remove default WordPress dashboard submenu items to clean up the interface
-    remove_submenu_page('index.php', 'index.php');
-    remove_submenu_page('index.php', 'update-core.php');
-    
-    // Add our main menu with dashboard icon
-    add_menu_page(
-        'Printify Sync',
-        'Printify Sync',
-        'manage_options',
-        'printify-sync-dashboard',
-        function() {
-            printify_sync_debug('Loading dashboard template');
-            include plugin_dir_path(__FILE__) . 'templates/admin/admin-dashboard.php';
-        },
-        'dashicons-dashboard',
-        2
-    );
-    
-    // Add submenu items - ONLY THE ONES WE WANT
-    add_submenu_page(
-        'printify-sync-dashboard',
-        'Dashboard', // Page title
-        'Dashboard', // Menu title
-        'manage_options',
-        'printify-sync-dashboard',
-        null // We don't need a callback here as the parent menu already has one
-    );
-    
-    add_submenu_page(
-        'printify-sync-dashboard',
-        'Products',
-        'Products',
-        'manage_options',
-        'printify-sync-products',
-        function() {
-            include plugin_dir_path(__FILE__) . 'templates/admin/products-page.php';
-        }
-    );
-    
-    add_submenu_page(
-        'printify-sync-dashboard',
-        'Orders',
-        'Orders',
-        'manage_options',
-        'printify-sync-orders',
-        function() {
-            include plugin_dir_path(__FILE__) . 'templates/admin/orders-page.php';
-        }
-    );
-    
-    add_submenu_page(
-        'printify-sync-dashboard',
-        'Shops',
-        'Shops',
-        'manage_options',
-        'printify-sync-shops',
-        function() {
-            include plugin_dir_path(__FILE__) . 'templates/admin/shops-page.php';
-        }
-    );
-    
-    add_submenu_page(
-        'printify-sync-dashboard',
-        'Exchange Rates',
-        'Exchange Rates',
-        'manage_options',
-        'printify-sync-exchange-rates',
-        function() {
-            include plugin_dir_path(__FILE__) . 'templates/admin/exchange-rates-page.php';
-        }
-    );
-    
-    // Add Log Viewer submenu item
-    add_submenu_page(
-        'printify-sync-dashboard',
-        'Log Viewer',
-        'Log Viewer',
-        'manage_options',
-        'printify-sync-logs',
-        function() {
-            include plugin_dir_path(__FILE__) . 'templates/admin/logs-page.php';
-        }
-    );
-    
-    // Add Settings under our admin menu instead of WordPress settings
-    add_submenu_page(
-        'printify-sync-dashboard',
-        'Settings',
-        'Settings',
-        'manage_options',
-        'printify-sync-settings',
-        function() {
-            include plugin_dir_path(__FILE__) . 'templates/admin/settings-page.php';
-        }
-    );
-    
-    printify_sync_debug('Admin menu registered');
-    
-}, 11); // Higher priority to run after potential other menu registrations
-
+// Register the autoloader
 add_action('plugins_loaded', function () {
     Autoloader::register();
     printify_sync_debug('Autoloader registered');
     
-    // Register these without their menu items
+    // Register classes
     AdminDashboard::register();
+    AdminMenu::register();
     ProductSync::register();
     OrderSync::register();
     WebhookHandler::register();
@@ -186,4 +78,8 @@ add_action('plugins_loaded', function () {
     printify_sync_debug('All classes registered');
 });
 
-// REMOVED: The duplicate printifySyncData declaration from admin_footer
+// Instantiate AdminMenu
+add_action('plugins_loaded', function () {
+    EnqueueAssets::register();
+}); // Ensure this runs after the autoloader is registered
+

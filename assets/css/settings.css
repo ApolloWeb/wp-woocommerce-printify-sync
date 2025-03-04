@@ -1,3 +1,4 @@
+.settings-page {
 /* Settings Page Specific Styles */
 .settings-content {
     padding: 20px;
@@ -305,4 +306,5 @@ input:checked + .slider:before {
         flex-direction: column;
         gap: 10px;
     }
+}
 }

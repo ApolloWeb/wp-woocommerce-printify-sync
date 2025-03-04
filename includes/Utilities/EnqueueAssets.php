@@ -1,165 +1,112 @@
 <?php
+
 /**
- * Asset Enqueuing Utility
+ * EnqueueAssets
+ *
+ * This class handles the automatic loading of all frontend and admin scripts/styles,
+ * ensuring proper enqueueing, versioning, and minification where needed.
  *
  * @package ApolloWeb\WPWooCommercePrintifySync\Utilities
  */
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Utilities;
 
-/**
- * Class EnqueueAssets
- * Handles all asset enqueuing for the plugin
- */
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
+use ApolloWeb\WPWooCommercePrintifySync\Helpers\EnqueueHelper;
+use ApolloWeb\WPWooCommercePrintifySync\Helpers\Minifier;
+
 class EnqueueAssets {
     /**
-     * Plugin version for asset versioning
+     * Version number for assets, used for cache busting.
      *
      * @var string
      */
-    private static $version = '1.0.7';
+    private static $asset_version = '1.0.7';
 
     /**
-     * Register the class hooks
-     *
-     * @return void
+     * Registers hooks for enqueueing scripts and styles.
      */
     public static function register() {
-        add_action('admin_enqueue_scripts', [self::class, 'enqueueAdminAssets']);
-        add_action('wp_enqueue_scripts', [self::class, 'enqueueFrontendAssets']);
-        add_action('admin_head', [self::class, 'outputCriticalStyles']);
-        add_action('admin_footer', [self::class, 'outputGlobalData']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_scripts']);
+        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_scripts']);
     }
 
     /**
-     * Enqueue admin scripts and styles
-     *
-     * @param string $hook The current admin page
-     * @return void
+     * Enqueues scripts and styles for the admin panel.
      */
-    public static function enqueueAdminAssets($hook) {
-        if (strpos($hook, 'printify-sync') === false) {
+    public static function enqueue_admin_scripts() {
+        self::enqueue_external_assets();
+        self::enqueue_assets_from_directory('assets/css/admin', 'admin-style', 'style');
+        self::enqueue_assets_from_directory('assets/js/admin', 'admin-script', 'script');
+    }
+
+    /**
+     * Enqueues scripts and styles for the frontend.
+     */
+    public static function enqueue_scripts() {
+        self::enqueue_external_assets();
+        self::enqueue_assets_from_directory('assets/css', 'printify-sync-style', 'style');
+        self::enqueue_assets_from_directory('assets/js', 'printify-sync-script', 'script');
+    }
+
+    /**
+     * Enqueues external libraries such as Bootstrap and jQuery.
+     */
+    private static function enqueue_external_assets() {
+        wp_enqueue_style('bootstrap-css', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css', [], self::$asset_version);
+        wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css', [], self::$asset_version);
+        wp_enqueue_script('jquery-cdn', 'https://code.jquery.com/jquery-3.6.0.min.js', [], self::$asset_version, true);
+        wp_enqueue_script('bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js', ['jquery-cdn'], self::$asset_version, true);
+    }
+
+    /**
+     * Scans and enqueues all assets from the given directory.
+     *
+     * @param string $directory Directory path relative to the plugin root.
+     * @param string $handle_prefix Prefix for asset handles.
+     * @param string $type Type of asset ('style' or 'script').
+     */
+    private static function enqueue_assets_from_directory($directory, $handle_prefix, $type) {
+        $dir_path = plugin_dir_path(__FILE__) . $directory;
+        $dir_url = plugin_dir_url(__FILE__) . $directory;
+
+        if (!is_dir($dir_path)) {
             return;
         }
 
-        // Base directory & URL for assets
-        $plugin_dir = plugin_dir_path(__FILE__);  // Gets absolute path
-        $plugin_url = plugin_dir_url(__FILE__);   // Gets plugin URL
+        $files = self::scan_directory_recursively($dir_path);
+        foreach ($files as $file_path) {
+            if (is_file($file_path)) {
+                $final_path = Minifier::minify_and_save($file_path) ?: $file_path;
+                $file_url = EnqueueHelper::convert_path_to_url($final_path, $dir_path, $dir_url);
+                $handle = EnqueueHelper::generate_handle($final_path, $handle_prefix);
 
-        $css_dirs = [
-            'assets/css/',
-            'assets/admin/css/'
-        ];
-        
-        $js_dirs = [
-            'assets/js/',
-            'assets/admin/js/'
-        ];
-
-        // 🔹 1️⃣ Enqueue External Dependencies First
-        wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', [], '5.15.4');
-        wp_enqueue_style('google-fonts-poppins', 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap', [], null);
-
-        wp_enqueue_script('jquery'); // Ensure jQuery is enqueued
-        wp_enqueue_script('chart-js', 'https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js', ['jquery'], '3.7.0', true);
-        wp_enqueue_script('progressbar-js', 'https://cdn.jsdelivr.net/npm/progressbar.js@1.1.0/dist/progressbar.min.js', ['jquery'], '1.1.0', true);
-
-        // 🔹 2️⃣ Enqueue All CSS Files (Regular + Admin)
-        foreach ($css_dirs as $dir) {
-            foreach (glob($plugin_dir . $dir . "*.css") as $file) {
-                $filename = basename($file);
-                $handle = 'printify-sync-' . str_replace('.css', '', $filename);
-                wp_enqueue_style($handle, $plugin_url . $dir . $filename, [], self::$version);
+                if ($type === 'style' && str_ends_with($final_path, '.css')) {
+                    wp_enqueue_style($handle, $file_url, [], self::$asset_version);
+                } elseif ($type === 'script' && str_ends_with($final_path, '.js')) {
+                    wp_enqueue_script($handle, $file_url, ['jquery'], self::$asset_version, true);
+                }
             }
         }
-
-        // 🔹 3️⃣ Enqueue All JS Files (Regular + Admin)
-        foreach ($js_dirs as $dir) {
-            foreach (glob($plugin_dir . $dir . "*.js") as $file) {
-                $filename = basename($file);
-                $handle = 'printify-sync-' . str_replace('.js', '', $filename);
-                wp_enqueue_script($handle, $plugin_url . $dir . $filename, ['jquery', 'chart-js', 'progressbar-js'], self::$version, true);
-            }
-        }
-
-        // Debugging output
-        error_log("Admin Assets Enqueued for: " . $hook);
     }
 
     /**
-     * Enqueue frontend scripts and styles
+     * Recursively scans a directory for asset files.
      *
-     * @return void
+     * @param string $directory Directory to scan.
+     * @return array List of file paths.
      */
-    public static function enqueueFrontendAssets() {
-        // Define base paths
-        $plugin_dir = plugin_dir_path(__FILE__);
-        $plugin_url = plugin_dir_url(__FILE__);
+    private static function scan_directory_recursively($directory) {
+        $files = [];
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));
 
-        $css_dir = $plugin_dir . 'assets/css/';
-        $js_dir = $plugin_dir . 'assets/js/';
-
-        // Enqueue all frontend CSS
-        foreach (glob($css_dir . "*.css") as $file) {
-            $filename = basename($file);
-            $handle = 'printify-sync-' . str_replace('.css', '', $filename);
-            wp_enqueue_style($handle, $plugin_url . 'assets/css/' . $filename, [], self::$version);
-        }
-
-        // Enqueue all frontend JS
-        foreach (glob($js_dir . "*.js") as $file) {
-            $filename = basename($file);
-            $handle = 'printify-sync-' . str_replace('.js', '', $filename);
-            wp_enqueue_script($handle, $plugin_url . 'assets/js/' . $filename, ['jquery'], self::$version, true);
-        }
-
-        error_log("Frontend Assets Enqueued");
-    }
-
-    /**
-     * Output critical styles for the admin dashboard
-     *
-     * @return void
-     */
-    public static function outputCriticalStyles() {
-        if (!is_admin()) return;
-
-        $screen = get_current_screen();
-        if (!$screen || strpos($screen->id, 'printify-sync') === false) return;
-
-        echo '<style id="printify-sync-critical-css">
-            .dashboard.no-sidebar { display: block; }
-            .main-content.full-width { width: 100%; }
-            .header-left { display: flex; align-items: center; flex: 1; }
-            .logo-container {
-                padding: 0 20px; height: 70px; display: flex; align-items: center;
-                background: linear-gradient(90deg, #674399 0%, #7f54b3 100%);
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $files[] = $file->getPathname();
             }
-            .site-logo { color: white; font-weight: 600; font-size: 20px; }
-            .main-nav { height: 70px; flex: 1; }
-            .main-nav ul { display: flex; list-style: none; margin: 0; padding: 0; height: 100%; }
-            .main-nav a { padding: 0 15px; text-decoration: none; color: #2D3748; font-weight: 500; }
-        </style>';
-    }
+        }
 
-    /**
-     * Output global JavaScript data for the admin panel
-     *
-     * @return void
-     */
-    public static function outputGlobalData() {
-        if (!is_admin()) return;
-
-        $screen = get_current_screen();
-        if (!$screen || strpos($screen->id, 'printify-sync') === false) return;
-
-        echo '<script>
-            var printifySyncData = {
-                currentDateTime: "' . date("Y-m-d H:i:s") . '",
-                currentUser: "' . esc_js(wp_get_current_user()->display_name) . '",
-                debug: true
-            };
-            console.log("Global Data Loaded", printifySyncData);
-        </script>';
+        return $files;
     }
 }

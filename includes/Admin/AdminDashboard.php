@@ -1,85 +1,87 @@
 <?php
+/**
+ * Admin Dashboard
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync\Admin
+ * @version 1.2.2
+ * @date 2025-03-04 00:33:55
+ */
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Admin;
 
-use ApolloWeb\WPWooCommercePrintifySync\Admin\Widgets\IncomingTicketsWidget;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\Widgets\OrderTrackingWidget;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\Widgets\WebhookStatusWidget;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\Widgets\ApiCallLogsWidget;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\Widgets\ShopInfoWidget;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\Widgets\ProductSyncSummaryWidget;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\Widgets\OrdersOverviewWidget;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\Widgets\StockLevelsWidget;
-
-class AdminDashboard
-{
-    public static function register()
-    {
-        add_action('admin_menu', [__CLASS__, 'addMenu']);
-        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueueAssets']);
+/**
+ * Class AdminDashboard
+ * Main dashboard controller
+ */
+class AdminDashboard {
+    /**
+     * Register dashboard
+     */
+    public static function register() {
+        // Add admin dashboard page
+        add_action('admin_menu', [self::class, 'addDashboardPage']);
     }
-
-    public static function addMenu()
-    {
-        add_menu_page(
-            'Printify Sync Dashboard',
-            'Printify Sync',
-            'manage_options',
-            'printify-sync-dashboard',
-            [__CLASS__, 'renderDashboard'],
-            'dashicons-admin-generic', // Replace with a suitable dashicon
-            56
-        );
-
-        add_submenu_page(
-            'printify-sync-dashboard',
-            'Shops',
-            'Shops',
-            'manage_options',
-            'printify-sync-shops',
-            [ShopsPage::class, 'renderPage']
-        );
-
-        add_submenu_page(
-            'printify-sync-dashboard',
-            'Product Import',
-            'Product Import',
-            'manage_options',
-            'printify-sync-product-import',
-            [ProductImport::class, 'renderPage']
-        );
-
-        add_submenu_page(
-            'printify-sync-dashboard',
-            'Exchange Rates',
-            'Exchange Rates',
-            'manage_options',
-            'printify-sync-exchange-rates',
-            [ExchangeRatesPage::class, 'renderPage']
-        );
-
-        add_submenu_page(
-            'printify-sync-dashboard',
-            'Postman',
-            'Postman',
-            'manage_options',
-            'printify-sync-postman',
-            [PostmanPage::class, 'renderPage']
-        );
+    
+    /**
+     * Add dashboard page
+     */
+    public static function addDashboardPage() {
+        // NOTE: Don't add the dashboard page here, it should be added only in the main plugin file
+        // This prevents duplicate dashboard pages from being registered
+        
+        // Instead, register any dashboard-specific AJAX handlers or other functionality here
+        add_action('wp_ajax_printify_sync_dashboard_data', [self::class, 'getDashboardData']);
     }
-
-    public static function enqueueAssets($hook)
-    {
-        if ($hook !== 'toplevel_page_printify-sync-dashboard') {
-            return;
+    
+    /**
+     * Get dashboard data (AJAX handler)
+     */
+    public static function getDashboardData() {
+        // Check nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'printify_sync_nonce')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            exit;
         }
-
-       wp_enqueue_script('admin-dashboard', plugins_url('../../assets/js/admin-dashboard.js', __FILE__), ['jquery'], '1.0.0', true);
-        wp_enqueue_style('admin-dashboard', plugins_url('../../assets/css/admin-dashboard.css', __FILE__), [], '1.0.0');
+        
+        // Current date and user for demo data
+        $current_date = '2025-03-04 00:33:55';
+        $current_user = 'ApolloWeb';
+        
+        // Demo data for dashboard
+        $data = [
+            'current_date' => $current_date,
+            'current_user' => $current_user,
+            'stats' => [
+                'product_syncs' => 1248,
+                'active_products' => 867,
+                'orders_processed' => 342,
+                'open_tickets' => 24
+            ],
+            'charts' => [
+                'sales' => [
+                    'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    'data' => [4500, 5200, 4800, 5800, 6000, 5500]
+                ],
+                'categories' => [
+                    'labels' => ['T-Shirts', 'Mugs', 'Posters', 'Phone Cases', 'Other'],
+                    'data' => [45, 20, 15, 12, 8]
+                ],
+                'api_performance' => [
+                    'labels' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    'data' => [320, 420, 380, 290, 310, 250, 270]
+                ]
+            ],
+            'sync_success_rate' => 98.2
+        ];
+        
+        wp_send_json_success($data);
+        exit;
     }
 
-    public static function renderDashboard()
-    {
+    /**
+     * Render the dashboard
+     */
+    public function render() {
         include plugin_dir_path(__FILE__) . '../../templates/admin/admin-dashboard.php';
     }
 }
