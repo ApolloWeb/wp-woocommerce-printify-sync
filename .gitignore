@@ -2,3 +2,7 @@ update-filelist.php
 files.txt
 excluded_files.txt
 removed_files.txt
+update-change-summary.php
+.git
+.wp-env.json
+*.log

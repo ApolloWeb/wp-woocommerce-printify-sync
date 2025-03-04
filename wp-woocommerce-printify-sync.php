@@ -3,7 +3,7 @@
  * Plugin Name: WP WooCommerce Printify Sync
  * Description: Sync products from Printify to WooCommerce
  * Plugin URI: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
- * Version: 1.0.7
+ * Version: 1.0.8
  * Author: ApolloWeb
  * Author URI: https://github.com/ApolloWeb
  * Text Domain: wp-woocommerce-printify-sync
@@ -20,12 +20,11 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('PRINTIFY_SYNC_VERSION', '1.0.7');
-define('PRINTIFY_SYNC_FILE', __FILE__);
+define('PRINTIFY_SYNC_VERSION', '1.0.8');
 define('PRINTIFY_SYNC_PATH', plugin_dir_path(__FILE__));
 define('PRINTIFY_SYNC_URL', plugin_dir_url(__FILE__));
-define('PRINTIFY_SYNC_BASENAME', plugin_basename(__FILE__));
 define('PRINTIFY_SYNC_DEBUG', true);
+define('PRINTIFY_SYNC_BASENAME', plugin_basename(__FILE__));
 
 // Simple debugging function
 function printify_sync_debug($message) {
@@ -39,52 +38,94 @@ function printify_sync_debug($message) {
 }
 
 printify_sync_debug('Plugin loading: WP WooCommerce Printify Sync');
-printify_sync_debug('Plugin path: ' . PRINTIFY_SYNC_PATH);
+
+// Helper for consistent user display
+function printify_sync_get_current_user() {
+    $user = wp_get_current_user();
+    return !empty($user->user_login) ? $user->user_login : 'No user';
+}
+
+// Helper for consistent datetime display
+function printify_sync_get_current_datetime() {
+    return gmdate('Y-m-d H:i:s');
+}
 
 // Include the autoloader
 require_once PRINTIFY_SYNC_PATH . 'includes/Autoloader.php';
-
-// Use our autoloader
 \ApolloWeb\WPWooCommercePrintifySync\Autoloader::register();
-printify_sync_debug('Autoloader registered');
 
-// Include AJAX handlers
-if (file_exists(PRINTIFY_SYNC_PATH . 'includes/ajax-handlers.php')) {
-    require_once PRINTIFY_SYNC_PATH . 'includes/ajax-handlers.php';
-}
-
-// Initialize components one by one to identify any issues
-add_action('plugins_loaded', function() {
+// Plugin initialization
+add_action('plugins_loaded', function () {
     try {
-        // Initialize EnqueueAssets first
-        if (class_exists('\ApolloWeb\WPWooCommercePrintifySync\Utilities\EnqueueAssets')) {
-            printify_sync_debug('Initializing EnqueueAssets');
-            \ApolloWeb\WPWooCommercePrintifySync\Utilities\EnqueueAssets::init();
+        // Initialize menu
+        if (class_exists('ApolloWeb\WPWooCommercePrintifySync\Admin\AdminMenu')) {
+            \ApolloWeb\WPWooCommercePrintifySync\Admin\AdminMenu::register();
+            printify_sync_debug('✅ AdminMenu registered successfully');
         } else {
-            printify_sync_debug('EnqueueAssets class not found');
+            printify_sync_debug('❌ AdminMenu class not found');
         }
         
-        // Initialize remaining components if they exist
-        $classes = [
-            '\ApolloWeb\WPWooCommercePrintifySync\Admin\AdminMenu',
-            '\ApolloWeb\WPWooCommercePrintifySync\Admin\AdminDashboard',
-            '\ApolloWeb\WPWooCommercePrintifySync\Sync\ProductSync',
-            '\ApolloWeb\WPWooCommercePrintifySync\Sync\OrderSync',
-            '\ApolloWeb\WPWooCommercePrintifySync\Webhook\WebhookHandler',
-            '\ApolloWeb\WPWooCommercePrintifySync\Logs\LogCleanup',
-            '\ApolloWeb\WPWooCommercePrintifySync\Settings\NotificationPreferences',
-            '\ApolloWeb\WPWooCommercePrintifySync\Settings\EnvironmentSettings'
-        ];
-        
-        foreach ($classes as $class) {
-            if (class_exists($class) && method_exists($class, 'register')) {
-                printify_sync_debug('Registering: ' . $class);
-                call_user_func([$class, 'register']);
-            } else {
-                printify_sync_debug('Class not found or missing register method: ' . $class);
-            }
+        // Initialize assets
+        if (class_exists('ApolloWeb\WPWooCommercePrintifySync\Utilities\EnqueueAssets')) {
+            \ApolloWeb\WPWooCommercePrintifySync\Utilities\EnqueueAssets::register();
+            printify_sync_debug('✅ EnqueueAssets registered successfully');
         }
+        
+        // Add admin styles for menu icon
+        add_action('admin_head', 'printify_sync_admin_styles');
+        
+        // Add Font Awesome
+        add_action('admin_enqueue_scripts', 'printify_sync_admin_scripts');
+        
     } catch (\Exception $e) {
         printify_sync_debug('Error during plugin initialization: ' . $e->getMessage());
     }
 });
+
+/**
+ * Add CSS for Font Awesome icon in admin menu
+ */
+function printify_sync_admin_styles() {
+    ?>
+    <style>
+        /* Target the menu icon and replace it with the shirt icon from Font Awesome */
+        #adminmenu .toplevel_page_wp-woocommerce-printify-sync .wp-menu-image:before {
+            font-family: "Font Awesome 5 Free", "Font Awesome 6 Free" !important;
+            content: "\f553" !important; /* fa-shirt icon */
+            font-weight: 900;
+        }
+    </style>
+    <?php
+}
+
+// Ensure Font Awesome is properly loaded in admin
+function printify_sync_admin_scripts() {
+    // Enqueue the free version of Font Awesome if not already loaded
+    if (!wp_script_is('font-awesome', 'enqueued') && !wp_style_is('font-awesome', 'enqueued')) {
+        wp_enqueue_style(
+            'font-awesome', 
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', 
+            [], 
+            '6.4.0'
+        );
+    }
+}
+
+// Add plugin action links
+add_filter('plugin_action_links_' . PRINTIFY_SYNC_BASENAME, function($links) {
+    $dashboard_link = '<a href="' . admin_url('admin.php?page=wp-woocommerce-printify-sync') . '">Dashboard</a>';
+    array_unshift($links, $dashboard_link);
+    return $links;
+});
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: Added:     return $links;
+#
+#
+# Commit Hash 16c804f
+#

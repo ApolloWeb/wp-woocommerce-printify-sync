@@ -1,26 +1,14 @@
 <?php
 /**
- * Format Helper Class
- *
- * Helper functions for formatting data
- *
- * @package WP_WooCommerce_Printify_Sync
+ * Format Helper Class * Helper functions for formatting data * @package WP_WooCommerce_Printify_Sync
  * @since 1.0.0
- */
-
-namespace ApolloWeb\WPWooCommercePrintifySync\Helpers;
-
-defined('ABSPATH') || exit;
-
-/**
+ */namespace ApolloWeb\WPWooCommercePrintifySync\Helpers;defined('ABSPATH') || exit;/**
  * Format Helper class
  */
 class FormatHelper {
     
     /**
-     * Format price with currency symbol
-     *
-     * @param float  $price   Price value.
+     * Format price with currency symbol     * @param float  $price   Price value.
      * @param string $currency Currency code (optional).
      * @return string Formatted price
      */
@@ -33,9 +21,7 @@ class FormatHelper {
     }
     
     /**
-     * Format a date in the site's timezone
-     * 
-     * @param string $date Date string or timestamp.
+     * Format a date in the site's timezone     * @param string $date Date string or timestamp.
      * @param string $format PHP date format (optional).
      * @return string Formatted date
      */
@@ -54,9 +40,7 @@ class FormatHelper {
     }
     
     /**
-     * Clean string for use in slugs or IDs
-     *
-     * @param string $string Input string.
+     * Clean string for use in slugs or IDs     * @param string $string Input string.
      * @return string Sanitized string
      */
     public static function sanitize_key($string) {
@@ -64,9 +48,7 @@ class FormatHelper {
     }
     
     /**
-     * Convert array to comma-separated string
-     *
-     * @param array $array Input array.
+     * Convert array to comma-separated string     * @param array $array Input array.
      * @return string Comma-separated list
      */
     public static function array_to_string($array) {
@@ -76,4 +58,17 @@ class FormatHelper {
         
         return implode(', ', $array);
     }
-}
+} Modified by: Rob Owen On: 2025-03-04 06:00:38 Commit Hash 16c804f Modified by: Rob Owen On: 2025-03-04 06:03:34 Commit Hash 16c804f# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------
+
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: Added: } Modified by: Rob Owen On: 2025-03-04 06:00:38 Commit Hash 16c804f Modified by: Rob Owen On: 2025-03-04 06:03:34 Commit Hash 16c804f# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------
+#
+#
+# Commit Hash 16c804f
+#

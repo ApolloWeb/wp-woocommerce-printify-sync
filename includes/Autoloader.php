@@ -1,52 +1,69 @@
 <?php
-
-
 /**
- * Autoloader
- *
- * This class provides a PSR-4 compliant autoloader for the plugin.
- * It ensures that all classes under the ApolloWeb\WPWooCommercePrintifySync namespace
- * are automatically loaded from the 'includes/' directory.
+ * Autoloader for WP WooCommerce Printify Sync
  *
  * @package ApolloWeb\WPWooCommercePrintifySync
  */
 
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Class Autoloader
+ */
 class Autoloader {
     /**
-     * Registers the autoloader function.
+     * Register the autoloader
      */
     public static function register() {
-        spl_autoload_register([__CLASS__, 'autoload']);
+        spl_autoload_register([self::class, 'autoload']);
     }
 
     /**
-     * Autoloads classes based on their namespace and directory structure.
+     * Autoload function for registration with spl_autoload_register
      *
-     * @param string $class The fully qualified class name.
+     * @param string $class Class name to load.
      */
-    private static function autoload($class) {
-        $prefix = 'ApolloWeb\\WPWooCommercePrintifySync\\';
-        $base_dir = __DIR__ . '/includes/'; // Adjusted to load from 'includes/'
-
-        // Ensure the class uses the correct namespace prefix
-        if (strpos($class, $prefix) !== 0) {
+    public static function autoload($class) {
+        // Only handle classes in our namespace
+        $namespace = 'ApolloWeb\\WPWooCommercePrintifySync\\';
+        if (strpos($class, $namespace) !== 0) {
             return;
         }
 
-        // Get the relative class name
-        $relative_class = substr($class, strlen($prefix));
-        $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+        // Remove the namespace prefix
+        $class_name = substr($class, strlen($namespace));
+        
+        // Convert namespace separators to directory separators
+        $class_path = str_replace('\\', DIRECTORY_SEPARATOR, $class_name);
+        
+        // Build the file path
+        $file_path = PRINTIFY_SYNC_PATH . 'includes' . DIRECTORY_SEPARATOR . $class_path . '.php';
 
-        // Check if the file exists, then require it
-        if (file_exists($file)) {
-            require_once $file;
+        // If the file exists, load it
+        if (file_exists($file_path)) {
+            require_once $file_path;
+        } else {
+            // Debug message for missing files
+            if (defined('PRINTIFY_SYNC_DEBUG') && PRINTIFY_SYNC_DEBUG) {
+                error_log("Autoloader could not find: {$file_path} for class: {$class}");
+            }
         }
     }
 }
-
-// Register the autoloader
-Autoloader::register();
-
-
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: Added: }
+#
+#
+# Commit Hash 16c804f
+#

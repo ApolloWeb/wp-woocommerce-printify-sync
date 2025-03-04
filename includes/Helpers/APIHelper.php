@@ -1,49 +1,31 @@
 <?php
 /**
- * API Helper Class
- *
- * Helper functions for API requests
- *
- * @package WP_WooCommerce_Printify_Sync
+ * API Helper Class * Helper functions for API requests * @package WP_WooCommerce_Printify_Sync
  * @since 1.0.0
- */
-
-namespace ApolloWeb\WPWooCommercePrintifySync\Helpers;
-
-defined('ABSPATH') || exit;
-
-/**
+ */namespace ApolloWeb\WPWooCommercePrintifySync\Helpers;defined('ABSPATH') || exit;/**
  * API Helper class
  */
 class APIHelper {
     
     /**
-     * API base URL
-     *
-     * @var string
+     * API base URL     * @var string
      */
     private $api_url = 'https://api.printify.com/v1/';
     
     /**
-     * API key
-     *
-     * @var string
+     * API key     * @var string
      */
     private $api_key;
     
     /**
-     * Constructor
-     *
-     * @param string $api_key Printify API key.
+     * Constructor     * @param string $api_key Printify API key.
      */
     public function __construct($api_key) {
         $this->api_key = $api_key;
     }
     
     /**
-     * Make a GET request to the API
-     *
-     * @param string $endpoint API endpoint.
+     * Make a GET request to the API     * @param string $endpoint API endpoint.
      * @param array  $params   Query parameters.
      * @return array|WP_Error Response data or error
      */
@@ -52,9 +34,7 @@ class APIHelper {
     }
     
     /**
-     * Make a POST request to the API
-     *
-     * @param string $endpoint API endpoint.
+     * Make a POST request to the API     * @param string $endpoint API endpoint.
      * @param array  $data     Post data.
      * @return array|WP_Error Response data or error
      */
@@ -63,9 +43,7 @@ class APIHelper {
     }
     
     /**
-     * Make a PUT request to the API
-     *
-     * @param string $endpoint API endpoint.
+     * Make a PUT request to the API     * @param string $endpoint API endpoint.
      * @param array  $data     Put data.
      * @return array|WP_Error Response data or error
      */
@@ -74,9 +52,7 @@ class APIHelper {
     }
     
     /**
-     * Make a DELETE request to the API
-     *
-     * @param string $endpoint API endpoint.
+     * Make a DELETE request to the API     * @param string $endpoint API endpoint.
      * @return array|WP_Error Response data or error
      */
     public function delete($endpoint) {
@@ -84,9 +60,7 @@ class APIHelper {
     }
     
     /**
-     * Make an API request
-     *
-     * @param string $method   HTTP method.
+     * Make an API request     * @param string $method   HTTP method.
      * @param string $endpoint API endpoint.
      * @param array  $data     Request data or parameters.
      * @return array|WP_Error Response data or error
@@ -133,4 +107,17 @@ class APIHelper {
         
         return $data;
     }
-}
+} Modified by: Rob Owen On: 2025-03-04 06:00:38 Commit Hash 16c804f Modified by: Rob Owen On: 2025-03-04 06:03:34 Commit Hash 16c804f# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------
+
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: Added: } Modified by: Rob Owen On: 2025-03-04 06:00:38 Commit Hash 16c804f Modified by: Rob Owen On: 2025-03-04 06:03:34 Commit Hash 16c804f# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------
+#
+#
+# Commit Hash 16c804f
+#

@@ -13,6 +13,6 @@
     "WP_DEBUG_DISPLAY": true,
     "WP_PHP_BINARY": "php",
     "ALTERNATE_WP_CRON": true,
-    "WP_LANG": "en_SGB"
+    "WP_LANG": "en_GB"
   }
 }

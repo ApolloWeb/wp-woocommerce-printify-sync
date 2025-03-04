@@ -3,9 +3,7 @@
  * Dashboard Tables Styling
  * Version: 1.2.0
  * Date: 2025-03-03 12:28:57
- */
-
-/* Data Tables Container */
+ *//* Data Tables Container */
 .data-tables-container {
     display: flex;
     flex-direction: column;
@@ -13,132 +11,15 @@
     margin-bottom: 30px;
 }
 
-/* Data Card for Tables */
-.data-card {
-    background-color: var(--white);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: 0 4px 6px var(--shadow);
-    border: 1px solid var(--border);
-}
-
-/* Table Styles */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-.data-table thead {
-    background-color: #F9FAFB;
-}
-
-.data-table th {
-    padding: 12px 15px;
-    text-align: left;
-    font-weight: 600;
-    color: var(--text-dark);
-    border-bottom: 1px solid var(--border);
-}
-
-.data-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-dark);
-}
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.data-table tbody tr:hover {
-    background-color: rgba(127, 84, 179, 0.05);
-}
-
-/* Status Badges */
-.status-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
-    min-width: 80px;
-}
-
-.status-badge.active {
-    background-color: rgba(72, 187, 120, 0.1);
-    color: #48bb78;
-}
-
-.status-badge.inactive {
-    background-color: rgba(160, 174, 192, 0.1);
-    color: #a0aec0;
-}
-
-.status-badge.draft {
-    background-color: rgba(237, 137, 54, 0.1);
-    color: #ed8936;
-}
-
-.status-badge.pending {
-    background-color: rgba(66, 153, 225, 0.1);
-    color: #4299e1;
-}
-
-.status-badge.processing {
-    background-color: rgba(49, 130, 206, 0.1);
-    color: #3182ce;
-}
-
-.status-badge.complete {
-    background-color: rgba(72, 187, 120, 0.1);
-    color: #48bb78;
-}
-
-/* Action Buttons */
-.action-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-action {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 4px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--text-light);
-    transition: all 0.2s ease;
-}
-
-.btn-action:hover {
-    background-color: rgba(127, 84, 179, 0.1);
-    color: var(--primary);
-}
-
-.btn-action.view:hover {
-    background-color: rgba(66, 153, 225, 0.1);
-    color: #4299e1;
-}
-
-.btn-action.edit:hover {
-    background-color: rgba(237, 137, 54, 0.1);
-    color: #ed8936;
-}
-
-/* Button Primary Style */
-.btn-primary {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    
-}
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: -}
+#
+#
+# Commit Hash 16c804f
+#
