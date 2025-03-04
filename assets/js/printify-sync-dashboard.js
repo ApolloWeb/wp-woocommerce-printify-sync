@@ -1,11 +1,7 @@
-/**
- * Admin Widgets JavaScript
- * 
- * Handles rendering of charts and additional widget functionality.
- */
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Function to load dashboard data via AJAX.
+document.addEventListener('DOMContentLoaded', function () {
+    /**
+     * Load dashboard data via AJAX.
+     */
     function loadDashboardData() {
         jQuery.ajax({
             url: PrintifySyncDashboard.ajaxUrl,
@@ -15,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 action: 'printify_sync_dashboard_data',
                 nonce: PrintifySyncDashboard.nonce
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     const data = response.data;
                     // Update stats boxes with actual widget data.
@@ -29,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Dashboard data load error:', response.data.message);
                 }
             },
-            error: function(error) {
+            error: function (error) {
                 console.error('AJAX error:', error);
             }
         });
@@ -37,7 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let salesChartInstance = null;
 
-    // Render the sales chart using Chart.js.
+    /**
+     * Render the sales chart using Chart.js.
+     */
     function renderSalesChart(chartData) {
         const canvasElem = document.getElementById('salesChart');
         if (!canvasElem) {
@@ -68,11 +66,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Setup filter buttons to update sales chart; implement your filtering logic here.
+    /**
+     * Setup filter buttons to update sales chart; implement your filtering logic here.
+     */
     function setupFilterButtons() {
         const buttons = document.querySelectorAll('.filter-btn');
-        buttons.forEach(function(btn) {
-            btn.addEventListener('click', function() {
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
                 const period = btn.getAttribute('data-period');
                 console.log('Filter sales chart by:', period);
                 // TODO: Update chartData based on period via AJAX or dynamic lookup.

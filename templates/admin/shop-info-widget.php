@@ -38,7 +38,6 @@ $shop_info = isset($shop_info) ? $shop_info : [
             <td><strong>Products:</strong></td>
             <td><?php echo esc_html($shop_info['products_count']); ?></td>
         </tr>
-<<<<<<< HEAD
         <tr>
             <td><strong>Last Sync:</strong></td>
             <td><?php echo esc_html(human_time_diff(strtotime($shop_info['last_sync']), time()) . ' ago'); ?></td>
@@ -79,20 +78,3 @@ $shop_info = isset($shop_info) ? $shop_info : [
     gap: 10px;
 }
 </style>
-=======
-    </tbody>
-</table> Modified by: Rob Owen On: 2025-03-04 06:00:38 Commit Hash 16c804f Modified by: Rob Owen On: 2025-03-04 06:03:34 Commit Hash 16c804f# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------
-
-#
-# -------- Update Summary --------
-#
-# Modified by: Rob Owen
-#
-# On: 2025-03-04 08:00:31
-#
-# Change: Added: </table> Modified by: Rob Owen On: 2025-03-04 06:00:38 Commit Hash 16c804f Modified by: Rob Owen On: 2025-03-04 06:03:34 Commit Hash 16c804f# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------
-#
-#
-# Commit Hash 16c804f
-#
->>>>>>> bc14d86262cd5ad94e1edb2b5c005569542963c4

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /**
  * Admin Widget Styles
  */
@@ -22,9 +21,6 @@
     line-height: 1.4;
 }
 
-=======
-.admin-widgets {
->>>>>>> bc14d86262cd5ad94e1edb2b5c005569542963c4
 .widget-content {
     padding: 15px;
     min-height: 100px;
@@ -50,7 +46,6 @@
     min-width: 150px;
     background: #f8f9fa;
     padding: 10px;
-<<<<<<< HEAD
     border-radius: 4px;
 }
 
@@ -132,19 +127,3 @@
         flex-direction: column;
     }
 }
-=======
-}
-
-#
-# -------- Update Summary --------
-#
-# Modified by: Rob Owen
-#
-# On: 2025-03-04 08:00:31
-#
-# Change: -}
-#
-#
-# Commit Hash 16c804f
-#
->>>>>>> bc14d86262cd5ad94e1edb2b5c005569542963c4

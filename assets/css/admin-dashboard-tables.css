@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /**
  * Admin Dashboard Tables
  */
@@ -148,30 +147,3 @@
         border-bottom: 0;
     }
 }
-=======
-.dashboard-tables {
-/**
- * Dashboard Tables Styling
- * Version: 1.2.0
- * Date: 2025-03-03 12:28:57
- *//* Data Tables Container */
-.data-tables-container {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    margin-bottom: 30px;
-}
-
-#
-# -------- Update Summary --------
-#
-# Modified by: Rob Owen
-#
-# On: 2025-03-04 08:00:31
-#
-# Change: -}
-#
-#
-# Commit Hash 16c804f
-#
->>>>>>> bc14d86262cd5ad94e1edb2b5c005569542963c4

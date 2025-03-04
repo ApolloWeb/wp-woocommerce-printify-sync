@@ -1,6 +1,7 @@
 /**
-<<<<<<< HEAD
  * Admin Dashboard JavaScript
+ * 
+ * Handles loading and rendering of dashboard widgets and charts.
  */
 
 jQuery(document).ready(function($) {
@@ -11,7 +12,7 @@ jQuery(document).ready(function($) {
         loadOrdersOverview();
         loadWebhookStatus();
     }
-    
+
     // Load shop information widget data
     function loadShopInfo() {
         var $widget = $('#shop-info-widget');
@@ -41,7 +42,7 @@ jQuery(document).ready(function($) {
             }
         });
     }
-    
+
     // Load product sync summary widget data
     function loadProductSyncSummary() {
         var $widget = $('#product-sync-widget');
@@ -57,23 +58,81 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'printify_get_product_sync_summary',
-                n
-=======
- * Dashboard JavaScript - Chart Rendering and Dashboard Functionality * Version: 1.0.7
- * Date: 2025-03-03
- */
-jQuery(function($)
+                nonce: printify_dashboard.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $widget.html(response.data.html);
+                } else {
+                    $widget.html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>');
+                }
+            },
+            error: function() {
+                $widget.html('<div class="notice notice-error"><p>Failed to load product sync summary.</p></div>');
+            }
+        });
+    }
 
-#
-# -------- Update Summary --------
-#
-# Modified by: Rob Owen
-#
-# On: 2025-03-04 08:00:31
-#
-# Change: Added: jQuery(function($)
-#
-#
-# Commit Hash 16c804f
-#
->>>>>>> bc14d86262cd5ad94e1edb2b5c005569542963c4
+    // Load orders overview widget data
+    function loadOrdersOverview() {
+        var $widget = $('#orders-overview-widget');
+        
+        if (!$widget.length) {
+            return;
+        }
+        
+        $widget.html('<div class="widget-loading"><span class="spinner is-active"></span></div>');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'printify_get_orders_overview',
+                nonce: printify_dashboard.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $widget.html(response.data.html);
+                } else {
+                    $widget.html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>');
+                }
+            },
+            error: function() {
+                $widget.html('<div class="notice notice-error"><p>Failed to load orders overview.</p></div>');
+            }
+        });
+    }
+
+    // Load webhook status widget data
+    function loadWebhookStatus() {
+        var $widget = $('#webhook-status-widget');
+        
+        if (!$widget.length) {
+            return;
+        }
+        
+        $widget.html('<div class="widget-loading"><span class="spinner is-active"></span></div>');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'printify_get_webhook_status',
+                nonce: printify_dashboard.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $widget.html(response.data.html);
+                } else {
+                    $widget.html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>');
+                }
+            },
+            error: function() {
+                $widget.html('<div class="notice notice-error"><p>Failed to load webhook status.</p></div>');
+            }
+        });
+    }
+
+    // Initialize dashboard
+    initDashboard();
+});
