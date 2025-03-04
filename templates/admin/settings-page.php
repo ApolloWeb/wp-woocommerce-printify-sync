@@ -3,9 +3,7 @@
  * Settings page template for Printify Sync
  */
 defined('ABSPATH') || exit;
-?>
-
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -20,7 +18,16 @@ defined('ABSPATH') || exit;
                     <div class="logo-container">
                         <h2 class="site-logo">Printify<span>Sync</span></h2>
                     </div>
-                    <nav class="main-nav">
-                        <ul>
-                            <li><a href="admin.php?page=printify-sync-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
-                            <li><a href="admin.php?page=printify-sync-products"><i class="fas fa-shopping-cart"></i> Products</a>
+
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: Removed:                            <li><a href="admin.php?page=printify-sync-products"><i class="fas fa-shopping-cart"></i> Products</a>
+#
+#
+# Commit Hash 16c804f
+#

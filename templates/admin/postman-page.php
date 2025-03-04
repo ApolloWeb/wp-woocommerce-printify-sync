@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php
 /**
  * Postman API Test Template
@@ -82,3 +83,22 @@ if (!defined('ABSPATH')) {
         <p>For more information about the Printify API, please refer to the <a href="https://developers.printify.com" target="_blank">official documentation</a>.</p>
     </div>
 </div>
+=======
+<div class="wrap">
+    <h1>Postman Page</h1>
+    <p>Manage Postman settings and integrations here.</p>
+</div>
+
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: Added: </div>
+#
+#
+# Commit Hash 16c804f
+#
+>>>>>>> bc14d86262cd5ad94e1edb2b5c005569542963c4

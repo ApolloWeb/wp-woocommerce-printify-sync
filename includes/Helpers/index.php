@@ -1,8 +1,4 @@
-.settings-page {
-/* Settings Page Specific Styles */
-.settings-content {
-    padding: 20px;
-}
+<?php
 
 #
 # -------- Update Summary --------
@@ -11,7 +7,7 @@
 #
 # On: 2025-03-04 08:00:31
 #
-# Change: -}
+# Change: -// Silence is golden.
 #
 #
 # Commit Hash 16c804f

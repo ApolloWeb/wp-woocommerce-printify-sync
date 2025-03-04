@@ -1,4 +1,6 @@
+.admin-dashboard {
 /**
+<<<<<<< HEAD
  * WP WooCommerce Printify Sync - Admin Dashboard Styles
  * Inspired by Codiepie template with WooCommerce purple color scheme
  */
@@ -469,3 +471,52 @@
         padding: 15px;
     }
 }
+=======
+ * Dashboard Styling
+ * Version: 1.2.0
+ * Date: 2025-03-03 12:28:57
+ */ :root {
+    --primary: 
+7f54b3;
+    --primary-light: 
+9b69c6;
+    --primary-dark: 
+674399;
+    --secondary: 
+a36597;
+    --text-dark: 
+2D3748;
+    --text-light: 
+A0AEC0;
+    --background: 
+F7F8FC;
+    --white: 
+FFFFFF;
+    --success: 
+48BB78;
+    --warning: 
+ED8936;
+    --danger: 
+E53E3E;
+    --info: 
+4299E1;
+    --border: 
+E2E8F0;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+}
+
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: -}
+#
+#
+# Commit Hash 16c804f
+#
+>>>>>>> bc14d86262cd5ad94e1edb2b5c005569542963c4

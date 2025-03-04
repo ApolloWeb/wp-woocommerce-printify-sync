@@ -3,9 +3,7 @@
  * Main navigation component for the admin dashboard
  */
 defined('ABSPATH') || exit;
-?>
-
-<nav class="main-nav">
+?><nav class="main-nav">
     <ul>
         <li class="<?php echo (isset($_GET['page']) && $_GET['page'] === 'printify-sync-dashboard') ? 'active' : ''; ?>">
             <a href="admin.php?page=printify-sync-dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -29,4 +27,17 @@ defined('ABSPATH') || exit;
             <a href="admin.php?page=printify-sync-settings"><i class="fas fa-cog"></i> Settings</a>
         </li>
     </ul>
-</nav>
+</nav> Modified by: Rob Owen On: 2025-03-04 06:00:38 Commit Hash 16c804f Modified by: Rob Owen On: 2025-03-04 06:03:34 Commit Hash 16c804f# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------
+
+#
+# -------- Update Summary --------
+#
+# Modified by: Rob Owen
+#
+# On: 2025-03-04 08:00:31
+#
+# Change: Added: </nav> Modified by: Rob Owen On: 2025-03-04 06:00:38 Commit Hash 16c804f Modified by: Rob Owen On: 2025-03-04 06:03:34 Commit Hash 16c804f# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------# Commit Hash 16c804f# Initial commit tracked# -------- End Update Summary --------
+#
+#
+# Commit Hash 16c804f
+#
