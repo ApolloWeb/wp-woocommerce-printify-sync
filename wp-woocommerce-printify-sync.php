@@ -19,7 +19,12 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-// Set to true to enable debug output
+// Define plugin constants
+define('PRINTIFY_SYNC_VERSION', '1.0.7');
+define('PRINTIFY_SYNC_FILE', __FILE__);
+define('PRINTIFY_SYNC_PATH', plugin_dir_path(__FILE__));
+define('PRINTIFY_SYNC_URL', plugin_dir_url(__FILE__));
+define('PRINTIFY_SYNC_BASENAME', plugin_basename(__FILE__));
 define('PRINTIFY_SYNC_DEBUG', true);
 
 // Simple debugging function
@@ -34,52 +39,52 @@ function printify_sync_debug($message) {
 }
 
 printify_sync_debug('Plugin loading: WP WooCommerce Printify Sync');
+printify_sync_debug('Plugin path: ' . PRINTIFY_SYNC_PATH);
 
-require_once plugin_dir_path(__FILE__) . 'includes/Autoloader.php';
+// Include the autoloader
+require_once PRINTIFY_SYNC_PATH . 'includes/Autoloader.php';
 
-use ApolloWeb\WPWooCommercePrintifySync\Autoloader;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\AdminMenu;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\AdminDashboard;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\ShopsPage;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\ProductImport;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\ExchangeRatesPage;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\PostmanPage;
-use ApolloWeb\WPWooCommercePrintifySync\Settings\SettingsPage;
-use ApolloWeb\WPWooCommercePrintifySync\Sync\ProductSync;
-use ApolloWeb\WPWooCommercePrintifySync\Sync\OrderSync;
-use ApolloWeb\WPWooCommercePrintifySync\Webhook\WebhookHandler;
-use ApolloWeb\WPWooCommercePrintifySync\Logs\LogCleanup;
-use ApolloWeb\WPWooCommercePrintifySync\Settings\NotificationPreferences;
-use ApolloWeb\WPWooCommercePrintifySync\Settings\EnvironmentSettings;
-use ApolloWeb\WPWooCommercePrintifySync\Utilities\EnqueueAssets;
+// Use our autoloader
+\ApolloWeb\WPWooCommercePrintifySync\Autoloader::register();
+printify_sync_debug('Autoloader registered');
 
 // Include AJAX handlers
-if (file_exists(plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php')) {
-    require_once plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php';
+if (file_exists(PRINTIFY_SYNC_PATH . 'includes/ajax-handlers.php')) {
+    require_once PRINTIFY_SYNC_PATH . 'includes/ajax-handlers.php';
 }
 
-// Register the autoloader
-add_action('plugins_loaded', function () {
-    Autoloader::register();
-    printify_sync_debug('Autoloader registered');
-    
-    // Register classes
-    AdminDashboard::register();
-    AdminMenu::register();
-    ProductSync::register();
-    OrderSync::register();
-    WebhookHandler::register();
-    LogCleanup::register();
-    NotificationPreferences::register();
-    EnvironmentSettings::register();
-    
-    // Register the EnqueueAssets class to handle all asset loading
-    EnqueueAssets::register();
-    printify_sync_debug('All classes registered');
+// Initialize components one by one to identify any issues
+add_action('plugins_loaded', function() {
+    try {
+        // Initialize EnqueueAssets first
+        if (class_exists('\ApolloWeb\WPWooCommercePrintifySync\Utilities\EnqueueAssets')) {
+            printify_sync_debug('Initializing EnqueueAssets');
+            \ApolloWeb\WPWooCommercePrintifySync\Utilities\EnqueueAssets::init();
+        } else {
+            printify_sync_debug('EnqueueAssets class not found');
+        }
+        
+        // Initialize remaining components if they exist
+        $classes = [
+            '\ApolloWeb\WPWooCommercePrintifySync\Admin\AdminMenu',
+            '\ApolloWeb\WPWooCommercePrintifySync\Admin\AdminDashboard',
+            '\ApolloWeb\WPWooCommercePrintifySync\Sync\ProductSync',
+            '\ApolloWeb\WPWooCommercePrintifySync\Sync\OrderSync',
+            '\ApolloWeb\WPWooCommercePrintifySync\Webhook\WebhookHandler',
+            '\ApolloWeb\WPWooCommercePrintifySync\Logs\LogCleanup',
+            '\ApolloWeb\WPWooCommercePrintifySync\Settings\NotificationPreferences',
+            '\ApolloWeb\WPWooCommercePrintifySync\Settings\EnvironmentSettings'
+        ];
+        
+        foreach ($classes as $class) {
+            if (class_exists($class) && method_exists($class, 'register')) {
+                printify_sync_debug('Registering: ' . $class);
+                call_user_func([$class, 'register']);
+            } else {
+                printify_sync_debug('Class not found or missing register method: ' . $class);
+            }
+        }
+    } catch (\Exception $e) {
+        printify_sync_debug('Error during plugin initialization: ' . $e->getMessage());
+    }
 });
-
-// Instantiate AdminMenu
-add_action('plugins_loaded', function () {
-    EnqueueAssets::register();
-}); // Ensure this runs after the autoloader is registered
-

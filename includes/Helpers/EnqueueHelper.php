@@ -1,6 +1,5 @@
 <?php
 
-
 namespace ApolloWeb\WPWooCommercePrintifySync\Helpers;
 
 class EnqueueHelper {
@@ -15,10 +14,12 @@ class EnqueueHelper {
         // Get only the filename without the directory path
         $filename = pathinfo($file_path, PATHINFO_FILENAME);
         
-        // Ensure only file extensions are removed
-        $filename = str_replace(['.css', '.js', '.min'], '', $filename);
+        // ONLY remove .min if present, don't touch the rest of the filename
+        if (strpos($filename, '.min') !== false) {
+            $filename = str_replace('.min', '', $filename);
+        }
         
-        // Return the handle with prefix intact
+        // Return the handle with prefix and filename
         return $handle_prefix . '-' . $filename;
     }
 
@@ -29,7 +30,20 @@ class EnqueueHelper {
      * @return string|false
      */
     public static function get_minified_file($file_path) {
-        $minified_path = str_replace(['.css', '.js'], ['.min.css', '.min.js'], $file_path);
+        // Don't check if the file is already minified
+        if (strpos($file_path, '.min.') !== false) {
+            return $file_path;
+        }
+        
+        // Use pathinfo for reliable extension handling
+        $pathinfo = pathinfo($file_path);
+        $dir = $pathinfo['dirname'];
+        $filename = $pathinfo['filename'];
+        $ext = $pathinfo['extension'];
+        
+        // Construct the minified file path
+        $minified_path = $dir . '/' . $filename . '.min.' . $ext;
+        
         return file_exists($minified_path) ? $minified_path : false;
     }
 
@@ -42,8 +56,8 @@ class EnqueueHelper {
      * @return string
      */
     public static function convert_path_to_url($file_path, $dir_path, $dir_url) {
-        $relative_path = str_replace($dir_path . '/', '', $file_path);
-        return $dir_url . '/' . $relative_path;
+        $relative_path = str_replace($dir_path, '', $file_path);
+        $relative_path = ltrim($relative_path, '/');
+        return trailingslashit($dir_url) . $relative_path;
     }
 }
-
