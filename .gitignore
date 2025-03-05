@@ -7,3 +7,4 @@ update-change-summary.php
 .wp-env.json
 printify_sync_files_list.txt
 docker-compose.override.yml
+.husky/*

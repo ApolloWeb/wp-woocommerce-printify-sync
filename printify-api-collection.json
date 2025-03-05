@@ -1,0 +1,187 @@
+{
+  "info": {
+    "_postman_id": "e8f7a920-d6c4-42e3-8bba-5f3c15d8f45d",
+    "name": "Printify API Collection",
+    "description": "A comprehensive collection for the Printify API to be used with the WP WooCommerce Printify Sync plugin.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Endpoints for testing API authentication",
+      "item": [
+        {
+          "name": "Get Shops",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{printify_api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "https://api.printify.com/v1/shops.json",
+              "protocol": "https",
+              "host": [
+                "api",
+                "printify",
+                "com"
+              ],
+              "path": [
+                "v1",
+                "shops.json"
+              ]
+            },
+            "description": "List all shops connected to the authenticated account. Use this to verify that your API key is working correctly."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Shop Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{printify_api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "https://api.printify.com/v1/shops/{{shop_id}}",
+              "protocol": "https",
+              "host": [
+                "api",
+                "printify",
+                "com"
+              ],
+              "path": [
+                "v1",
+                "shops",
+                "{{shop_id}}"
+              ]
+            },
+            "description": "Get detailed information about a specific shop."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "description": "Endpoints for product management",
+      "item": [
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{printify_api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "https://api.printify.com/v1/shops/{{shop_id}}/products.json?page=1&limit=10",
+              "protocol": "https",
+              "host": [
+                "api",
+                "printify",
+                "com"
+              ],
+              "path": [
+                "v1",
+                "shops",
+                "{{shop_id}}",
+                "products.json"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get a list of products in a shop with pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{printify_api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "https://api.printify.com/v1/shops/{{shop_id}}/products/{{product_id}}.json",
+              "protocol": "https",
+              "host": [
+                "api",
+                "printify",
+                "com"
+              ],
+              "path": [
+                "v1",
+                "shops",
+                "{{shop_id}}",
+                "products",
+                "{{product_id}}.json"
+              ]
+            },
+            "description": "Get detailed information about a specific product."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{printify_api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Sample T-Shirt\",\n    \"description\": \"This is a sample t-shirt created via API\",\n    \"blueprint_id\": 1,\n    \"print_provider_id\": 1,\n    \"variants\": [\n        {\n            \"id\": 123,\n            \"price\": 25.99,\n            \"is_enabled\": true\n        }\n    ],\n    \"print_areas\": [\n        {\n            \"variant_ids\": [123],\n            \"placeholders\": [\n                {\n                    \"position\": \"front\",\n                    \"images\": [\n                        {\n                            \"id\": \"abc123\",\n                            \"x\": 0.5,\n                            \"y\": 0.5,\n                            \"scale\": 1,\n                            \"angle\": 0\n                        }\n                    ]\n                }\n            ]\n        }\n    ],\n    \"options\": [\n        {\n            \"id\": \"color\",\n            \"value\": \"red\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "https://api.printify.com/v1/shops/{{shop_id}}/products.json",
+              "protocol": "https",
+              "host": [
+                "api",
+                "printify",
+                "com"
+              ],
+              "path": [
+                "v1",
+                "shops",
+                "{{shop_id}}",
+                "products.json"
+              ]
+            },
+            "description": "Create a new product in a shop."
+          },
+          "response": []
+        },
+        {
+          "

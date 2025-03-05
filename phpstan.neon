@@ -1,0 +1,13 @@
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+parameters:
+    level: max
+    paths:
+        - src
+    ignoreErrors:
+        - '#Unsafe usage of new static#'
+    checkMissingIterableValueType: true
+    checkExplicitMixed: true
+    checkGenericClassInNonGenericObjectType: true

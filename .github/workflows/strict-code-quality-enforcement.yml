@@ -1,0 +1,96 @@
+name: Strict Code Quality Enforcement
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Detect `act` and Install PHP if Necessary
+        id: check-act
+        run: |
+          if [ -n "$ACT" ]; then
+            echo "Running inside act. Installing PHP manually..."
+            apt-get update
+            apt-get install -y php-cli php-mbstring php-xml unzip curl
+            curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+          else
+            echo "Running on GitHub Actions."
+          fi
+        shell: bash
+
+      - name: Setup PHP (GitHub Actions)
+        if: ${{ env.ACT == '' }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, phpcs, phpstan, rector
+
+      - name: Install PHP Dependencies (if composer.json exists)
+        run: |
+          if [ -f "composer.json" ]; then
+            composer install --no-interaction --prefer-dist
+            composer dump-autoload
+          else
+            echo "No composer.json found, skipping Composer installation."
+          fi
+
+      - name: Install PHPStan Globally (If composer.json is Missing)
+        run: |
+          if [ ! -f "composer.json" ]; then
+            echo "No composer.json found. Installing PHPStan globally..."
+            composer global require phpstan/phpstan
+            export PATH="$HOME/.composer/vendor/bin:$PATH"
+          fi
+
+      - name: Run PHPStan (Strict Analysis - If Installed)
+        run: |
+          if [ -f "vendor/bin/phpstan" ]; then
+            vendor/bin/phpstan analyse --level=9 --no-progress
+          elif command -v phpstan > /dev/null; then
+            phpstan analyse --level=9 --no-progress
+          else
+            echo "PHPStan not found. Skipping analysis."
+          fi
+
+      - name: Run PHP_CodeSniffer
+        run: vendor/bin/phpcs --standard=phpcs.xml.dist || exit 1
+
+      - name: Auto-Fix PHP Issues with PHPCBF
+        run: vendor/bin/phpcbf --standard=phpcs.xml.dist
+
+      - name: Setup Node.js for JS & CSS Checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install JS & CSS Dependencies
+        run: npm install --global eslint stylelint prettier
+
+      - name: Run ESLint
+        run: eslint "**/*.js" --ignore-path .gitignore || exit 1
+
+      - name: Run Stylelint
+        run: stylelint "**/*.{css,scss}" --ignore-path .gitignore || exit 1
+
+      - name: Run Prettier for Formatting
+        run: prettier --write "**/*.{php,js,css,scss}"
+
+      - name: Commit & Push Fixes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Automated Code Fixes (PHP, JS, CSS, SCSS)" || echo "No changes to commit"
+          git push || echo "No changes to push"
