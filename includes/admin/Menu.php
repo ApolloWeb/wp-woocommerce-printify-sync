@@ -24,8 +24,17 @@ class Menu {
             __('Dashboard', 'wp-woocommerce-printify-sync'),
             __('Dashboard', 'wp-woocommerce-printify-sync'),
             'manage_options',
-            'wpwprintifysync-dashboard',
+            'wpwprintifysync',
             [self::class, 'displayDashboard']
+        );
+
+        add_submenu_page(
+            'wpwprintifysync',
+            __('Shops', 'wp-woocommerce-printify-sync'),
+            __('Shops', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'wpwprintifysync-shops',
+            [self::class, 'displayShopsPage']
         );
 
         add_submenu_page(
@@ -111,15 +120,6 @@ class Menu {
 
         add_submenu_page(
             'wpwprintifysync',
-            __('Shops', 'wp-woocommerce-printify-sync'),
-            __('Shops', 'wp-woocommerce-printify-sync'),
-            'manage_options',
-            'wpwprintifysync-shops',
-            [self::class, 'displayShopsPage']
-        );
-
-        add_submenu_page(
-            'wpwprintifysync',
             __('Postman', 'wp-woocommerce-printify-sync'),
             __('Postman', 'wp-woocommerce-printify-sync'),
             'manage_options',
@@ -136,16 +136,20 @@ class Menu {
         include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/products-page.php';
     }
 
+    public static function displayShopsPage() {
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/shops-page.php'; // Placeholder template
+    }
+
     public static function displayOrdersPage() {
         include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/orders-page.php';
     }
 
     public static function displayShippingPage() {
-        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/shipping-page.php';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/shipping-page.php'; // Placeholder template
     }
 
     public static function displayCurrencyPage() {
-        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/currency-page.php';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/currency-page.php'; // Placeholder template
     }
 
     public static function displaySettingsPage() {
@@ -153,26 +157,22 @@ class Menu {
     }
 
     public static function displayLogsPage() {
-        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/logs-page.php';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/logs-page.php'; // Placeholder template
     }
 
     public static function displayReportsPage() {
-        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/reports-page.php';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/reports-page.php'; // Placeholder template
     }
 
     public static function displayToolsPage() {
-        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/tools-page.php';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/tools-page.php'; // Placeholder template
     }
 
     public static function displayTicketsPage() {
-        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/tickets-page.php';
-    }
-
-    public static function displayShopsPage() {
-        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/shops-page.php';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/tickets-page.php'; // Placeholder template
     }
 
     public static function displayPostmanPage() {
-        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/postman-page.php';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/postman-page.php'; // Placeholder template
     }
 }

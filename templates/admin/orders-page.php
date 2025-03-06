@@ -4,7 +4,7 @@
  *
  * @package ApolloWeb\WPWooCommercePrintifySync
  * @version 1.0.0
- * @author ApolloWeb
+ * @autor ApolloWeb
  */
 
 // Exit if accessed directly
@@ -16,10 +16,10 @@ use ApolloWeb\WPWooCommercePrintifySync\Helpers\OrderHelper;
 $action_message = '';
 if (isset($_POST['wpwprintifysync_order_action']) && isset($_POST['order_ids']) && is_array($_POST['order_ids'])) {
     check_admin_referer('wpwprintifysync_order_action', 'wpwprintifysync_order_nonce');
-    
+
     $action = isset($_POST['bulk_action']) ? sanitize_text_field($_POST['bulk_action']) : '';
     $order_ids = array_map('intval', $_POST['order_ids']);
-    
+
     if ($action === 'sync') {
         // Schedule order sync
         foreach ($order_ids as $order_id) {
@@ -33,7 +33,7 @@ if (isset($_POST['wpwprintifysync_order_action']) && isset($_POST['order_ids']) 
                 ]
             );
         }
-        
+
         $action_message = sprintf(
             _n(
                 'Scheduled %d order for submission to Printify.',
@@ -207,7 +207,7 @@ $all_statuses = array_merge($wc_statuses, $custom_statuses);
                         $date = $order->get_date_created()->date_i18n(get_option('date_format') . ' ' . get_option('time_format'));
                         $status = $order->get_status();
                         $status_label = wc_get_order_status_name($status);
-                        
+
                         // Get Printify data
                         $printify_order_id = $order->get_meta('_printify_order_id');
                         $tracking_number = $order->get_meta('_printify_tracking_number');
