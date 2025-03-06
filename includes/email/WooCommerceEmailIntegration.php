@@ -78,9 +78,9 @@ class WooCommerceEmailIntegration {
      */
     public function register_custom_emails($email_classes) {
         // Include our custom email classes
-        require_once WPWPRINTIFYSYNC_PLUGIN_DIR . 'includes/Email/TicketEmails/TicketCreatedEmail.php';
-        require_once WPWPRINTIFYSYNC_PLUGIN_DIR . 'includes/Email/TicketEmails/TicketReplyEmail.php';
-        require_once WPWPRINTIFYSYNC_PLUGIN_DIR . 'includes/Email/TicketEmails/TicketResolvedEmail.php';
+        require_once WPWPRINTIFYSYNC_PLUGIN_DIR . 'includes/email/TicketEmails/TicketCreatedEmail.php';
+        require_once WPWPRINTIFYSYNC_PLUGIN_DIR . 'includes/email/TicketEmails/TicketReplyEmail.php';
+        require_once WPWPRINTIFYSYNC_PLUGIN_DIR . 'includes/email/TicketEmails/TicketResolvedEmail.php';
         
         // Add our email classes
         $email_classes['WC_Email_Ticket_Created'] = new TicketEmails\TicketCreatedEmail();

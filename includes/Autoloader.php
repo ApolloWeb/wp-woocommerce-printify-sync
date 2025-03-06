@@ -67,31 +67,6 @@ class Autoloader {
             return true;
         }
         
-        // Check if this might be a file with "class-" prefix (WordPress convention)
-        $parts = explode('\\', $relative_class);
-        $class_name = array_pop($parts);
-        $directory = $this->base_dir;
-        
-        if (!empty($parts)) {
-            $directory .= strtolower(implode('/', $parts)) . '/';
-        }
-        
-        // Check various WordPress naming conventions
-        $file_patterns = [
-            $directory . 'class-' . strtolower(str_replace('_', '-', $class_name)) . '.php',
-            $directory . 'class-' . strtolower($class_name) . '.php',
-            $directory . strtolower($class_name) . '.php',
-            $directory . 'abstract-' . strtolower(str_replace('_', '-', $class_name)) . '.php',
-            $directory . 'interface-' . strtolower(str_replace('_', '-', $class_name)) . '.php'
-        ];
-        
-        foreach ($file_patterns as $file) {
-            if (file_exists($file)) {
-                require_once $file;
-                return true;
-            }
-        }
-        
         return false;
     }
 }

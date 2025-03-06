@@ -305,7 +305,7 @@ class WPWPRINTIFYSYNC_WooCommerceApiClient {
         }
         
         // Make bulk update request
-        $response = $this->request("orders/{$order_id}/meta/batch", array(
+        $response = $->request("orders/{$order_id}/meta/batch", array(
             'method' => 'POST',
             'body' => array(
                 'create' => $payload

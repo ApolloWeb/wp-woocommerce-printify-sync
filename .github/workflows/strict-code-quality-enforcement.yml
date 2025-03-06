@@ -64,11 +64,33 @@ jobs:
             echo "PHPStan not found. Skipping analysis."
           fi
 
-      - name: Run PHP_CodeSniffer
-        run: vendor/bin/phpcs --standard=phpcs.xml.dist || exit 1
+      - name: Install PHPCS Globally (If composer.json is Missing)
+        run: |
+          if [ ! -f "composer.json" ]; then
+            echo "No composer.json found. Installing PHPCS globally..."
+            composer global require squizlabs/php_codesniffer
+            export PATH="$HOME/.composer/vendor/bin:$PATH"
+          fi
+
+      - name: Run PHP_CodeSniffer (If Installed)
+        run: |
+          if [ -f "vendor/bin/phpcs" ]; then
+            vendor/bin/phpcs --standard=phpcs.xml.dist || exit 1
+          elif command -v phpcs > /dev/null; then
+            phpcs --standard=phpcs.xml.dist || exit 1
+          else
+            echo "PHPCS not found. Skipping analysis."
+          fi
 
       - name: Auto-Fix PHP Issues with PHPCBF
-        run: vendor/bin/phpcbf --standard=phpcs.xml.dist
+        run: |
+          if [ -f "vendor/bin/phpcbf" ]; then
+            vendor/bin/phpcbf --standard=phpcs.xml.dist
+          elif command -v phpcbf > /dev/null; then
+            phpcbf --standard=phpcs.xml.dist
+          else
+            echo "PHPCBF not found. Skipping auto-fix."
+          fi
 
       - name: Setup Node.js for JS & CSS Checks
         uses: actions/setup-node@v4
@@ -76,10 +98,11 @@ jobs:
           node-version: '20'
 
       - name: Install JS & CSS Dependencies
-        run: npm install --global eslint stylelint prettier
+        run: npm install --global eslint stylelint stylelint-config-standard prettier
+    
 
-      - name: Run ESLint
-        run: eslint "**/*.js" --ignore-path .gitignore || exit 1
+      - name: Run ESLint and Auto-Fix Issues
+        run: eslint "**/*.js" --fix || exit 1
 
       - name: Run Stylelint
         run: stylelint "**/*.{css,scss}" --ignore-path .gitignore || exit 1

@@ -1,28 +1,58 @@
-    /**
-     * Get geolocator
-     *
-     * @return \ApolloWeb\WPWooCommercePrintifySync\Geolocation\Geolocator
-     */
+<?php
+/**
+ * Plugin Name: WP WooCommerce Printify Sync
+ * Description: Sync products from Printify to WooCommerce
+ * Plugin URI: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
+ * Version: 1.0.0
+ * Author: ApolloWeb
+ * Author URI: https://github.com/ApolloWeb
+ * Text Domain: wp-woocommerce-printify-sync
+ * Domain Path: /languages
+ * Requires at least: 5.6
+ * Requires PHP: 7.3
+ * License: MIT
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync
+ */
+
+namespace ApolloWeb\WPWooCommercePrintifySync;
+
+// Define plugin directory
+if (!defined('WPWPRINTIFYSYNC_PLUGIN_DIR')) {
+    define('WPWPRINTIFYSYNC_PLUGIN_DIR', plugin_dir_path(__FILE__));
+}
+
+// Include the autoloader
+require_once WPWPRINTIFYSYNC_PLUGIN_DIR . 'includes/Autoloader.php';
+
+// Register the autoloader
+$autoloader = new Autoloader();
+$autoloader->register();
+
+class WP_WooCommerce_Printify_Sync {
+    private static $instance = null;
+
+    public static function get_instance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    public function init() {
+        // Initialization code
+    }
+
     public function get_geolocator() {
-        return \ApolloWeb\WPWooCommercePrintifySync\Geolocation\Geolocator::get_instance();
+        return Geolocation\Geolocator::get_instance();
     }
-    
-    /**
-     * Get background processor
-     *
-     * @return \ApolloWeb\WPWooCommercePrintifySync\Processing\BackgroundProcessor
-     */
+
     public function get_background_processor() {
-        return \ApolloWeb\WPWooCommercePrintifySync\Processing\BackgroundProcessor::get_instance();
+        return Processing\BackgroundProcessor::get_instance();
     }
-    
-    /**
-     * Get installer
-     *
-     * @return \ApolloWeb\WPWooCommercePrintifySync\Install\Installer
-     */
+
     public function get_installer() {
-        return \ApolloWeb\WPWooCommercePrintifySync\Install\Installer::get_instance();
+        return Install\Installer::get_instance();
     }
 }
 

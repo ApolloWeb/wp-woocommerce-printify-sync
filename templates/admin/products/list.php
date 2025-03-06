@@ -91,4 +91,27 @@ ob_start();
                                 <a href="<?php echo esc_url($product['edit_link']); ?>" class="btn btn-outline-secondary" title="<?php esc_attr_e('Edit', 'wp-woocommerce-printify-sync'); ?>">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="
+                                <a href="#" class="btn btn-outline-danger" title="<?php esc_attr_e('Delete', 'wp-woocommerce-printify-sync'); ?>" data-product-id="<?php echo esc_attr($product['id']); ?>">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else : ?>
+                <tr>
+                    <td colspan="7" class="text-center"><?php esc_html_e('No products found.', 'wp-woocommerce-printify-sync'); ?></td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
+<?php
+$card_content = ob_get_clean();
+
+// Output the card with our content
+do_action('wpwprintifysync_render_card', __('Products', 'wp-woocommerce-printify-sync'), $card_content, array(
+    'card_icon' => 'fa-box',
+    'card_actions' => $card_actions,
+));
