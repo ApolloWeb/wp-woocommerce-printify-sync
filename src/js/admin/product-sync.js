@@ -1,0 +1,1 @@
+// JS code for product sync

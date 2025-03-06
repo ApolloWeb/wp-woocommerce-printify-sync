@@ -1,0 +1,8 @@
+// SCSS styles for admin dashboard
+
+/* Replace the Dashicon with Font Awesome icon */
+#toplevel_page_printify-sync-settings .dashicons-admin-generic:before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f553"; /* Unicode for fa-tshirt */
+    font-weight: 900;
+}
