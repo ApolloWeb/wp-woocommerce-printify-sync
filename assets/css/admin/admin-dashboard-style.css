@@ -1,0 +1,11 @@
+/*!******************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/sass/admin/admin-dashboard.scss ***!
+  \******************************************************************************************************************************/
+/* Replace the Dashicon with Font Awesome icon */
+#toplevel_page_printify-sync-settings .dashicons-admin-generic:before {
+  font-family: "Font Awesome 5 Free";
+  content: "\f553"; /* Unicode for fa-tshirt */
+  font-weight: 900;
+}
+
+/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY3NzL2FkbWluL2FkbWluLWRhc2hib2FyZC1zdHlsZS5jc3MiLCJtYXBwaW5ncyI6Ijs7O0FBRUE7QUFDQTtFQUNJO0VBQ0E7RUFDQTtBQURKLEMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly93cC13b29jb21tZXJjZS1wcmludGlmeS1zeW5jLy4vc3JjL3Nhc3MvYWRtaW4vYWRtaW4tZGFzaGJvYXJkLnNjc3MiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gU0NTUyBzdHlsZXMgZm9yIGFkbWluIGRhc2hib2FyZFxuXG4vKiBSZXBsYWNlIHRoZSBEYXNoaWNvbiB3aXRoIEZvbnQgQXdlc29tZSBpY29uICovXG4jdG9wbGV2ZWxfcGFnZV9wcmludGlmeS1zeW5jLXNldHRpbmdzIC5kYXNoaWNvbnMtYWRtaW4tZ2VuZXJpYzpiZWZvcmUge1xuICAgIGZvbnQtZmFtaWx5OiBcIkZvbnQgQXdlc29tZSA1IEZyZWVcIjtcbiAgICBjb250ZW50OiBcIlxcZjU1M1wiOyAvKiBVbmljb2RlIGZvciBmYS10c2hpcnQgKi9cbiAgICBmb250LXdlaWdodDogOTAwO1xufSJdLCJuYW1lcyI6W10sInNvdXJjZVJvb3QiOiIifQ==*/
