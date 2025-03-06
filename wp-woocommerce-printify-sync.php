@@ -26,8 +26,5 @@ define('WPWPPS_PLUGIN_URL', plugin_dir_url(__FILE__));
 // Include the autoloader
 require_once WPWPPS_PLUGIN_DIR . 'includes/Autoloader.php';
 
-// Initialize the Enqueue class
-new ApolloWeb\WPWooCommercePrintifySync\Enqueue();
-
-// Initialize the Menu class
-new ApolloWeb\WPWooCommercePrintifySync\Admin\Menu();
+// Register all the services
+ApolloWeb\WPWooCommercePrintifySync\Init::register_services();
