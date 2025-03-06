@@ -1,0 +1,21 @@
+/* Error Logs styles go here */
+body {
+    background-color: #f5f5f5;
+}
+
+.card {
+    margin: 20px 0;
+}
+
+.card-header {
+    background-color: #96588A; /* WooCommerce purple */
+    color: #fff;
+}
+
+.logs-container {
+    margin-top: 20px;
+}
+
+#logs-status {
+    margin-top: 20px;
+}

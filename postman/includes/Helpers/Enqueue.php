@@ -16,8 +16,8 @@ class Enqueue {
      */
     public static function enqueueAdminAssets($hook) {
         // Enqueue Shards Dashboard Lite CSS and JS
-        wp_enqueue_style('shards-dashboard-lite-css', WP_WOOCOMMERCE_PRINTIFY_SYNC_PLUGIN_URL . 'assets/css/shards-dashboard-lite.min.css');
-        wp_enqueue_script('shards-dashboard-lite-js', WP_WOOCOMMERCE_PRINTIFY_SYNC_PLUGIN_URL . 'assets/js/shards-dashboard-lite.min.js', ['jquery'], null, true);
+        wp_enqueue_style('shards-dashboard-lite-css', WP_WOOCOMMERCE_PRINTIFY_SYNC_PLUGIN_URL . 'assets/shards-dashboard-lite.min.css');
+        wp_enqueue_script('shards-dashboard-lite-js', WP_WOOCOMMERCE_PRINTIFY_SYNC_PLUGIN_URL . 'assets/shards-dashboard-lite.min.js', ['jquery'], null, true);
 
         // Enqueue Chart.js
         wp_enqueue_script('chart-js', 'https://cdn.jsdelivr.net/npm/chart.js', [], null, true);

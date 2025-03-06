@@ -19,7 +19,6 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-
 // Define constants
 define('WP_WOOCOMMERCE_PRINTIFY_SYNC_VERSION', '1.0.0');
 define('WP_WOOCOMMERCE_PRINTIFY_SYNC_PLUGIN_DIR', plugin_dir_path(__FILE__));

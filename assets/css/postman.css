@@ -1,0 +1,13 @@
+/* Postman page styles go here */
+body {
+    background-color: #f5f5f5;
+}
+
+.card {
+    margin: 20px 0;
+}
+
+.card-header {
+    background-color: #96588A; /* WooCommerce purple */
+    color: #fff;
+}

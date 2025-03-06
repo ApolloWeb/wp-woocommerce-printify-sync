@@ -1,0 +1,12 @@
+/* Settings page styles go here */
+body {
+    background-color: #f5f5f5;
+}
+
+.form-table th {
+    width: 250px;
+}
+
+.form-table td input {
+    width: 100%;
+}

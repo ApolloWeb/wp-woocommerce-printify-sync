@@ -1,0 +1,7 @@
+services:
+  database:
+    volumes:
+      - wp-env-mysql-data:/var/lib/mysql
+
+volumes:
+  wp-env-mysql-data:
