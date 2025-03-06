@@ -1,0 +1,24 @@
+# Ignore PHP files
+*.php
+
+# Ignore common config files
+composer.json
+composer.lock
+package-lock.json
+yarn.lock
+node_modules/
+vendor/
+
+# Ignore GitHub Actions workflow files
+.github/
+.git/
+
+# Ignore minified and built assets
+dist/
+build/
+*.min.js
+*.min.css
+
+# Ignore logs and cache
+*.log
+.cache/

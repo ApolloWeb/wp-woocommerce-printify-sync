@@ -112,7 +112,7 @@ jobs:
           fi
 
       - name: Run Prettier for Formatting
-        run: prettier --write "**/*.{php,js,css,scss}"
+        run: prettier --write --ignore-unknown "**/*.{js,css,scss}"
 
       - name: Commit & Push Fixes
         run: |
