@@ -24,7 +24,7 @@ class Menu {
             __('Dashboard', 'wp-woocommerce-printify-sync'),
             __('Dashboard', 'wp-woocommerce-printify-sync'),
             'manage_options',
-            'wpwprintifysync',
+            'wpwprintifysync-dashboard',
             [self::class, 'displayDashboard']
         );
 
@@ -63,25 +63,116 @@ class Menu {
             'wpwprintifysync-currency',
             [self::class, 'displayCurrencyPage']
         );
+
+        add_submenu_page(
+            'wpwprintifysync',
+            __('Settings', 'wp-woocommerce-printify-sync'),
+            __('Settings', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'wpwprintifysync-settings',
+            [self::class, 'displaySettingsPage']
+        );
+
+        add_submenu_page(
+            'wpwprintifysync',
+            __('Logs', 'wp-woocommerce-printify-sync'),
+            __('Logs', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'wpwprintifysync-logs',
+            [self::class, 'displayLogsPage']
+        );
+
+        add_submenu_page(
+            'wpwprintifysync',
+            __('Reports', 'wp-woocommerce-printify-sync'),
+            __('Reports', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'wpwprintifysync-reports',
+            [self::class, 'displayReportsPage']
+        );
+
+        add_submenu_page(
+            'wpwprintifysync',
+            __('Tools', 'wp-woocommerce-printify-sync'),
+            __('Tools', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'wpwprintifysync-tools',
+            [self::class, 'displayToolsPage']
+        );
+
+        add_submenu_page(
+            'wpwprintifysync',
+            __('Tickets', 'wp-woocommerce-printify-sync'),
+            __('Tickets', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'wpwprintifysync-tickets',
+            [self::class, 'displayTicketsPage']
+        );
+
+        add_submenu_page(
+            'wpwprintifysync',
+            __('Shops', 'wp-woocommerce-printify-sync'),
+            __('Shops', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'wpwprintifysync-shops',
+            [self::class, 'displayShopsPage']
+        );
+
+        add_submenu_page(
+            'wpwprintifysync',
+            __('Postman', 'wp-woocommerce-printify-sync'),
+            __('Postman', 'wp-woocommerce-printify-sync'),
+            'manage_options',
+            'wpwprintifysync-postman',
+            [self::class, 'displayPostmanPage']
+        );
     }
 
     public static function displayDashboard() {
-        echo '<h1>' . __('Printify Sync Dashboard', 'wp-woocommerce-printify-sync') . '</h1>';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/dashboard.php';
     }
 
     public static function displayProductsPage() {
-        echo '<h1>' . __('Products', 'wp-woocommerce-printify-sync') . '</h1>';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/products-page.php';
     }
 
     public static function displayOrdersPage() {
-        echo '<h1>' . __('Orders', 'wp-woocommerce-printify-sync') . '</h1>';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/orders-page.php';
     }
 
     public static function displayShippingPage() {
-        echo '<h1>' . __('Shipping', 'wp-woocommerce-printify-sync') . '</h1>';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/shipping-page.php';
     }
 
     public static function displayCurrencyPage() {
-        echo '<h1>' . __('Currency', 'wp-woocommerce-printify-sync') . '</h1>';
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/currency-page.php';
+    }
+
+    public static function displaySettingsPage() {
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/settings.php';
+    }
+
+    public static function displayLogsPage() {
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/logs-page.php';
+    }
+
+    public static function displayReportsPage() {
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/reports-page.php';
+    }
+
+    public static function displayToolsPage() {
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/tools-page.php';
+    }
+
+    public static function displayTicketsPage() {
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/tickets-page.php';
+    }
+
+    public static function displayShopsPage() {
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/shops-page.php';
+    }
+
+    public static function displayPostmanPage() {
+        include WPWPRINTIFYSYNC_PLUGIN_DIR . 'templates/admin/postman-page.php';
     }
 }

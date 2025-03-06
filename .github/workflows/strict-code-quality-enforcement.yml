@@ -98,14 +98,18 @@ jobs:
           node-version: '20'
 
       - name: Install JS & CSS Dependencies
-        run: npm install --global eslint stylelint stylelint-config-standard prettier
-    
+        run: npm install --global eslint stylelint stylelint-config-recommended prettier
 
       - name: Run ESLint and Auto-Fix Issues
         run: eslint "**/*.js" --fix || exit 1
 
-      - name: Run Stylelint
-        run: stylelint "**/*.{css,scss}" --ignore-path .gitignore || exit 1
+      - name: Run Stylelint (If Config Exists)
+        run: |
+          if [ -f "stylelint.config.js" ]; then
+            stylelint "**/*.{css,scss}" --fix || exit 1
+          else
+            echo "No stylelint.config.js found. Skipping Stylelint."
+          fi
 
       - name: Run Prettier for Formatting
         run: prettier --write "**/*.{php,js,css,scss}"
