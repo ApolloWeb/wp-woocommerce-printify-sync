@@ -1,0 +1,27 @@
+# Ignore unnecessary files and directories
+/vendor/
+/node_modules/
+/.DS_Store
+/.idea
+/.vscode
+*.log
+*.bak
+*.swp
+*.tmp
+
+# Ignore WordPress files
+wp/
+/wp-content/uploads/
+/wp-content/cache/
+/wp-content/upgrade/
+/wp-content/plugins/
+/wp-content/themes/
+!wp-content/plugins/wp-woocommerce-printify-sync/
+
+
+# Ignore environment configuration files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
