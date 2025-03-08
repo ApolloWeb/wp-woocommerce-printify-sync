@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b507586a6f9fd81cb383f66f795815dc",
+    "content-hash": "a5c6b2a4e8ddd078500c40f4b847daf0",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -2089,6 +2089,78 @@
                 }
             ],
             "time": "2022-01-24T18:55:24+00:00"
+        },
+        {
+            "name": "wpackagist-plugin/classic-editor",
+            "version": "1.6.7",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/classic-editor/",
+                "reference": "tags/1.6.7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/classic-editor.1.6.7.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/classic-editor/"
+        },
+        {
+            "name": "wpackagist-plugin/postie",
+            "version": "1.9.69",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/postie/",
+                "reference": "tags/1.9.69"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/postie.1.9.69.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/postie/"
+        },
+        {
+            "name": "wpackagist-plugin/redis-cache",
+            "version": "2.5.4",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/redis-cache/",
+                "reference": "tags/2.5.4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/redis-cache.2.5.4.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/redis-cache/"
+        },
+        {
+            "name": "wpackagist-plugin/smtp-mailer",
+            "version": "1.1.17",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/smtp-mailer/",
+                "reference": "trunk"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/smtp-mailer.zip?timestamp=1731556335"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/smtp-mailer/"
         },
         {
             "name": "wpackagist-plugin/woocommerce",

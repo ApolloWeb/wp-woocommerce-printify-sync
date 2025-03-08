@@ -8,15 +8,17 @@
 *.bak
 *.swp
 *.tmp
+deploy.sh
 
 # Ignore WordPress files
 wp/
-/wp-content/uploads/
-/wp-content/cache/
-/wp-content/upgrade/
-/wp-content/plugins/
-/wp-content/themes/
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/themes/
+wp-content/plugins/*
 !wp-content/plugins/wp-woocommerce-printify-sync/
+!wp-content/plugins/wp-woocommerce-printify-sync/**
 
 
 # Ignore environment configuration files

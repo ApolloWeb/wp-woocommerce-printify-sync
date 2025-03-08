@@ -1,31 +1,44 @@
 <?php
 
-use Dotenv\Dotenv;
+// ** Database settings - These settings get pulled from your environment file ** //
+define('DB_NAME', getenv('DB_NAME'));
+define('DB_USER', getenv('DB_USER'));
+define('DB_PASSWORD', getenv('DB_PASSWORD'));
+define('DB_HOST', getenv('DB_HOST'));
+define('DB_CHARSET', 'utf8mb4');
+define('DB_COLLATE', 'utf8mb4_unicode_ci');
 
-// Load Composer autoloader
-if (file_exists(__DIR__ . '/vendor/autoload.php')) {
-    require_once __DIR__ . '/vendor/autoload.php';
-}
+// ** WordPress Table Prefix ** //
+$table_prefix = getenv('DB_TABLE_PREFIX') ?: 'wp_';
 
-// Load environment variables from .env file
-if (file_exists(__DIR__ . '/.env')) {
-    $dotenv = Dotenv::createImmutable(__DIR__);
-    $dotenv->load();
-}
+// ** WordPress Plugin and Content Paths ** //
+// Ensures WordPress detects plugins in wp-content/plugins (root-level)
+define('WP_CONTENT_DIR', dirname(__FILE__) . '/wp-content');
+define('WP_CONTENT_URL', 'http://' . $_SERVER['HTTP_HOST'] . '/wp-content');
 
-// Define database settings using .env variables
-define('DB_NAME', getenv('DB_NAME') ?: 'wordpress');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASSWORD', getenv('DB_PASSWORD') ?: '');
-define('DB_HOST', getenv('DB_HOST') ?: 'mysql');
-define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8');
-define('DB_COLLATE', getenv('DB_COLLATE') ?: '');
+define('WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins');
+define('WP_PLUGIN_URL', WP_CONTENT_URL . '/plugins');
 
-// Define WordPress URLs
-define('WP_HOME', getenv('WP_HOME') ?: 'http://localhost:8081');
-define('WP_SITEURL', getenv('WP_SITEURL') ?: WP_HOME . '/wp');
+// Debugging mode (useful for troubleshooting)
+define('WP_DEBUG', filter_var(getenv('WP_DEBUG'), FILTER_VALIDATE_BOOLEAN));
+define('WP_DEBUG_LOG', filter_var(getenv('WP_DEBUG_LOG'), FILTER_VALIDATE_BOOLEAN));
+define('WP_DEBUG_DISPLAY', filter_var(getenv('WP_DEBUG_DISPLAY'), FILTER_VALIDATE_BOOLEAN));
 
-// Authentication unique keys and salts
+// Redis Configuration
+define('WP_REDIS_HOST', 'redis'); // Use 'redis' for Docker, or '127.0.0.1' for local
+define('WP_REDIS_PORT', 6379);
+define('WP_REDIS_DATABASE', 0);
+define('WP_REDIS_TIMEOUT', 1);
+define('WP_REDIS_READ_TIMEOUT', 1);
+define('WP_CACHE', true); // Enable WordPress caching
+
+// Redis Socket Path (Optional - for Unix socket connections)
+define('WP_REDIS_PATH', '/var/run/redis/redis-server.sock'); // Change path if needed
+
+// Define Woocommerce session handler
+define('WC_SESSION_HANDLER', 'Redis');
+
+// Security Keys (auto-populated from .env)
 define('AUTH_KEY', getenv('AUTH_KEY'));
 define('SECURE_AUTH_KEY', getenv('SECURE_AUTH_KEY'));
 define('LOGGED_IN_KEY', getenv('LOGGED_IN_KEY'));
@@ -35,20 +48,12 @@ define('SECURE_AUTH_SALT', getenv('SECURE_AUTH_SALT'));
 define('LOGGED_IN_SALT', getenv('LOGGED_IN_SALT'));
 define('NONCE_SALT', getenv('NONCE_SALT'));
 
-// Debugging
-define('WP_DEBUG', filter_var(getenv('WP_DEBUG'), FILTER_VALIDATE_BOOLEAN));
-define('WP_DEBUG_LOG', filter_var(getenv('WP_DEBUG_LOG'), FILTER_VALIDATE_BOOLEAN));
-define('WP_DEBUG_DISPLAY', filter_var(getenv('WP_DEBUG_DISPLAY'), FILTER_VALIDATE_BOOLEAN));
-@ini_set('display_errors', WP_DEBUG_DISPLAY ? '1' : '0');
+// WordPress URLs
+define('WP_HOME', getenv('WP_HOME'));
+define('WP_SITEURL', getenv('WP_SITEURL'));
 
-// Custom Content Directory (Optional)
-define('WP_CONTENT_DIR', __DIR__ . '/wp-content');
-define('WP_CONTENT_URL', WP_HOME . '/wp-content');
-
-// Set the absolute path to the WordPress directory.
+// Stop Editing! That's all, Happy Publishing.
 if (!defined('ABSPATH')) {
-    define('ABSPATH', __DIR__ . '/wp/');
+    define('ABSPATH', dirname(__FILE__) . '/wp/');
 }
-
-// Load WordPress settings
 require_once ABSPATH . 'wp-settings.php';
