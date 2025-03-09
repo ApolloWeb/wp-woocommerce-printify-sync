@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a5c6b2a4e8ddd078500c40f4b847daf0",
+    "content-hash": "139135ecace1053b217aa925ce7a68f3",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -2215,6 +2215,24 @@
             },
             "type": "wordpress-plugin",
             "homepage": "https://wordpress.org/plugins/wp-smushit/"
+        },
+        {
+            "name": "wpackagist-theme/botiga",
+            "version": "2.2.17",
+            "source": {
+                "type": "svn",
+                "url": "https://themes.svn.wordpress.org/botiga/",
+                "reference": "2.2.17"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/theme/botiga.2.2.17.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-theme",
+            "homepage": "https://wordpress.org/themes/botiga/"
         }
     ],
     "packages-dev": [],

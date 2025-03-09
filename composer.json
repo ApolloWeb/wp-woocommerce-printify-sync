@@ -11,12 +11,14 @@
     "wpackagist-plugin/postie": "^1.9.58",
     "wpackagist-plugin/redis-cache": "^2.5",
     "wpackagist-plugin/classic-editor": "^1.6",
-    "wpackagist-plugin/smtp-mailer": "^1.1"
+    "wpackagist-plugin/smtp-mailer": "^1.1",
+    "wpackagist-theme/botiga":"2.2.17"
   },
   "extra": {
     "wordpress-install-dir": "wp",
     "installer-paths": {
-      "wp-content/plugins/{$name}/": ["type:wordpress-plugin"]
+      "wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
+      "wp-content/themes/{$name}/": ["type:wordpress-theme"]
     }
   },
   "repositories": [
