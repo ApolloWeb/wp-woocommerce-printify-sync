@@ -18,6 +18,7 @@ wp-content/
 !wp-content/plugins/wp-woocommerce-printify-sync/**
 
 
+
 # Ignore environment configuration files
 .env
 .env.local
