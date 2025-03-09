@@ -16,7 +16,7 @@ use ApolloWeb\WPWooCommercePrintifySync\Interfaces\LoggerInterface;
 /**
  * Logger Class
  */
-class Logger implements LoggerInterface {
+class Logger {
     /**
      * Log levels
      *
@@ -41,27 +41,6 @@ class Logger implements LoggerInterface {
     protected $minimum_level;
     
     /**
-     * Table name for database logs
-     *
-     * @var string
-     */
-    protected $table_name;
-    
-    /**
-     * Whether to write logs to file
-     *
-     * @var bool
-     */
-    protected $log_to_file;
-    
-    /**
-     * Whether to write logs to database
-     *
-     * @var bool
-     */
-    protected $log_to_db;
-    
-    /**
      * Log file path
      *
      * @var string
@@ -69,41 +48,18 @@ class Logger implements LoggerInterface {
     protected $log_file;
     
     /**
-     * Maximum log file size in bytes (5MB default)
-     *
-     * @var int
-     */
-    protected $max_file_size = 5242880;
-    
-    /**
      * Constructor
      */
     public function __construct() {
-        global $wpdb;
-        
         // Set minimum log level from settings (default to 'info')
         $this->minimum_level = get_option('apolloweb_printify_log_level', 'info');
-        
-        // Set logging destinations from settings
-        $this->log_to_file = 'yes' === get_option('apolloweb_printify_log_to_file', 'yes');
-        $this->log_to_db = 'yes' === get_option('apolloweb_printify_log_to_db', 'yes');
-        
-        // Set table name using the database prefix
-        $this->table_name = $wpdb->prefix . 'apolloweb_printify_logs';
         
         // Set log file path
         $upload_dir = wp_upload_dir();
         $this->log_file = $upload_dir['basedir'] . '/apolloweb-printify/logs/plugin.log';
         
         // Ensure log directory exists
-        if ($this->log_to_file) {
-            $this->ensureLogDirectory();
-        }
-        
-        // Ensure log table exists
-        if ($this->log_to_db) {
-            $this->ensureLogTable();
-        }
+        $this->ensureLogDirectory();
     }
     
     /**
@@ -126,34 +82,6 @@ class Logger implements LoggerInterface {
     }
     
     /**
-     * Ensure log table exists
-     *
-     * @return void
-     */
-    protected function ensureLogTable() {
-        global $wpdb;
-        
-        $charset_collate = $wpdb->get_charset_collate();
-        
-        $sql = "CREATE TABLE IF NOT EXISTS $this->table_name (
-            id bigint(20) NOT NULL AUTO_INCREMENT,
-            timestamp datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            level varchar(20) NOT NULL,
-            message text NOT NULL,
-            context longtext,
-            user_id bigint(20) DEFAULT NULL,
-            ip_address varchar(100) DEFAULT NULL,
-            PRIMARY KEY (id),
-            KEY level (level),
-            KEY timestamp (timestamp),
-            KEY user_id (user_id)
-        ) $charset_collate;";
-        
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql);
-    }
-    
-    /**
      * Log a message
      *
      * @param string $message Log message
@@ -170,14 +98,12 @@ class Logger implements LoggerInterface {
         // Format log entry
         $entry = $this->formatLogEntry($message, $level, $context);
         
-        // Write to file if enabled
-        if ($this->log_to_file) {
-            $this->writeToFile($entry);
-        }
+        // Write to file
+        $this->writeToFile($entry);
         
-        // Write to database if enabled
-        if ($this->log_to_db) {
-            $this->writeToDatabase($message, $level, $context);
+        // Also log to error_log for debugging
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log($message . ($context ? ' ' . json_encode($context) : ''));
         }
     }
     
@@ -231,83 +157,7 @@ class Logger implements LoggerInterface {
      * @return void
      */
     protected function writeToFile($entry) {
-        // Rotate log if necessary
-        $this->rotateLogFileIfNeeded();
-        
-        // Write to log file
         error_log($entry, 3, $this->log_file);
-    }
-    
-    /**
-     * Write log entry to database
-     *
-     * @param string $message Log message
-     * @param string $level Log level
-     * @param array  $context Additional context
-     * @return void
-     */
-    protected function writeToDatabase($message, $level, $context = []) {
-        global $wpdb;
-        
-        // Get current user ID
-        $user_id = get_current_user_id();
-        
-        // Get IP address
-        $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
-        
-        // Insert log entry
-        $wpdb->insert(
-            $this->table_name,
-            [
-                'timestamp'  => current_time('mysql'),
-                'level'      => $level,
-                'message'    => $message,
-                'context'    => !empty($context) ? json_encode($context) : null,
-                'user_id'    => $user_id ? $user_id : null,
-                'ip_address' => $ip_address,
-            ],
-            [
-                '%s', // timestamp
-                '%s', // level
-                '%s', // message
-                '%s', // context
-                '%d', // user_id
-                '%s', // ip_address
-            ]
-        );
-    }
-    
-    /**
-     * Rotate log file if it exceeds the maximum size
-     *
-     * @return void
-     */
-    protected function rotateLogFileIfNeeded() {
-        if (!file_exists($this->log_file)) {
-            return;
-        }
-        
-        // Check file size
-        $file_size = filesize($this->log_file);
-        
-        if ($file_size < $this->max_file_size) {
-            return;
-        }
-        
-        // Rotate log file
-        $backup_file = $this->log_file . '.' . date('Y-m-d-H-i-s');
-        rename($this->log_file, $backup_file);
-        
-        // Compress backup file
-        if (function_exists('gzopen')) {
-            $gz_file = $backup_file . '.gz';
-            $gz = gzopen($gz_file, 'w9');
-            gzwrite($gz, file_get_contents($backup_file));
-            gzclose($gz);
-            
-            // Delete original backup file
-            unlink($backup_file);
-        }
     }
     
     /**

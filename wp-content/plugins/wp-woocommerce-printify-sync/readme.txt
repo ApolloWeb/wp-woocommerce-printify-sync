@@ -1,6 +1,6 @@
 === WP WooCommerce Printify Sync ===
 Contributors: apolloweb
-Tags: woocommerce, printify, print-on-demand, ecommerce, integration
+Tags: woocommerce, printify, print-on-demand, ecommerce, integration, pod, woo
 Requires at least: 5.6
 Tested up to: 6.4
 Requires PHP: 7.3
@@ -37,6 +37,10 @@ WP WooCommerce Printify Sync provides a comprehensive integration between WooCom
 
 Need help with setup or have custom requirements? Contact us at hello@apollo-web.co.uk or join our [Slack workspace](https://apollowebworkspace.slack.com/archives/C08FLP5Q8FL).
 
+= Documentation =
+
+For full documentation, please visit our [GitHub Wiki](https://github.com/ApolloWeb/wp-woocommerce-printify-sync/wiki).
+
 == Installation ==
 
 1. Upload the plugin files to the `/wp-content/plugins/wp-woocommerce-printify-sync` directory, or install the plugin through the WordPress plugins screen.
@@ -66,3 +70,33 @@ By default, orders are sent to Printify immediately when a customer places an or
 = Does this plugin support multi-currency stores? =
 
 Yes, the plugin includes built-in exchange rate management to handle currency conversions between WooCommerce and Printify.
+
+= How does the plugin handle shipping and fulfillment? =
+
+The plugin automatically maps WooCommerce shipping methods to Printify's available shipping options, and updates orders with tracking information when shipments are processed.
+
+= Can I use the plugin with multiple Printify stores? =
+
+Yes, you can configure the plugin to work with different Printify shops for different product categories.
+
+= Is this plugin compatible with multilingual sites? =
+
+Yes, the plugin is fully translatable and works with WPML, Polylang, and other WordPress multilingual plugins.
+
+== Screenshots ==
+
+1. Dashboard overview with sync status and recent orders
+2. Product import interface showing available Printify products
+3. Order management screen with Printify status information
+4. Plugin settings page
+5. Shipping profile configuration page
+
+== Changelog ==
+
+= 1.0.0 - 2025-03-09 =
+* Initial release
+
+== Upgrade Notice ==
+
+= 1.0.0 =
+Initial release of the WP WooCommerce Printify Sync plugin.

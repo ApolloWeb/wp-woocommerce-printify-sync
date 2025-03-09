@@ -1,223 +1,228 @@
 <?php
 /**
- * Redis Cache Implementation
+ * Redis Cache Handler
  *
- * Implements caching using Redis.
+ * Provides Redis-based caching functionality.
  *
  * @package ApolloWeb\WPWooCommercePrintifySync\Utils
  * @author ApolloWeb <hello@apollo-web.co.uk>
  * @since 1.0.0
+ * @updated 2025-03-09 13:25:00
  */
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Utils;
 
-use ApolloWeb\WPWooCommercePrintifySync\Interfaces\CacheInterface;
-use ApolloWeb\WPWooCommercePrintifySync\Interfaces\LoggerInterface;
-
 /**
  * RedisCache Class
  */
-class RedisCache implements CacheInterface {
+class RedisCache {
     /**
-     * Redis instance
+     * Redis client instance
      *
      * @var \Redis
      */
     private $redis;
     
     /**
-     * Logger instance
+     * Whether Redis is available
      *
-     * @var LoggerInterface
+     * @var bool
      */
-    private $logger;
+    private $is_connected = false;
     
     /**
-     * Cache key prefix
+     * Cache prefix
      *
      * @var string
      */
     private $prefix = 'apolloweb_printify_';
     
     /**
-     * Whether Redis is available
-     *
-     * @var bool
-     */
-    private $is_available = false;
-
-    /**
      * Constructor
      *
-     * @param LoggerInterface $logger Logger instance
+     * @param string $host Redis host
+     * @param int $port Redis port
+     * @param string $password Redis password
+     * @param int $database Redis database
+     * @param string $prefix Cache key prefix
      */
-    public function __construct(LoggerInterface $logger = null) {
-        $this->logger = $logger;
-        $this->initRedis();
-    }
-    
-    /**
-     * Initialize Redis connection
-     *
-     * @return void
-     */
-    private function initRedis() {
-        // Check if Redis is already available via the Redis Object Cache plugin
-        if (function_exists('wp_redis') && wp_redis()->redis instanceof \Redis) {
-            $this->redis = wp_redis()->redis;
-            $this->is_available = true;
-            
-            if ($this->logger) {
-                $this->logger->info('Using existing Redis connection from Redis Object Cache plugin');
-            }
-            
+    public function __construct($host = '127.0.0.1', $port = 6379, $password = '', $database = 0, $prefix = '') {
+        if (!class_exists('Redis')) {
             return;
         }
         
-        // Otherwise try to establish our own connection
-        if (class_exists('Redis')) {
-            try {
-                $this->redis = new \Redis();
-                
-                // Get Redis configuration from wp-config.php constants or use defaults
-                $host = defined('WP_REDIS_HOST') ? WP_REDIS_HOST : '127.0.0.1';
-                $port = defined('WP_REDIS_PORT') ? WP_REDIS_PORT : 6379;
-                $timeout = defined('WP_REDIS_TIMEOUT') ? WP_REDIS_TIMEOUT : 1;
-                $database = defined('WP_REDIS_DATABASE') ? WP_REDIS_DATABASE : 0;
-                
-                // Connect to Redis
-                if ($this->redis->connect($host, $port, $timeout)) {
-                    // Select database
-                    $this->redis->select($database);
-                    
-                    // Check if authentication is required
-                    if (defined('WP_REDIS_PASSWORD') && WP_REDIS_PASSWORD) {
-                        $this->redis->auth(WP_REDIS_PASSWORD);
-                    }
-                    
-                    $this->is_available = true;
-                    
-                    if ($this->logger) {
-                        $this->logger->info('Successfully connected to Redis server');
-                    }
-                }
-            } catch (\Exception $e) {
-                $this->is_available = false;
-                
-                if ($this->logger) {
-                    $this->logger->error('Failed to connect to Redis server: ' . $e->getMessage());
-                }
+        if (!empty($prefix)) {
+            $this->prefix = $prefix;
+        }
+        
+        try {
+            $this->redis = new \Redis();
+            $this->is_connected = $this->redis->connect($host, $port);
+            
+            if (!empty($password)) {
+                $this->redis->auth($password);
             }
-        } else {
-            if ($this->logger) {
-                $this->logger->warning('Redis PHP extension not installed');
+            
+            if ($database !== 0) {
+                $this->redis->select($database);
             }
+        } catch (\Exception $e) {
+            error_log('Redis connection error: ' . $e->getMessage());
+            $this->is_connected = false;
         }
     }
     
     /**
-     * Generate full cache key with prefix
+     * Check if Redis is connected
      *
-     * @param string $key Cache key
-     * @return string
+     * @return bool
      */
-    private function getFullKey($key) {
-        return $this->prefix . $key;
+    public function isConnected() {
+        return $this->is_connected;
     }
-
+    
     /**
-     * Get an item from the cache
+     * Get a value from cache
      *
      * @param string $key Cache key
-     * @param mixed  $default Default value if not found
+     * @param mixed $default Default value
      * @return mixed
      */
     public function get($key, $default = null) {
-        if (!$this->is_available) {
+        if (!$this->is_connected) {
             return $default;
         }
         
-        $full_key = $this->getFullKey($key);
-        $result = $this->redis->get($full_key);
+        $value = $this->redis->get($this->prefix . $key);
         
-        if (false === $result) {
+        if ($value === false) {
             return $default;
         }
         
-        $data = unserialize($result);
-        return false === $data ? $default : $data;
+        return unserialize($value);
     }
     
     /**
-     * Set an item in the cache
+     * Set a value in cache
      *
      * @param string $key Cache key
-     * @param mixed  $value Value to cache
-     * @param int    $expiration Expiration time in seconds
+     * @param mixed $value Cache value
+     * @param int $ttl Time to live in seconds
      * @return bool
      */
-    public function set($key, $value, $expiration = 0) {
-        if (!$this->is_available) {
+    public function set($key, $value, $ttl = 3600) {
+        if (!$this->is_connected) {
             return false;
         }
         
-        $full_key = $this->getFullKey($key);
-        $data = serialize($value);
-        
-        if ($expiration > 0) {
-            return $this->redis->setex($full_key, $expiration, $data);
-        }
-        
-        return $this->redis->set($full_key, $data);
+        return $this->redis->setex(
+            $this->prefix . $key,
+            $ttl,
+            serialize($value)
+        );
     }
     
     /**
-     * Check if an item exists in the cache
-     *
-     * @param string $key Cache key
-     * @return bool
-     */
-    public function has($key) {
-        if (!$this->is_available) {
-            return false;
-        }
-        
-        $full_key = $this->getFullKey($key);
-        return (bool) $this->redis->exists($full_key);
-    }
-    
-    /**
-     * Delete an item from the cache
+     * Delete a value from cache
      *
      * @param string $key Cache key
      * @return bool
      */
     public function delete($key) {
-        if (!$this->is_available) {
+        if (!$this->is_connected) {
             return false;
         }
         
-        $full_key = $this->getFullKey($key);
-        return (bool) $this->redis->del($full_key);
+        return $this->redis->del($this->prefix . $key) > 0;
     }
     
     /**
-     * Flush the cache
+     * Flush all keys with the plugin's prefix
      *
      * @return bool
      */
-    public function flush() {
-        if (!$this->is_available) {
+    public function flushPlugin() {
+        if (!$this->is_connected) {
             return false;
         }
         
-        // Get all keys with our prefix
         $keys = $this->redis->keys($this->prefix . '*');
         
-        if (!empty($keys)) {
-            return (bool) $this->redis->del($keys);
+        if (empty($keys)) {
+            return true;
         }
         
-        return true;
+        return $this->redis->del($keys) > 0;
+    }
+    
+    /**
+     * Check if a key exists in cache
+     *
+     * @param string $key Cache key
+     * @return bool
+     */
+    public function exists($key) {
+        if (!$this->is_connected) {
+            return false;
+        }
+        
+        return $this->redis->exists($this->prefix . $key) > 0;
+    }
+    
+    /**
+     * Increment a value in cache
+     *
+     * @param string $key Cache key
+     * @param int $value Increment value
+     * @return int|bool
+     */
+    public function increment($key, $value = 1) {
+        if (!$this->is_connected) {
+            return false;
+        }
+        
+        return $this->redis->incrBy($this->prefix . $key, $value);
+    }
+    
+    /**
+     * Store data in hash
+     *
+     * @param string $key Hash key
+     * @param string $field Hash field
+     * @param mixed $value Hash value
+     * @return bool
+     */
+    public function hashSet($key, $field, $value) {
+        if (!$this->is_connected) {
+            return false;
+        }
+        
+        return $this->redis->hSet(
+            $this->prefix . $key,
+            $field,
+            serialize($value)
+        );
+    }
+    
+    /**
+     * Get data from hash
+     *
+     * @param string $key Hash key
+     * @param string $field Hash field
+     * @param mixed $default Default value
+     * @return mixed
+     */
+    public function hashGet($key, $field, $default = null) {
+        if (!$this->is_connected) {
+            return $default;
+        }
+        
+        $value = $this->redis->hGet($this->prefix . $key, $field);
+        
+        if ($value === false) {
+            return $default;
+        }
+        
+        return unserialize($value);
     }
 }

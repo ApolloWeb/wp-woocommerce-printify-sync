@@ -10,10 +10,18 @@
 *.swp
 *.tmp
 deploy.sh
+certs/
 
 # Ignore WordPress files
 wp/
+# Ignore WordPress files
+wp/
+# Ignore WordPress files
+wp/
+# Ignore WordPress files
+wp/
 wp-content/
+!wp-content/plugins/
 !wp-content/plugins/wp-woocommerce-printify-sync/
 !wp-content/plugins/wp-woocommerce-printify-sync/**
 

@@ -8,6 +8,7 @@ define('DB_HOST', getenv('DB_HOST'));
 define('DB_CHARSET', 'utf8mb4');
 define('DB_COLLATE', 'utf8mb4_unicode_ci');
 
+
 // ** WordPress Table Prefix ** //
 $table_prefix = getenv('DB_TABLE_PREFIX') ?: 'wp_';
 
@@ -36,7 +37,7 @@ define('WP_CACHE', true); // Enable WordPress caching
 define('WP_REDIS_PATH', '/var/run/redis/redis-server.sock'); // Change path if needed
 
 // Define Woocommerce session handler
-define('WC_SESSION_HANDLER', 'Redis');
+#define('WC_SESSION_HANDLER', 'Redis');
 
 // Security Keys (auto-populated from .env)
 define('AUTH_KEY', getenv('AUTH_KEY'));
