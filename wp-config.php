@@ -7,7 +7,12 @@ define('DB_PASSWORD', getenv('DB_PASSWORD'));
 define('DB_HOST', getenv('DB_HOST'));
 define('DB_CHARSET', 'utf8mb4');
 define('DB_COLLATE', 'utf8mb4_unicode_ci');
+define('DB_ROOT_PASSWORD', getenv('DB_ROOT_PASSWORD'));
 
+// Load WordPress admin user details from .env
+define('WP_ADMIN_USER', getenv('WP_ADMIN_USER') ?: 'admin');
+define('WP_ADMIN_PASSWORD', getenv('WP_ADMIN_PASSWORD') ?: 'securepassword');
+define('WP_ADMIN_EMAIL', getenv('WP_ADMIN_EMAIL') ?: 'admin@example.com');
 
 // ** WordPress Table Prefix ** //
 $table_prefix = getenv('DB_TABLE_PREFIX') ?: 'wp_';
@@ -50,11 +55,10 @@ define('LOGGED_IN_SALT', getenv('LOGGED_IN_SALT'));
 define('NONCE_SALT', getenv('NONCE_SALT'));
 
 // WordPress URLs
-define('WP_HOME', getenv('WP_HOME'));
-define('WP_SITEURL', getenv('WP_SITEURL'));
+define('WP_HOME', getenv('WP_HOME') ?: 'https://localhost:8443');
+define('WP_SITEURL', getenv('WP_SITEURL') ?: 'https://localhost:8443');
 
-// Stop Editing! That's all, Happy Publishing.
-if (!defined('ABSPATH')) {
-    define('ABSPATH', dirname(__FILE__) . '/wp/');
-}
+// Default theme
+define('WP_DEFAULT_THEME', 'botiga');
+
 require_once ABSPATH . 'wp-settings.php';
