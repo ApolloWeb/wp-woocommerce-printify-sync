@@ -28,7 +28,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/wordpress_app:latest
+          tags: ${{ secrets.DOCKER_USER }}/wordpress_app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
