@@ -1,52 +1,37 @@
-name: PHP Composer
+name: PHP Code Quality Check
 
 on:
-  push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
-
-permissions:
-  contents: read
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
 
 jobs:
-  build:
+  php-cs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 🛠 Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: 🔧 Set Up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: "8.2"  # ✅ Ensure a consistent PHP version
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, cs2pr
+          coverage: none
 
-    - name: ✅ Validate composer.json and composer.lock
-      run: composer validate --strict
+      - name: Accept Composer License
+        run: composer config --global allow-plugins true
 
-    - name: ⚡ Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+      - name: Validate Composer.json and Composer.lock
+        run: composer validate
 
-    - name: 📦 Install dependencies
-      run: composer install --prefer-dist --no-progress
+      - name: Install Dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction
 
-    # Run PHP_CodeSniffer
-    - name: 🔍 PHP_CodeSniffer
-      uses: Novusvetus/action-php_codesniffer@1.2.17
-      with:
-        files: .  # ✅ Scan all PHP files
-        scan_all: true  # ✅ Scan all files, not just changed ones
-        phpcs_path: ./vendor/bin/phpcs  # ✅ Correct path
-        standard: phpcs.xml
-        fail_on_warnings: false
-
-    # Run test suite (Uncomment if you have tests)
-    # - name: 🧪 Run test suite
-    #   run: composer run-script test
+      - name: Run PHP CodeSniffer
+        run: vendor/bin/phpcs --standard=phpcs.xml | cs2pr

@@ -1,10 +1,11 @@
 <?php
 
 // ** Database settings - These settings get pulled from your environment file ** //
+define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT);
 define('DB_NAME', getenv('DB_NAME'));
 define('DB_USER', getenv('DB_USER'));
 define('DB_PASSWORD', getenv('DB_PASSWORD'));
-define('DB_HOST', getenv('DB_HOST'));
+define('DB_HOST', getenv('DB_HOST') . ";sslmode=DISABLED");
 define('DB_CHARSET', 'utf8mb4');
 define('DB_COLLATE', 'utf8mb4_unicode_ci');
 define('DB_ROOT_PASSWORD', getenv('DB_ROOT_PASSWORD'));

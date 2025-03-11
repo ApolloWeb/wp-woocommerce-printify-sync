@@ -3,14 +3,12 @@
 Thumbs.db
 
 # Ignore Git files
-.git
 .gitignore
 
 # Ignore GitHub Actions files (Not needed in Docker)
 .github/
 
 # Ignore local environment files
-.env
 .env.local
 .env.production
 .env.development
@@ -19,17 +17,9 @@ Thumbs.db
 vendor/
 
 # Ignore all of wp-content except your plugin
+wp
 wp-content/*
 !wp-content/plugins/wp-woocommerce-printify-sync/
-
-# ✅ Allow wp-config.php but ignore a specific file
-!wp-config.php
-!index.php
-
-# ✅ Keep certs (SSL) & nginx (for webserver config)
-# Do NOT ignore certs/ and nginx/
-# certs/  ❌ REMOVED from ignore list
-# nginx/  ❌ REMOVED from ignore list
 
 # Ignore logs, cache, and tmp files
 logs/

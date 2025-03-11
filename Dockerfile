@@ -1,64 +1,35 @@
-# ------------------------------------
-# ✅ Stage 1: Builder (Installs Dependencies & Composer)
-# ------------------------------------
-    FROM php:8.2-fpm-alpine AS builder
+# Optimized Multi-Stage Dockerfile for WordPress with PHP 8.2-FPM and Nginx
+# Uses multi-stage builds to reduce image size and speed up builds
 
-    # Step 1: Update Alpine Packages & Install Required Dependencies
-    RUN apk update && apk upgrade && apk add --no-cache \
-        zip \
-        unzip \
-        libzip-dev \
-        libpng-dev \
-        libjpeg-turbo-dev \
-        freetype-dev \
-        libxml2-dev \
-        mariadb-client \
-        curl \
-        wget \
-        git \
-        vim \
-        oniguruma-dev \
-        icu-dev \
-        autoconf \
-        build-base
-    
-    # Step 2: Configure and Install PHP Extensions
-    RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-        docker-php-ext-install gd mbstring xml pdo pdo_mysql mysqli zip bcmath soap intl opcache && \
-        docker-php-ext-enable gd mbstring xml pdo pdo_mysql mysqli zip bcmath soap intl opcache
-    
-    # Step 3: Install Redis Extension via PECL
-    RUN pecl install redis && docker-php-ext-enable redis
-    
-    # Step 4: Install Composer (Globally)
-    RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-    
-    # Set Working Directory
-    WORKDIR /var/www
-    
-    # Copy Composer Files First (For Better Caching)
-    COPY composer.json composer.lock ./
-    
-    # Install PHP Dependencies Before Copying Full Project
-    RUN composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
-    
-    # ------------------------------------
-    # ✅ Stage 2: Final Minimal PHP-FPM Image
-    # ------------------------------------
-    FROM php:8.2-fpm-alpine
-    
-    # Set Working Directory
-    WORKDIR /var/www
-    
-    # Copy Only Necessary Files from Builder Stage
-    COPY --from=builder /var/www /var/www
-    
-    # Ensure Correct File Permissions
-    RUN chown -R www-data:www-data /var/www
-    
-    # Expose PHP-FPM Port
-    EXPOSE 9000
-    
-    # Start PHP-FPM
-    CMD ["php-fpm", "-F"]
-    
+# Stage 1: Composer Dependencies Builder
+FROM composer:2 AS builder
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-progress --no-interaction
+
+# Stage 2: Final PHP-FPM Runtime Container
+FROM php:8.2-fpm-alpine AS runtime
+
+# Install required system dependencies and PHP extensions in one step to minimize layers
+RUN apk add --no-cache \
+    libpng libjpeg-turbo freetype icu-libs curl git mariadb-client \
+    linux-headers build-base autoconf bash \
+    libpng-dev libjpeg-turbo-dev freetype-dev icu-dev postgresql-dev && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd pdo_mysql mysqli opcache intl bcmath && \
+    docker-php-ext-install sockets && \
+    pecl install redis && docker-php-ext-enable redis && \
+    apk del --purge libpng-dev libjpeg-turbo-dev freetype-dev icu-dev postgresql-dev && \
+    rm -rf /var/cache/apk/* /tmp/* /var/tmp/* /var/lib/apt/lists/* /usr/share/man /usr/share/doc /usr/share/info
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Set correct file ownership and permissions
+COPY --from=builder --chown=www-data:www-data . .
+
+# Set correct file ownership and permissions
+RUN chmod -R 755 /var/www/html
+
+EXPOSE 9000
+CMD ["php-fpm", "-F"]

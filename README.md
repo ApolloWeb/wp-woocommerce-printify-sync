@@ -1,29 +1,36 @@
 # WP WooCommerce Printify Sync
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![PHP](https://img.shields.io/badge/PHP-7.3%2B-purple)
-![WordPress](https://img.shields.io/badge/WordPress-5.6%2B-green)
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
+![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-green)
+![WooCommerce](https://img.shields.io/badge/WooCommerce-8.0%2B-green)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 A comprehensive WordPress plugin that seamlessly integrates Printify with WooCommerce, enabling automated product syncing, order management, and advanced features for print-on-demand businesses.
 
 ## 🚀 Features
 
-- **Complete Printify Integration**: Seamlessly sync products, images, and orders between Printify and WooCommerce
+- **Complete Printify Integration**: Sync products, images, and orders between Printify and WooCommerce
 - **HPOS Compatibility**: Optimized for WooCommerce High-Performance Order Storage
 - **Advanced Queue System**: Reliable processing using WooCommerce Action Scheduler
 - **Exchange Rate Management**: Dynamic currency conversion using FreeCurrencyAPI
 - **Real-time Notifications**: Webhooks integration for instant order status updates
+- **Product & Order Webhook Updates**: Automatically update product and order details via webhooks
 - **AI-Powered Support**: Integrated ticketing system with AI assistance
-- **Robust Logging**: Comprehensive activity tracking for easy debugging
+- **POP3 Email Polling**: Fetch customer support emails and convert them into tickets
+- **SMTP Queuing & Sending**: Scheduled email sending with retry logic
+- **Blade Templating Engine**: Clean UI rendering for email and admin panels
+- **WooCommerce Email Integration**: Ticketing system integrates with WooCommerce email templates
+- **Robust Logging**: Comprehensive activity tracking for debugging
 - **Secure API Communication**: Encrypted API key storage and secure communication protocols
 - **User-Friendly Admin Interface**: Built with AdminLTE for an intuitive backend experience
+- **Geolocation API**: Integrated with [ipgeolocation.io](https://ipgeolocation.io/)
 
 ## 📋 Requirements
 
-- WordPress 5.6+
-- PHP 7.3+
-- WooCommerce 5.0+
+- WordPress 6.0+
+- PHP 8.2+
+- WooCommerce 8.0+
 - SSL Certificate
 
 ## 🔧 Installation
@@ -39,14 +46,22 @@ A comprehensive WordPress plugin that seamlessly integrates Printify with WooCom
 ### Via Composer
 
 ```bash
-composer require apolloweb/wp-woocommerce-printify-sync
+composer require robowen1972/wp-woocommerce-printify-sync
 ```
 
 ## ⚙️ Configuration
 
 1. Go to WooCommerce > Settings > Printify Sync
 2. Enter your Printify API key
-3. Configure sync settings:
+3. Enter your Geolocation API key ([ipgeolocation.io](https://ipgeolocation.io/))
+4. Enter your Exchange Rate API key ([FreeCurrencyAPI](https://freecurrencyapi.com/))
+5. Configure webhook settings for product and order updates
+6. Configure email settings:
+   - POP3 polling credentials
+   - SMTP queue settings
+   - Blade email templates
+   - WooCommerce email template integration
+7. Configure sync settings:
    - Product sync frequency
    - Order processing preferences
    - Shipping profile mappings
@@ -56,97 +71,46 @@ composer require apolloweb/wp-woocommerce-printify-sync
 
 ### Product Synchronization
 
-Products can be synchronized from Printify in three ways:
-
-1. **Automatic Sync**: Products are automatically synced based on your configured schedule
-2. **Manual Import**: Use the "Import Products" button from the admin dashboard
-3. **Individual Products**: Click "Import from Printify" when creating a new product
+**Printify -> Woocommerce**: Product details update in real time via webhooks
+**Woocommerce -> Printify**: Product details are pushed to Printify via the API triggered by Woocommerce hooks
+**Manual Import**: Required at plugin activation.
 
 ### Order Management
 
-Orders placed in your WooCommerce store are:
+**Printify -> Woocommerce**: Order details update in real time via webhooks
+**Woocommerce -> Printify**: Order details are pushed to Printify via the API triggered by Woocommerce hooks
+**Status updates**: Order statuses from Printify are reflected in WooCommerce
+**Tracking Information**: Tracking information is sent to customer and added to orders
 
-1. Automatically sent to Printify for processing
-2. Status updates from Printify are reflected in WooCommerce
-3. Shipping notifications are sent to customers
-4. Tracking information is added to orders when available
+### Ticketing System
 
-## 🏗️ Architecture
+**Email to Ticket**: Incoming customer emails (via POP3) are converted into tickets
+**Reply via SMTP**: Responses are sent from WooCommerce using queued SMTP messages
+**WooCommerce Email Integration**: Ticket responses follow WooCommerce email templates
+**Admin Interface**: View and manage tickets in WooCommerce
 
-This plugin follows SOLID principles and uses an OOP approach with PSR-12 coding standards:
+## 🏗️ Deployment & Development
 
-```
-wp-woocommerce-printify-sync/
-├── assets/
-│   ├── css/
-│   └── js/
-│       ├── modules/
-│       │   ├── core.js
-│       │   ├── notification.js
-│       │   ├── sync.js
-│       │   └── ui.js
-│       └── admin.js
-├── includes/
-│   ├── Abstracts/
-│   ├── Admin/
-│   ├── Api/
-│   ├── Interfaces/
-│   ├── Queue/
-│   ├── Services/
-│   ├── Utils/
-│   └── View/
-└── views/
+### Docker Deployment
+To deploy the plugin using Docker, use the following command:
+```bash
+docker-compose up -d --build
 ```
 
-## 🔌 Hooks and Filters
-
-The plugin provides extensive hooks and filters for customization:
-
-### Actions
-
-```php
-do_action('apolloweb_printify_before_product_sync', $product_id);
-do_action('apolloweb_printify_after_product_sync', $product_id, $result);
-do_action('apolloweb_printify_before_order_submit', $order_id);
-do_action('apolloweb_printify_after_order_submit', $order_id, $printify_order_id);
-```
-
-### Filters
-
-```php
-$product_data = apply_filters('apolloweb_printify_product_data', $product_data, $product_id);
-$order_data = apply_filters('apolloweb_printify_order_data', $order_data, $order_id);
-$shipping_methods = apply_filters('apolloweb_printify_shipping_methods', $shipping_methods);
-```
-
-## 🧪 Testing
-
+### Running Tests
 Run the test suite with:
-
 ```bash
 composer test
 ```
 
-## 🔄 Development Workflow
-
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   composer install
-   npm install
-   ```
-3. Start the development environment:
-   ```bash
-   docker-compose up -d
-   ```
-4. Access the development site at `http://localhost:8080`
+### GitHub Actions & Postman Mock Servers
+- Automated testing is configured via **GitHub Actions**
+- API responses are validated using **Postman Mock Servers**
 
 ## 📖 Documentation
-
-For full documentation, please visit our [GitHub Wiki](https://github.com/ApolloWeb/wp-woocommerce-printify-sync/wiki).
+For full documentation, please visit our [GitHub Wiki](https://github.com/robowen1972/wp-woocommerce-printify-sync/wiki).
 
 ## 🤝 Contributing
-
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
@@ -156,20 +120,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 5. Open a Pull Request
 
 ## 📜 License
-
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgements
-
-- [WooCommerce](https://woocommerce.com/)
-- [Printify API](https://developers.printify.com/)
-- [AdminLTE](https://adminlte.io/)
-- [Botiga Theme](https://athemes.com/theme/botiga/)
 
 ## 📬 Contact
 
 - Email: [hello@apollo-web.co.uk](mailto:hello@apollo-web.co.uk)
-- Slack: [ApolloWeb Workspace](https://apollowebworkspace.slack.com/archives/C08FLP5Q8FL)
-- GitHub: [ApolloWeb](https://github.com/ApolloWeb)
+- GitHub: [robowen1972](https://github.com/robowen1972)
+- Slack: [Apollo Web Workspace](https://apollowebworkspace.slack.com/archives/C08FLP5Q8FL)
 
-For support or inquiries, please open an issue on our [GitHub repository](https://github.com/ApolloWeb/wp-woocommerce-printify-sync/issues).
+For support or inquiries, please open an issue on our [GitHub repository](https://github.com/robowen1972/wp-woocommerce-printify-sync/issues).

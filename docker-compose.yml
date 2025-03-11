@@ -1,69 +1,81 @@
-version: '3.8'
-
 services:
-  app:
-    image: ${APP_IMAGE_NAME}
+  wordpress_app:
     container_name: ${APP_CONTAINER_NAME}
+    restart: unless-stopped
+    image: ${APP_IMAGE_NAME}
+    volumes:
+      - .:/var/www/html
+      - ./php/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./php/php-fpm.conf:/usr/local/etc/php-fpm.d/zz-custom.conf:ro
     env_file:
       - .env
-    restart: unless-stopped
-    volumes:
-      - wp_data:/var/www/html           # Persist WordPress core files
-      - ./wp-content:/var/www/html/wp-content  # Persist wp-content (plugins, uploads, themes)
-      - ./php.ini:/usr/local/etc/php/conf.d/custom.ini  # Custom PHP configuration
     environment:
+      - DB_HOST=${DB_HOST}
       - WP_HOME=${WP_HOME}
       - WP_SITEURL=${WP_SITEURL}
-      - DB_HOST=${DB_HOST}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - WP_CONTENT_DIR=${WP_CONTENT_DIR}
+      - WP_CONTENT_URL=${WP_CONTENT_URL}
+      - WP_ADMIN_USER=${WP_ADMIN_USER}
+      - WP_ADMIN_PASSWORD=${WP_ADMIN_PASSWORD}
+      - WP_ADMIN_EMAIL=${WP_ADMIN_EMAIL}
+      - WP_DEBUG=${WP_DEBUG}
+      - WP_DEBUG_LOG=${WP_DEBUG_LOG}
+      - WP_DEBUG_DISPLAY=${WP_DEBUG_DISPLAY}
     depends_on:
-      - db
+      - wordpress_db
+      - wordpress_redis
     networks:
       - wordpress_network
 
-  db:
-    image: mysql:5.7
+  wordpress_db:
+    image: mariadb:latest
     container_name: ${DB_CONTAINER_NAME}
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_CLIENT_FLAGS: ${MYSQL_CLIENT_FLAGS}
     volumes:
       - db_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
     networks:
       - wordpress_network
 
-  nginx:
+  wordpress_redis:
+    image: redis:alpine
+    container_name: ${REDIS_CONTAINER_NAME}
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    environment:
+      - WP_REDIS_HOST=${WP_REDIS_HOST}
+      - WP_REDIS_PORT=${WP_REDIS_PORT}
+      - WP_REDIS_DATABASE=${WP_REDIS_DATABASE}
+      - WP_REDIS_TIMEOUT=${WP_REDIS_TIMEOUT}
+      - WP_REDIS_READ_TIMEOUT=${WP_REDIS_READ_TIMEOUT}
+      - ENABLE_REDIS_CACHE=${ENABLE_REDIS_CACHE}
+    networks:
+      - wordpress_network
+
+  wordpress_nginx:
     image: nginx:latest
     container_name: ${NGINX_CONTAINER_NAME}
     restart: unless-stopped
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       - "${NGINX_HTTP_PORT}:80"
       - "${NGINX_HTTPS_PORT}:443"
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
-      - ./certs:/etc/nginx/certs  # Contains your SSL certificates
+    networks:
+      - wordpress_network
     depends_on:
-      - app
-    networks:
-      - wordpress_network
-
-  redis:
-    image: redis:latest
-    container_name: ${REDIS_CONTAINER_NAME}
-    restart: unless-stopped
-    networks:
-      - wordpress_network
+      - wordpress_app
 
 volumes:
   db_data:
-  wp_data:
 
 networks:
   wordpress_network:
-    driver: bridge
