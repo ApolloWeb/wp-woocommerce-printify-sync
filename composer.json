@@ -17,7 +17,7 @@
     "johnpbloch/wordpress-core-installer": "^2.0"
   },
   "extra": {
-    "wordpress-install-dir": "wp",
+    "wordpress-install-dir": "./",
     "installer-paths": {
       "wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
       "wp-content/themes/{$name}/": ["type:wordpress-theme"]

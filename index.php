@@ -13,4 +13,4 @@ if (file_exists(__DIR__ . '/.env')) { // Load .env file if it exists
 }
 
 define('WP_USE_THEMES', true); // Enable WordPress theme support
-require __DIR__ . '/wp/wp-blog-header.php'; // Load WordPress
+require __DIR__ . 'wp-blog-header.php'; // Load WordPress

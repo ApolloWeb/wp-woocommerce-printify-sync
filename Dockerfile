@@ -1,35 +1,25 @@
-# Optimized Multi-Stage Dockerfile for WordPress with PHP 8.2-FPM and Nginx
-# Uses multi-stage builds to reduce image size and speed up builds
+FROM litespeedtech/openlitespeed:latest
 
-# Stage 1: Composer Dependencies Builder
-FROM composer:2 AS builder
-WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-progress --no-interaction
+# Set working directory to OpenLiteSpeed's web root
+WORKDIR /var/www/vhosts/localhost/html/
 
-# Stage 2: Final PHP-FPM Runtime Container
-FROM php:8.2-fpm-alpine AS runtime
+# Install required PHP extensions for WordPress & Composer
+RUN apt-get update && apt-get install -y \
+    unzip curl git libpng-dev libjpeg-dev libfreetype6-dev \
+    php-mysqli php-curl php-gd php-xml php-mbstring php-zip php-intl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install required system dependencies and PHP extensions in one step to minimize layers
-RUN apk add --no-cache \
-    libpng libjpeg-turbo freetype icu-libs curl git mariadb-client \
-    linux-headers build-base autoconf bash shadow \
-    libpng-dev libjpeg-turbo-dev freetype-dev icu-dev postgresql-dev && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd pdo_mysql mysqli opcache intl bcmath && \
-    docker-php-ext-install sockets && \
-    pecl install redis && docker-php-ext-enable redis && \
-    apk del --purge libpng-dev libjpeg-turbo-dev freetype-dev icu-dev postgresql-dev && \
-    rm -rf /var/cache/apk/* /tmp/* /var/tmp/* /var/lib/apt/lists/* /usr/share/man /usr/share/doc /usr/share/info
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /var/www/html
+# Copy the Composer project (expects a composer.json file in the build context)
+COPY . /var/www/vhosts/localhost/html/
 
-# Copy files from builder, keeping composer dependencies
-COPY --from=builder --chown=www-data:www-data . .
+# Install WordPress using Composer
+RUN composer install --no-dev --prefer-dist --optimize-autoloader
 
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
+# Set proper permissions
+RUN chown -R nobody:nobody /var/www/vhosts/localhost/html/ && chmod -R 755 /var/www/vhosts/localhost/html/
 
-EXPOSE 9000
-
-CMD ["php-fpm", "-F"]
+# Expose OpenLiteSpeed Ports
+EXPOSE 8088 

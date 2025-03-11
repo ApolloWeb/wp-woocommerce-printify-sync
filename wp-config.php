@@ -1,7 +1,18 @@
 <?php
 
+if (file_exists(__DIR__ . '/vendor/autoload.php')) { // Load Composer autoloader if it exists
+    require_once __DIR__ . '/vendor/autoload.php'; // Load Composer autoloader
+}
+
+// Load Environment Variables
+use Dotenv\Dotenv;
+
+if (file_exists(__DIR__ . '/.env')) { // Load .env file if it exists
+    $dotenv = Dotenv::createImmutable(__DIR__); // Load .env file
+    $dotenv->load(); // Parse the .env file   
+}
+
 // ** Database settings - These settings get pulled from your environment file ** //
-define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT);
 define('DB_NAME', getenv('DB_NAME'));
 define('DB_USER', getenv('DB_USER'));
 define('DB_PASSWORD', getenv('DB_PASSWORD'));
@@ -17,14 +28,6 @@ define('WP_ADMIN_EMAIL', getenv('WP_ADMIN_EMAIL') ?: 'admin@example.com');
 
 // ** WordPress Table Prefix ** //
 $table_prefix = getenv('DB_TABLE_PREFIX') ?: 'wp_';
-
-// ** WordPress Plugin and Content Paths ** //
-// Ensures WordPress detects plugins in wp-content/plugins (root-level)
-define('WP_CONTENT_DIR', '/var/www/html/wp-content');
-define('WP_CONTENT_URL', 'http://localhost:8080/wp-content');
-
-define('WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins');
-define('WP_PLUGIN_URL', WP_CONTENT_URL . '/plugins');
 
 // Debugging mode (useful for troubleshooting)
 define('WP_DEBUG', filter_var(getenv('WP_DEBUG'), FILTER_VALIDATE_BOOLEAN));
@@ -43,7 +46,7 @@ define('WP_CACHE', true); // Enable WordPress caching
 define('WP_REDIS_PATH', '/var/run/redis/redis-server.sock'); // Change path if needed
 
 // Define Woocommerce session handler
-#define('WC_SESSION_HANDLER', 'Redis');
+define('WC_SESSION_HANDLER', 'Redis');
 
 // Security Keys (auto-populated from .env)
 define('AUTH_KEY', getenv('AUTH_KEY'));
@@ -57,7 +60,7 @@ define('NONCE_SALT', getenv('NONCE_SALT'));
 
 // WordPress URLs
 define('WP_HOME', 'http://localhost:8080');
-define('WP_SITEURL', 'http://localhost:8080/wp');
+define('WP_SITEURL', 'http://localhost:8080');
 
 // Default theme
 define('WP_DEFAULT_THEME', 'botiga');
