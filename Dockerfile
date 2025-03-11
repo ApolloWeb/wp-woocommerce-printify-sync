@@ -13,7 +13,7 @@ FROM php:8.2-fpm-alpine AS runtime
 # Install required system dependencies and PHP extensions in one step to minimize layers
 RUN apk add --no-cache \
     libpng libjpeg-turbo freetype icu-libs curl git mariadb-client \
-    linux-headers build-base autoconf bash \
+    linux-headers build-base autoconf bash shadow \
     libpng-dev libjpeg-turbo-dev freetype-dev icu-dev postgresql-dev && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install gd pdo_mysql mysqli opcache intl bcmath && \
@@ -25,11 +25,11 @@ RUN apk add --no-cache \
 # Set working directory
 WORKDIR /var/www/html
 
-# Set correct file ownership and permissions
+# Copy files from builder, keeping composer dependencies
 COPY --from=builder --chown=www-data:www-data . .
 
-# Set correct file ownership and permissions
-RUN chmod -R 755 /var/www/html
+RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 
 EXPOSE 9000
+
 CMD ["php-fpm", "-F"]

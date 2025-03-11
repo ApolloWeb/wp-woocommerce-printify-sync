@@ -16,6 +16,12 @@ Thumbs.db
 # Ignore Composer dependencies (they will be installed inside the container)
 vendor/
 
+# Ignore as loaded through volumes
+certs/
+mysql/
+php/
+nginx/
+
 # Ignore all of wp-content except your plugin
 wp
 wp-content/*

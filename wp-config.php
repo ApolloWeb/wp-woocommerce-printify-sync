@@ -5,9 +5,9 @@ define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT);
 define('DB_NAME', getenv('DB_NAME'));
 define('DB_USER', getenv('DB_USER'));
 define('DB_PASSWORD', getenv('DB_PASSWORD'));
-define('DB_HOST', getenv('DB_HOST') . ";sslmode=DISABLED");
-define('DB_CHARSET', 'utf8mb4');
-define('DB_COLLATE', 'utf8mb4_unicode_ci');
+define('DB_HOST', getenv('DB_HOST'));
+define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
+define('DB_COLLATE', getenv('DB_COLLATE') ?: 'utf8mb4_unicode_ci');
 define('DB_ROOT_PASSWORD', getenv('DB_ROOT_PASSWORD'));
 
 // Load WordPress admin user details from .env
@@ -20,8 +20,8 @@ $table_prefix = getenv('DB_TABLE_PREFIX') ?: 'wp_';
 
 // ** WordPress Plugin and Content Paths ** //
 // Ensures WordPress detects plugins in wp-content/plugins (root-level)
-define('WP_CONTENT_DIR', dirname(__FILE__) . '/wp-content');
-define('WP_CONTENT_URL', 'http://' . $_SERVER['HTTP_HOST'] . '/wp-content');
+define('WP_CONTENT_DIR', '/var/www/html/wp-content');
+define('WP_CONTENT_URL', 'http://localhost:8080/wp-content');
 
 define('WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins');
 define('WP_PLUGIN_URL', WP_CONTENT_URL . '/plugins');
@@ -56,8 +56,8 @@ define('LOGGED_IN_SALT', getenv('LOGGED_IN_SALT'));
 define('NONCE_SALT', getenv('NONCE_SALT'));
 
 // WordPress URLs
-define('WP_HOME', getenv('WP_HOME') ?: 'https://localhost:8443');
-define('WP_SITEURL', getenv('WP_SITEURL') ?: 'https://localhost:8443');
+define('WP_HOME', 'http://localhost:8080');
+define('WP_SITEURL', 'http://localhost:8080/wp');
 
 // Default theme
 define('WP_DEFAULT_THEME', 'botiga');

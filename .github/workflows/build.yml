@@ -31,15 +31,3 @@ jobs:
           tags: ${{ secrets.DOCKER_USER }}/wordpress_app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /var/www/wordpress_app
-            docker-compose pull
-            docker-compose up -d
-            docker system prune -f
