@@ -1,4 +1,4 @@
 ngrok/*
-.evn
-wp-congig.php
+.env
+wp-config.php
 composer.json
