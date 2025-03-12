@@ -1,0 +1,85 @@
+services:
+  wordpress:
+    container_name: wordpress
+    image: nginx:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - ./wp:/var/www/html/wp
+      - ./wp-content:/var/www/html/wp-content
+      - wordpress_data:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./snippets/fastcgi-php.conf:/etc/nginx/snippets/fastcgi-php.conf
+    depends_on:
+      - db
+      - php-fpm
+      - redis
+    networks:
+      - wp-network
+
+  db:
+    container_name: db
+    image: mariadb:latest
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - wp-network
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "9090:90"
+    environment:
+      PMA_HOST: ${DB_HOST}
+      MYSQL_ROOT_PASSWORD: rootpass
+    networks:
+      - wp-network
+
+  ngrok:
+    container_name: ngrok
+    image: wernight/ngrok
+    ports:
+      - '4040:4040'
+    volumes:
+      - ./ngrok.yml:/ngrok.yml
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    command: ngrok start --config /ngrok/ngrok.yml --all
+    depends_on: 
+      - wordpress
+    networks:
+      - wp-network
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - wp-network
+
+  php-fpm:
+    container_name: php-fpm
+    image: php:fpm
+    volumes:
+      - ./wp:/var/www/html/wp
+      - ./wp-content:/var/www/html/wp-content
+    networks:
+      - wp-network
+
+volumes:
+  db_data:
+  redis_data:
+  wordpress_data:
+
+networks:
+  wp-network:
+    driver: bridge

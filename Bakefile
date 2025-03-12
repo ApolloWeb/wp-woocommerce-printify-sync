@@ -1,0 +1,17 @@
+{
+  "target": {
+    "default": {
+      "context": ".",
+      "dockerfile": "Dockerfile",
+      "tags": ["php-fpm:latest"]
+    },
+    "php-fpm": {
+      "context": ".",
+      "dockerfile": "Dockerfile",
+      "tags": ["php-fpm:8.4.4"]
+    }
+  },
+  "group": {
+    "default": ["php-fpm"]
+  }
+}
