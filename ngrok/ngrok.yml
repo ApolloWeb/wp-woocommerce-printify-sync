@@ -1,0 +1,7 @@
+version: "2"
+authtoken: ${NGROK_AUTHTOKEN}
+tunnels:
+  wordpress:
+    addr: wordpress:80
+    proto: http
+    host_header: rewrite
