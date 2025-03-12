@@ -1,4 +1,7 @@
-FROM php:8.4.4-fpm
+FROM wordpress:latest
+
+# Copy custom Nginx configuration
+COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
 
 RUN apt-get update && apt-get install -y \
     libfreetype6-dev \

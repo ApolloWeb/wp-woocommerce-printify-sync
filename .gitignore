@@ -1,3 +1,5 @@
 wp/
 vendor/
 wp-content/
+.env
+ngrok/
