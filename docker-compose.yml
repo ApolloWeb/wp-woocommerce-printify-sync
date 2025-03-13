@@ -1,0 +1,104 @@
+services:
+  wordpress:
+    image: bitnami/wordpress:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - wordpress_apache_conf:/opt/bitnami/apache/conf
+      # Mount specific modified files - these will reflect changes immediately
+      - ./apache-configs/httpd.conf:/opt/bitnami/apache/conf/httpd.conf
+      - ./wp-config.php:/opt/bitnami/wordpress/wp-config.php
+      - ./wp-content/plugins/wp-woocommerce-printify-sync:/bitnami/wordpress/wp-content/plugins/wp-woocommerce-printify-sync
+    environment:
+      - WORDPRESS_DATABASE_HOST=${WORDPRESS_DB_HOST}
+      - WORDPRESS_DATABASE_PORT_NUMBER=3306
+      - WORDPRESS_DATABASE_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_DATABASE_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_DATABASE_NAME=${WORDPRESS_DB_NAME}
+      - WORDPRESS_TABLE_PREFIX=${WORDPRESS_TABLE_PREFIX}
+      - WORDPRESS_ENABLE_REDIS_CACHE=yes
+      - WORDPRESS_USERNAME=${WORDPRESS_ADMIN_USER}
+      - WORDPRESS_PASSWORD=${WORDPRESS_ADMIN_PASS}
+      - WORDPRESS_EMAIL=${WORDPRESS_ADMIN_EMAIL}
+      - WORDPRESS_FIRST_NAME=${WORDPRESS_ADMIN_FIRSTNAME}
+      - WORDPRESS_LAST_NAME=${WORDPRESS_ADMIN_LASTNAME}
+      - WORDPRESS_BLOG_NAME="Apollo Web Site"
+      - WORDPRESS_SKIP_BOOTSTRAP=${WORDPRESS_SKIP_BOOTSTRAP}
+      - WORDPRESS_LOCALE=${WORDPRESS_LOCALE}
+      - WP_MEMORY_LIMIT=${WP_MEMORY_LIMIT}
+      - WP_MAX_MEMORY_LIMIT=${WP_MAX_MEMORY_LIMIT}
+      - DISALLOW_FILE_EDIT=${DISALLOW_FILE_EDIT}
+      - DISALLOW_FILE_MODS=${DISALLOW_FILE_MODS}
+      - WORDPRESS_PLUGINS=${WORDPRESS_PLUGINS}
+      - WORDPRESS_SKIP_PLUGINS=${WORDPRESS_SKIP_PLUGINS}
+      - WORDPRESS_SMTP_HOST=${SMTP_HOST}
+      - WORDPRESS_SMTP_PORT=${SMTP_PORT}
+      - WORDPRESS_SMTP_USER=${SMTP_USERNAME}
+      - WORDPRESS_SMTP_PASSWORD=${SMTP_PASSWORD}
+      - WORDPRESS_SMTP_PROTOCOL=${SMTP_PROTOCOL}
+      - WORDPRESS_SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - WORDPRESS_SMTP_FROM_NAME=${SMTP_FROM_NAME}
+      - WORDPRESS_SMTP_AUTH=${SMTP_AUTH}
+      - WORDPRESS_POP3_HOST=${POP3_HOST}
+      - WORDPRESS_POP3_PORT=${POP3_PORT}
+      - WORDPRESS_POP3_USER=${POP3_USERNAME}
+      - WORDPRESS_POP3_PASSWORD=${POP3_PASSWORD}
+      - WORDPRESS_POP3_SSL=${POP3_SSL}
+    env_file:
+      - .env
+
+  redis:
+    image: bitnami/redis:latest
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - wp_network
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    env_file:
+      - .env
+
+  ngrok:
+    image: wernight/ngrok:latest
+    container_name: ngrok
+    restart: unless-stopped
+    networks:
+      - wp_network
+    depends_on:
+      - wordpress
+    command: ["sh", "-c", "ngrok authtoken ${NGROK_AUTHTOKEN} && ngrok http --host-header=rewrite wordpress:80"]
+    env_file:
+      - .env
+
+  php-fpm:
+    image: php:8.4.4-fpm
+    container_name: php-fpm
+    restart: unless-stopped
+    networks:
+      - wp_network
+    volumes:
+      - wordpress_data:/var/www/html
+    env_file:
+      - .env
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: unless-stopped
+    networks:
+      - wp_network
+    ports:
+      - "8081:8080"
+    env_file:
+      - .env
+
+networks:
+  wp_network:
+    driver: bridge
+
+volumes:
+  wordpress_data:
+  mariadb_data:
+  wordpress_apache_conf:  # Add this named volume for Apache config

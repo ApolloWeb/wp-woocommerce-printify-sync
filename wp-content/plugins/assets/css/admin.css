@@ -1,0 +1,131 @@
+/* Admin styles for WP WooCommerce Printify Sync */
+
+.wpps-dashboard {
+    max-width: 1200px;
+    margin: 20px 0;
+}
+
+/* Stats cards */
+.wpps-stats-container {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.wpps-stats-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    flex: 1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.wpps-stats-card h3 {
+    margin-top: 0;
+    color: #23282d;
+}
+
+.wpps-stats-number {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+    color: #0073aa;
+}
+
+/* Widgets */
+.wpps-widget {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.wpps-widget h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Sync status */
+.wpps-sync-status {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+/* Progress bar */
+.wpps-progress-bar {
+    height: 20px;
+    width: 100%;
+    background-color: #f1f1f1;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.wpps-progress-bar-inner {
+    height: 100%;
+    width: 0;
+    background-color: #0073aa;
+    transition: width 0.3s ease;
+}
+
+/* Error list */
+.wpps-error-list {
+    margin: 15px 0;
+    padding: 15px;
+    border-left: 4px solid #dc3232;
+    background-color: #f8f8f8;
+}
+
+.wpps-error-list h3 {
+    margin-top: 0;
+    color: #dc3232;
+}
+
+.wpps-error-list ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* Settings form */
+.wpps-settings-form .form-table {
+    margin-top: 20px;
+}
+
+.wpps-settings-form .button-primary {
+    margin-top: 15px;
+}
+
+/* Font Awesome icons in admin */
+.wpps-icon {
+    margin-right: 5px;
+}
+
+/* Status indicators */
+.wpps-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.wpps-status-success {
+    background-color: #46b450;
+}
+
+.wpps-status-warning {
+    background-color: #ffb900;
+}
+
+.wpps-status-error {
+    background-color: #dc3232;
+}
