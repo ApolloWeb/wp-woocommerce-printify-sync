@@ -25,6 +25,9 @@ jobs:
 
       # ✅ Debug: Check if secrets are set
       - name: Debug Secrets (Check if they exist)
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
         run: |
           if [ -z "$DOCKER_USER" ]; then
             echo "❌ DOCKER_USER secret is missing!"
