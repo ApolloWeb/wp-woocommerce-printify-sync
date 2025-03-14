@@ -3,11 +3,10 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - gemini
+      - gemini  # ✅ Trigger builds only when pushing to the `gemini` branch
   pull_request:
     branches:
-      - gemini
-    types: [opened, synchronize, reopened]
+      - gemini  # ✅ Trigger workflows on PRs targeting `gemini`
     secrets: inherit  # Allow secrets in PRs from forks
 
 jobs:
@@ -18,17 +17,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Debugging step: Check if secrets are available
+      # Debugging: Check if secrets are available
       - name: Debug Secrets (Check if they exist)
         run: |
-          if [[ -z "${{ secrets.DOCKER_USER }}" ]]; then
+          if [ -z "${{ secrets.DOCKER_USER }}" ]; then
             echo "❌ DOCKER_USER secret is missing!"
             exit 1
           else
             echo "✅ DOCKER_USER is set"
           fi
 
-          if [[ -z "${{ secrets.DOCKER_PAT }}" ]]; then
+          if [ -z "${{ secrets.DOCKER_PAT }}" ]; then
             echo "❌ DOCKER_PAT secret is missing!"
             exit 1
           else
@@ -55,5 +54,4 @@ jobs:
             robowen1972/wp-woocommerce-printify-sync:${{ github.sha }}
 
       - name: Post-Build Debugging
-        run: |
-          echo "✅ Build completed successfully!"
+        run: echo "✅ Build completed successfully!"
