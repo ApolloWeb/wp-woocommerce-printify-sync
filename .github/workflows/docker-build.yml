@@ -17,17 +17,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Debugging: Check if secrets are available
+      # ✅ Set Environment Variables from GitHub Secrets
+      - name: Set Environment Variables
+        run: |
+          echo "DOCKER_USER=${{ secrets.DOCKER_USER }}" >> $GITHUB_ENV
+          echo "DOCKER_PAT=${{ secrets.DOCKER_PAT }}" >> $GITHUB_ENV
+
+      # ✅ Debug: Check if secrets are set
       - name: Debug Secrets (Check if they exist)
         run: |
-          if [[ -z "${{ secrets.DOCKER_USER }}" || "${{ secrets.DOCKER_USER }}" == "null" ]]; then
+          if [ -z "$DOCKER_USER" ]; then
             echo "❌ DOCKER_USER secret is missing!"
             exit 1
           else
             echo "✅ DOCKER_USER is set"
           fi
 
-          if [[ -z "${{ secrets.DOCKER_PAT }}" || "${{ secrets.DOCKER_PAT }}" == "null" ]]; then
+          if [ -z "$DOCKER_PAT" ]; then
             echo "❌ DOCKER_PAT secret is missing!"
             exit 1
           else
