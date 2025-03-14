@@ -42,3 +42,5 @@ npm-debug.log
 #Ignore other build-related files
 build.sh
 docker-bake.hcl
+
+# Cache busting v1
