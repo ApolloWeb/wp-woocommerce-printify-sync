@@ -29,14 +29,14 @@ jobs:
           fi
       
       # Determine if we should push
-      - name: Process Based on Event Type
-        id: process_type
+      - name: Check if Running in a Fork
+        id: check_fork
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            echo "Running PR from fork - will build but not push"
+            echo "Fork detected, skipping login."
             echo "should_push=false" >> $GITHUB_ENV
           else
-            echo "Running push or internal PR - will attempt to push"
+            echo "Not a fork, proceeding with login."
             echo "should_push=true" >> $GITHUB_ENV
           fi
 
@@ -46,12 +46,12 @@ jobs:
       # Debug Secrets
       - name: Debug Secrets
         run: |
-          if [[ -z "${{ secrets.DOCKER_USER }}" || -z "${{ secrets.DOCKER_PAT }}" ]]; then
-            echo "❌ ERROR: DOCKER_USER or DOCKER_PAT is not set!"
-            exit 1
-          else
-            echo "✅ Secrets are set."
-          fi
+          echo "Checking if secrets are set..."
+          echo "DOCKER_USER length: ${#DOCKER_USER}"
+          echo "DOCKER_PAT length: ${#DOCKER_PAT}"
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
 
       # Clear Docker Cache
       - name: Clear Docker Cache
