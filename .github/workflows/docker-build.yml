@@ -11,29 +11,44 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+    
+    # Add this environment reference to ensure secrets are properly loaded
+    environment: production
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Debug GitHub Context
+      # Add workflow context debugging
+      - name: Debug Workflow Context
         run: |
           echo "Event name: ${{ github.event_name }}"
           echo "Repository: ${{ github.repository }}"
-          echo "Actor: ${{ github.actor }}"
           echo "Ref: ${{ github.ref }}"
+          echo "Actor: ${{ github.actor }}"
 
-      - name: Debug Secrets (Check if they exist)
+      # Check if we're in a context where secrets should be available
+      - name: Verify Secrets Context
+        id: check_secrets
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "Running from forked PR - secrets won't be available for security"
+            echo "skip_secrets_check=true" >> $GITHUB_OUTPUT
+          else
+            echo "Running in a context where secrets should be available"
+            echo "skip_secrets_check=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Only perform this check if we expect secrets to be available
+      - name: Debug Secrets
+        if: steps.check_secrets.outputs.skip_secrets_check != 'true'
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
         run: |
           if [ -z "$DOCKER_USER" ]; then
             echo "❌ DOCKER_USER secret is missing!"
-            echo "Please add this secret in your GitHub repository settings."
+            echo "Please verify this secret is correctly set in repository settings → Secrets and variables → Actions → Repository secrets"
             exit 1
           else
             echo "✅ DOCKER_USER is set"
@@ -41,13 +56,15 @@ jobs:
 
           if [ -z "$DOCKER_PAT" ]; then
             echo "❌ DOCKER_PAT secret is missing!"
-            echo "Please add this secret in your GitHub repository settings."
+            echo "Please verify this secret is correctly set in repository settings → Secrets and variables → Actions → Repository secrets"
             exit 1
           else
             echo "✅ DOCKER_PAT is set"
           fi
 
+      # Only run Docker operations if we expect secrets to be available
       - name: Log in to Docker Hub
+        if: steps.check_secrets.outputs.skip_secrets_check != 'true'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USER }}
