@@ -7,6 +7,8 @@ on:
   pull_request:
     branches:
       - gemini
+    types: [opened, synchronize, reopened]
+    secrets: inherit  # Allow secrets in PRs from forks
 
 jobs:
   build:
@@ -15,6 +17,23 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+
+      # Debugging step: Check if secrets are available
+      - name: Debug Secrets (Check if they exist)
+        run: |
+          if [[ -z "${{ secrets.DOCKER_USER }}" ]]; then
+            echo "❌ DOCKER_USER secret is missing!"
+            exit 1
+          else
+            echo "✅ DOCKER_USER is set"
+          fi
+
+          if [[ -z "${{ secrets.DOCKER_PAT }}" ]]; then
+            echo "❌ DOCKER_PAT secret is missing!"
+            exit 1
+          else
+            echo "✅ DOCKER_PAT is set"
+          fi
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -34,3 +53,7 @@ jobs:
           tags: |
             robowen1972/wp-woocommerce-printify-sync:latest
             robowen1972/wp-woocommerce-printify-sync:${{ github.sha }}
+
+      - name: Post-Build Debugging
+        run: |
+          echo "✅ Build completed successfully!"
