@@ -1,4 +1,4 @@
-name: Build and Push Docker Image v2
+name: Build and Push Docker Image
 
 on:
   push:
@@ -11,6 +11,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Add this line to ensure secrets are properly accessed
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     
     steps:
       - name: Checkout Repository
@@ -40,6 +42,21 @@ jobs:
             echo "should_push=true" >> $GITHUB_ENV
           fi
 
+      # Explicitly verify secrets before attempting to use them
+      - name: Verify Docker Hub Secrets
+        id: check_secrets
+        run: |
+          if [[ -z "${{ secrets.DOCKER_USER }}" || -z "${{ secrets.DOCKER_PAT }}" ]]; then
+            echo "❌ Docker Hub secrets are missing!"
+            echo "Please add DOCKER_USER and DOCKER_PAT secrets to your repository."
+            echo "Go to Settings → Secrets and variables → Actions → New repository secret"
+            echo "has_secrets=false" >> $GITHUB_OUTPUT
+            # Don't fail yet - we'll skip the Docker login steps
+          else
+            echo "✅ Docker Hub secrets are available"
+            echo "has_secrets=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -61,7 +78,7 @@ jobs:
 
       # Login to Docker Hub
       - name: Login to Docker Hub
-        if: env.should_push == 'true'
+        if: steps.check_secrets.outputs.has_secrets == 'true'
         uses: docker/login-action@v2
         with:
           registry: docker.io
@@ -74,7 +91,8 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          push: ${{ env.should_push == 'true' }}
+          # Only push if we have secrets
+          push: ${{ steps.check_secrets.outputs.has_secrets == 'true' }}
           tags: |
             robowen1972/wp-woocommerce-printify-sync:latest
             robowen1972/wp-woocommerce-printify-sync:${{ github.sha }}
