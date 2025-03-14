@@ -20,14 +20,14 @@ jobs:
       # Debugging: Check if secrets are available
       - name: Debug Secrets (Check if they exist)
         run: |
-          if [ -z "${{ secrets.DOCKER_USER }}" ]; then
+          if [[ -z "${{ secrets.DOCKER_USER }}" || "${{ secrets.DOCKER_USER }}" == "null" ]]; then
             echo "❌ DOCKER_USER secret is missing!"
             exit 1
           else
             echo "✅ DOCKER_USER is set"
           fi
 
-          if [ -z "${{ secrets.DOCKER_PAT }}" ]; then
+          if [[ -z "${{ secrets.DOCKER_PAT }}" || "${{ secrets.DOCKER_PAT }}" == "null" ]]; then
             echo "❌ DOCKER_PAT secret is missing!"
             exit 1
           else
