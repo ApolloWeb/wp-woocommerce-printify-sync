@@ -1,0 +1,29 @@
+# Ignore Git repository
+.git/
+.gitignore
+
+# Ignore environment files (Do NOT expose secrets)
+.env
+.env.local
+
+# Ignore build-related files
+build.sh
+docker-bake.hcl
+
+# Ignore logs, cache, and temp files
+*.log
+*.cache
+*.swp
+*.swo
+*.bak
+
+# Ignore WordPress core (handled inside container)
+wp/
+
+# Ignore wp-content (except the plugin you're working on)
+wp-content/
+!wp-content/plugins/wp-woocommerce-printify-sync/ # Keep only this plugin
+
+# Ignore dependency directories (Composer)
+vendor/
+node_modules/
