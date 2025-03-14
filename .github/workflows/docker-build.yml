@@ -12,59 +12,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    # Add this environment reference to ensure secrets are properly loaded
-    environment: production
-    
+    # This will skip certain steps in PR from forks due to security
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-
-      # Add workflow context debugging
-      - name: Debug Workflow Context
-        run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "Repository: ${{ github.repository }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "Actor: ${{ github.actor }}"
-
-      # Check if we're in a context where secrets should be available
-      - name: Verify Secrets Context
-        id: check_secrets
+      
+      - name: Check if PR from fork
+        id: check_fork
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            echo "Running from forked PR - secrets won't be available for security"
-            echo "skip_secrets_check=true" >> $GITHUB_OUTPUT
+            echo "is_fork=true" >> $GITHUB_OUTPUT
+            echo "⚠️ This is a PR from a fork. For security, secrets won't be available and we'll skip pushing to Docker Hub."
           else
-            echo "Running in a context where secrets should be available"
-            echo "skip_secrets_check=false" >> $GITHUB_OUTPUT
+            echo "is_fork=false" >> $GITHUB_OUTPUT
           fi
 
-      # Only perform this check if we expect secrets to be available
-      - name: Debug Secrets
-        if: steps.check_secrets.outputs.skip_secrets_check != 'true'
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
-        run: |
-          if [ -z "$DOCKER_USER" ]; then
-            echo "❌ DOCKER_USER secret is missing!"
-            echo "Please verify this secret is correctly set in repository settings → Secrets and variables → Actions → Repository secrets"
-            exit 1
-          else
-            echo "✅ DOCKER_USER is set"
-          fi
-
-          if [ -z "$DOCKER_PAT" ]; then
-            echo "❌ DOCKER_PAT secret is missing!"
-            echo "Please verify this secret is correctly set in repository settings → Secrets and variables → Actions → Repository secrets"
-            exit 1
-          else
-            echo "✅ DOCKER_PAT is set"
-          fi
-
-      # Only run Docker operations if we expect secrets to be available
-      - name: Log in to Docker Hub
-        if: steps.check_secrets.outputs.skip_secrets_check != 'true'
+      - name: Login to Docker Hub
+        if: steps.check_fork.outputs.is_fork != 'true'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USER }}
@@ -78,7 +42,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          push: true
+          push: ${{ steps.check_fork.outputs.is_fork != 'true' }}
           tags: |
             robowen1972/wp-woocommerce-printify-sync:latest
             robowen1972/wp-woocommerce-printify-sync:${{ github.sha }}
