@@ -3,27 +3,29 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - gemini  # ✅ Trigger builds only when pushing to the `gemini` branch
+      - gemini
   pull_request:
     branches:
-      - gemini  # ✅ Trigger workflows on PRs targeting `gemini`
-    secrets: inherit  # Allow secrets in PRs from forks
+      - gemini
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # ✅ Set Environment Variables from GitHub Secrets
-      - name: Set Environment Variables
+      - name: Debug GitHub Context
         run: |
-          echo "DOCKER_USER=${{ secrets.DOCKER_USER }}" >> $GITHUB_ENV
-          echo "DOCKER_PAT=${{ secrets.DOCKER_PAT }}" >> $GITHUB_ENV
+          echo "Event name: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Ref: ${{ github.ref }}"
 
-      # ✅ Debug: Check if secrets are set
       - name: Debug Secrets (Check if they exist)
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
@@ -31,6 +33,7 @@ jobs:
         run: |
           if [ -z "$DOCKER_USER" ]; then
             echo "❌ DOCKER_USER secret is missing!"
+            echo "Please add this secret in your GitHub repository settings."
             exit 1
           else
             echo "✅ DOCKER_USER is set"
@@ -38,6 +41,7 @@ jobs:
 
           if [ -z "$DOCKER_PAT" ]; then
             echo "❌ DOCKER_PAT secret is missing!"
+            echo "Please add this secret in your GitHub repository settings."
             exit 1
           else
             echo "✅ DOCKER_PAT is set"
