@@ -58,3 +58,4 @@ jobs:
           else
             echo "⚠️ Docker image was built but NOT pushed to Docker Hub due to missing credentials"
             echo "Please check that DOCKER_USER and DOCKER_PAT secrets in your GitHub repository settings are correct"
+          fi
