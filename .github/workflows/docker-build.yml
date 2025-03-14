@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - gemini
-      - main  # Added main branch to ensure workflow runs on common branch names
+      - main
   pull_request:
     branches:
       - gemini
@@ -18,39 +18,44 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Verify Docker Hub Secrets
+      - name: Debug Secrets Availability
         id: check_secrets
         run: |
-          if [[ -z "${{ secrets.DOCKER_USER }}" || -z "${{ secrets.DOCKER_PAT }}" ]]; then
-            echo "Docker Hub credentials are missing. Image will be built but not pushed."
-            echo "has_secrets=false" >> $GITHUB_OUTPUT
-          else
-            echo "Docker Hub credentials found. Image will be built and pushed."
+          echo "Checking for Docker Hub credentials..."
+          if [[ -n "${{ secrets.DOCKER_USER }}" && -n "${{ secrets.DOCKER_PAT }}" ]]; then
+            echo "Both DOCKER_USER and DOCKER_PAT secrets are available"
             echo "has_secrets=true" >> $GITHUB_OUTPUT
+          else
+            echo "One or both secrets are missing"
+            echo "has_secrets=false" >> $GITHUB_OUTPUT
           fi
+          # This will be masked in logs if the secret exists
+          echo "DOCKER_USER length: ${#DOCKER_USER}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       - name: Login to Docker Hub
-        if: steps.check_secrets.outputs.has_secrets == 'true'
+        id: docker_login
+        if: success()  # Try login regardless of secrets check
         uses: docker/login-action@v2
         with:
-          registry: docker.io
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PAT }}
+        continue-on-error: true
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
-          push: ${{ steps.check_secrets.outputs.has_secrets == 'true' }}
+          push: ${{ steps.docker_login.outcome == 'success' }}
           tags: |
-            apolloweb/wp-woocommerce-printify-sync:latest
-            apolloweb/wp-woocommerce-printify-sync:${{ github.sha }}
+            robowen1972/wp-woocommerce-printify-sync:latest
+            robowen1972/wp-woocommerce-printify-sync:${{ github.sha }}
 
       - name: Image Status
+        shell: /usr/bin/bash -e {0}
         run: |
           if [[ "${{ steps.check_secrets.outputs.has_secrets }}" == "true" ]]; then
             echo "✅ Docker image has been pushed to Docker Hub"
@@ -58,4 +63,3 @@ jobs:
           else
             echo "⚠️ Docker image was built but NOT pushed to Docker Hub due to missing credentials"
             echo "Please check that DOCKER_USER and DOCKER_PAT secrets in your GitHub repository settings are correct"
-          fi
