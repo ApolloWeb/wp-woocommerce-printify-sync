@@ -15,39 +15,49 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+
+      # Add detailed debugging steps
+      - name: Debug Information
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "This is a pull request"
+            echo "PR from fork: ${{ github.event.pull_request.head.repo.fork }}"
+          fi
       
-      - name: Check if PR from fork
-        id: check_fork
+      # Only attempt Docker operations for push events, not PRs from forks
+      - name: Process Based on Event Type
+        id: process_type
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            echo "is_fork=true" >> $GITHUB_OUTPUT
-            echo "⚠️ This is a PR from a fork. For security, secrets won't be available and we'll skip pushing to Docker Hub."
+            echo "Running PR from fork - will build but not push"
+            echo "should_push=false" >> $GITHUB_OUTPUT
           else
-            echo "is_fork=false" >> $GITHUB_OUTPUT
+            echo "Running push or internal PR - will attempt to push"
+            echo "should_push=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Debug Secrets
-        run: |
-          echo "DOCKER_USER: ${{ secrets.DOCKER_USER }}"
-          echo "DOCKER_PAT: ${{ secrets.DOCKER_PAT }}"
-        if: steps.check_fork.outputs.is_fork != 'true'
-      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Only try to log in when we expect to have access to secrets
       - name: Login to Docker Hub
-        if: steps.check_fork.outputs.is_fork != 'true'
+        if: steps.process_type.outputs.should_push == 'true'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PAT }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
-          push: ${{ steps.check_fork.outputs.is_fork != 'true' }}
+          # Only push if we're not in a PR from fork
+          push: ${{ steps.process_type.outputs.should_push == 'true' }}
           tags: |
             robowen1972/wp-woocommerce-printify-sync:latest
             robowen1972/wp-woocommerce-printify-sync:${{ github.sha }}
