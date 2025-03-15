@@ -40,9 +40,6 @@ Thumbs.db
 docker-compose.override.yml
 *.bak
 
-# Ignore Composer's lock file (optional depending on your use case)
-composer.lock
-
 # Ignore npm-related files (if any, e.g., for asset management)
 node_modules/
 package-lock.json
