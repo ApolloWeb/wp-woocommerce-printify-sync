@@ -35,6 +35,17 @@ COPY . /var/www/html
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy Nginx configuration files
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/conf.d /etc/nginx/conf.d
+
+# Copy PHP configuration files
+COPY php/php.ini /usr/local/etc/php/php.ini
+COPY php/php-fpm.conf /usr/local/etc/php-fpm.conf
+
+# Copy Supervisor configuration
+COPY etc/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # Set permissions before running Composer
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html && \
