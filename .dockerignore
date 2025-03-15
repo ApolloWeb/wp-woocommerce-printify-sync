@@ -17,14 +17,6 @@ docker-bake.hcl
 *.swo
 *.bak
 
-# Ignore configuration files
-etc/supervisord.conf
-nginx/nginx.conf
-nginx/conf.d/
-php/php.ini
-php-fpm/php-fpm.conf
-mariadb/my.cnf
-
 # Ignore WordPress core (handled inside container)
 wp/
 
