@@ -1,8 +1,13 @@
-# Use the official Redis image
+# Use official Redis image
 FROM redis:latest
 
-# Expose Redis port
-EXPOSE 6379
+# Set environment variables
+ENV REDIS_PORT=6379 \
+    REDIS_MAXMEMORY=256mb \
+    REDIS_POLICY=allkeys-lru
 
-# Start Redis with Render's environment variables
-CMD ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\" --maxmemory \"$REDIS_MAXMEMORY\" --maxmemory-policy \"$REDIS_POLICY\""]
+# Expose Redis port
+EXPOSE $REDIS_PORT
+
+# Start Redis with authentication and security settings
+CMD ["sh", "-c", "redis-server --port $REDIS_PORT --maxmemory $REDIS_MAXMEMORY --maxmemory-policy $REDIS_POLICY --bind 0.0.0.0 --protected-mode yes"]
