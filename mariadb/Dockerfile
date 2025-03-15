@@ -6,4 +6,3 @@ EXPOSE 3306
 
 # Start MariaDB with Render's environment variables
 CMD ["mariadbd"]
-

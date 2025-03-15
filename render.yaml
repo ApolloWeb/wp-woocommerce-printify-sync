@@ -49,5 +49,5 @@ services:
       - key: REDIS_MAXMEMORY
         value: false
       - key: REDIS_POLICY
-        value: allkeys-lru
+        value: false
     autoDeploy: false
