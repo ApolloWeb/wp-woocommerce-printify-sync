@@ -1,8 +1,10 @@
 # Use an official PHP runtime as a parent image
 FROM php:8.2-fpm
 
-# Install required packages including unzip
+# Install required packages including MariaDB, Nginx, and Supervisor
 RUN apt-get update && apt-get install -y \
+    mariadb-server \
+    mariadb-client \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     libpng-dev \
@@ -53,14 +55,31 @@ RUN chown -R www-data:www-data /var/www/html && \
     mkdir -p /var/run && \
     chown -R www-data:www-data /var/run
 
-# Define volumes
-VOLUME /var/www/html/wp-content
-VOLUME /var/www/html/wp-config.php
-VOLUME /var/www/html/index.php
-VOLUME /var/www/html/.env
+# Ensure MySQL runs and create the WordPress database
+RUN service mysql start && \
+    mysql -e "CREATE DATABASE IF NOT EXISTS wordpress;" && \
+    mysql -e "CREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY 'yourpassword';" && \
+    mysql -e "GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'%';" && \
+    mysql -e "FLUSH PRIVILEGES;"
 
-# Expose port 80
+# Expose only port 80 (not 3306 since MariaDB is internal)
 EXPOSE 80
 
-# Start supervisord to manage nginx and php-fpm
+# Create Supervisor configuration to start Nginx, PHP-FPM, and MariaDB
+RUN echo "[supervisord]" > /etc/supervisor/conf.d/supervisord.conf && \
+    echo "nodaemon=true" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "[program:nginx]" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "command=/usr/sbin/nginx -g 'daemon off;'" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "autostart=true" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "autorestart=true" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "[program:php-fpm]" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "command=/usr/local/sbin/php-fpm -F" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "autostart=true" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "autorestart=true" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "[program:mysql]" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "command=/usr/bin/mysqld_safe" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "autostart=true" >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo "autorestart=true" >> /etc/supervisor/conf.d/supervisord.conf
+
+# Start supervisord to manage Nginx, PHP-FPM, and MariaDB
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
