@@ -61,12 +61,8 @@ COPY php/php.ini /usr/local/etc/php/php.ini
 COPY php/php-fpm.conf /usr/local/etc/php-fpm.conf
 COPY etc/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy entrypoint script and make it executable
-COPY mariadb/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
 # Expose Nginx port
 EXPOSE 80
 
-# Start services using entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+# Start Nginx and PHP-FPM with Supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
