@@ -36,7 +36,7 @@ COPY . /var/www/html
 WORKDIR /var/www/html
 
 # Copy Nginx configuration files
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 COPY nginx/conf.d /etc/nginx/conf.d
 
 # Copy PHP configuration files

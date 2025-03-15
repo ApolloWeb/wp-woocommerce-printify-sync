@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy configuration files
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
-COPY nginx/conf.d /etc/nginx/conf.d
+COPY nginx/conf.d/default-prod.conf /etc/nginx/conf.d/default.conf
 COPY php/php.ini /usr/local/etc/php/php.ini
 COPY php/php-fpm.conf /usr/local/etc/php-fpm.conf
 COPY etc/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
