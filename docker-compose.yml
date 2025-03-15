@@ -7,11 +7,6 @@ services:
       - "80:80"
     volumes:
       - app_data:/var/www/html
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./php/php.ini:/usr/local/etc/php/php.ini
-      - ./php/php-fpm.conf:/usr/local/etc/php-fpm.conf
-      - ./etc/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
       - ./wp-config.php:/var/www/html/wp-config.php
       - ./index.php:/var/www/html/index.php
       - ./.env:/var/www/html/.env
