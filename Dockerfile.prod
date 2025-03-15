@@ -65,4 +65,4 @@ COPY etc/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 EXPOSE 80
 
 # Start Nginx and PHP-FPM with Supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["sh", "-c", "until mysqladmin ping -h mariadb.internal --silent; do sleep 5; done && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
