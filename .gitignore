@@ -1,7 +1,16 @@
 # Ignore WordPress core files (we don't need them in version control)
 wp/
-wp-content/
+
+# Ignore everything inside wp-content
+wp-content/*
+
+# Allow the plugins folder but ignore all plugins
+!wp-content/plugins/
+wp-content/plugins/*
+
+# Allow only `wp-woocommerce-printify-sync`
 !wp-content/plugins/wp-woocommerce-printify-sync/
+
 
 # Ignore plugin build artifacts or other generated files
 *.log

@@ -17,13 +17,23 @@ docker-bake.hcl
 *.swo
 *.bak
 
+# Ignore configuration files
+etc/supervisord.conf
+nginx/nginx.conf
+nginx/conf.d/
+php/php.ini
+php-fpm/php-fpm.conf
+mariadb/my.cnf
+
 # Ignore WordPress core (handled inside container)
 wp/
 
 # Ignore wp-content (except the plugin you're working on)
-wp-content/
-!wp-content/plugins/wp-woocommerce-printify-sync/ # Keep only this plugin
+wp-content/*
+!wp-content/plugins/
+!wp-content/plugins/wp-woocommerce-printify-sync/
 
 # Ignore dependency directories (Composer)
-vendor/
+#vendor/
 node_modules/
+vendor/

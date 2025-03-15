@@ -1,7 +1,7 @@
-# Use official PHP-FPM image for performance
+# Use an official PHP runtime as a parent image
 FROM php:8.2-fpm
 
-# Install dependencies
+# Install required packages including unzip
 RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
@@ -42,7 +42,7 @@ RUN chown -R www-data:www-data /var/www/html && \
 
 # Install PHP dependencies
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
 # Set permissions again after running Composer
 RUN chown -R www-data:www-data /var/www/html && \
@@ -54,7 +54,6 @@ RUN chown -R www-data:www-data /var/www/html && \
     chown -R www-data:www-data /var/run
 
 # Define volumes
-VOLUME /var/www/html/wp
 VOLUME /var/www/html/wp-content
 VOLUME /var/www/html/wp-config.php
 VOLUME /var/www/html/index.php
