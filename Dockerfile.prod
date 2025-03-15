@@ -1,9 +1,11 @@
-# Use an official PHP runtime as a parent image
-FROM php:8.2-fpm
+# Use official PHP image as base
+FROM php:8.2-fpm AS base
 
-# Install required packages including MariaDB, nginx, and supervisor
-RUN apt-get update && apt-get install -y \
-    mariadb-server \
+# Install dependencies using cache to speed up builds
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nginx \
+    supervisor \
+    unzip \
     mariadb-client \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
@@ -12,9 +14,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libonig-dev \
-    nginx \
-    supervisor \
-    unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) \
     pdo_mysql \
@@ -28,62 +27,30 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-enable redis \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Copy the project files
-COPY . /var/www/html
-
-# Set working directory
-WORKDIR /var/www/html
-
-# Copy Nginx configuration files
+# Copy configuration files
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY nginx/conf.d /etc/nginx/conf.d
-
-# Copy PHP configuration files
 COPY php/php.ini /usr/local/etc/php/php.ini
 COPY php/php-fpm.conf /usr/local/etc/php-fpm.conf
-
-# Copy Supervisor configuration
 COPY etc/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy entrypoint script and make it executable
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Set permissions
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application files separately to take advantage of caching
+COPY . .
+
+# Set correct permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html && \
     find /var/www/html -type d -exec chmod g+s {} \;
 
-# Copy entrypoint script from `mariadb/` and make it executable
-COPY mariadb/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Copy Supervisor configuration from `/etc/`
-COPY etc/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Set permissions before running Composer
-RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 /var/www/html && \
-    find /var/www/html -type d -exec chmod g+s {} \;
-
-# Install PHP dependencies
-ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-
-# Set permissions again after running Composer
-RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 /var/www/html && \
-    find /var/www/html -type d -exec chmod g+s {} \; && \
-    mkdir -p /var/log/nginx && \
-    chown -R www-data:www-data /var/log/nginx && \
-    mkdir -p /var/run && \
-    chown -R www-data:www-data /var/run
-
-# Expose only port 80 (MariaDB is internal)
+# Expose Nginx port
 EXPOSE 80
 
-# Start services using entrypoint script
+# Start services using entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
