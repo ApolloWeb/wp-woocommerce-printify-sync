@@ -35,7 +35,7 @@ COPY php/php-fpm.conf /usr/local/etc/php-fpm.conf
 COPY etc/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy entrypoint script and make it executable
-COPY entrypoint.sh /entrypoint.sh
+COPY mariadb/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Set working directory
