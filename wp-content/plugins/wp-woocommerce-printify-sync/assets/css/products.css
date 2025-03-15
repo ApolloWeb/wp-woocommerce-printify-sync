@@ -1,0 +1,24 @@
+/* Products page specific styles */
+.wpwps-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.wpwps-product-card {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.wpwps-product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.wpwps-product-details {
+    padding: 15px;
+}

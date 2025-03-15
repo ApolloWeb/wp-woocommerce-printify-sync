@@ -1,0 +1,72 @@
+/* Custom Bootstrap styles for WordPress Admin */
+.wpwps-wrapper {
+    --wp-admin-theme-color: #2271b1;
+    --wp-admin-theme-color-darker-10: #185f8c;
+    --wp-admin-theme-color-darker-20: #124e73;
+}
+
+/* Modal customization */
+.modal-header {
+    background-color: var(--wp-admin-theme-color);
+    color: #fff;
+}
+
+.modal-header .btn-close {
+    color: #fff;
+}
+
+/* Button customization */
+.btn-primary {
+    background-color: var(--wp-admin-theme-color);
+    border-color: var(--wp-admin-theme-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--wp-admin-theme-color-darker-10);
+    border-color: var(--wp-admin-theme-color-darker-10);
+}
+
+/* Tooltip customization */
+.tooltip {
+    font-size: 12px;
+}
+
+/* Alert customization */
+.alert {
+    border-left: 4px solid transparent;
+}
+
+.alert-info {
+    border-left-color: var(--wp-admin-theme-color);
+}
+
+.alert-success {
+    border-left-color: #46b450;
+}
+
+.alert-warning {
+    border-left-color: #ffb900;
+}
+
+.alert-danger {
+    border-left-color: #dc3232;
+}
+
+/* Form customization */
+.form-control {
+    border-color: #8c8f94;
+}
+
+.form-control:focus {
+    border-color: var(--wp-admin-theme-color);
+    box-shadow: 0 0 0 1px var(--wp-admin-theme-color);
+}
+
+/* Card customization */
+.card {
+    border-color: #c3c4c7;
+}
+
+.card-header {
+    background-color: #f0f0f1;
+}
