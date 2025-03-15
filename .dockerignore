@@ -21,6 +21,7 @@ docker-bake.hcl
 wp/
 
 # Ignore wp-content (except the plugin you're working on)
+wp/
 wp-content/*
 !wp-content/plugins/
 !wp-content/plugins/wp-woocommerce-printify-sync/
