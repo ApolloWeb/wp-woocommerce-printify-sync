@@ -5,15 +5,16 @@ mkdir -p /var/run/mysqld
 chown -R mysql:mysql /var/run/mysqld
 chmod 777 /var/run/mysqld
 
-# Initialize database if empty
+# Ensure MariaDB data directory exists
 if [ ! -d "/var/lib/mysql/mysql" ]; then
     echo "Initializing MariaDB..."
-    mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql
 fi
 
-# Start MariaDB in the background as `mysql` system user
+# Start MariaDB in the background
 echo "Starting mysqld..."
 mysqld --user=mysql --datadir=/var/lib/mysql --skip-networking &
+MYSQL_PID=$!
 
 # Wait for MariaDB to be ready
 until mysqladmin ping --silent; do
