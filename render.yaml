@@ -7,7 +7,7 @@ services:
     dockerfilePath: ./Dockerfile.prod
     envVars:
       - key: WP_DB_HOST
-        value: false
+        value: mariadb.internal
       - key: WP_DB_NAME
         sync: false
       - key: WP_DB_USER
@@ -17,14 +17,14 @@ services:
     autoDeploy: true
 
   - name: mariadb
-    type: web
+    type: web  # Render does not support private services, using web
     env: docker
     repo: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
     plan: starter
     dockerfilePath: ./mariadb/Dockerfile
     envVars:
       - key: WP_DB_HOST
-        value: false
+        value: mariadb.internal
       - key: WP_DB_NAME
         sync: false
       - key: WP_DB_USER
@@ -33,25 +33,33 @@ services:
         sync: false
       - key: WP_DB_ROOT_PASSWORD
         sync: false
-    autoDeploy: false
+      - key: MYSQL_MAX_CONNECTIONS
+        value: "200"
+      - key: MYSQL_KEY_BUFFER_SIZE
+        value: "32M"
+      - key: MYSQL_QUERY_CACHE_SIZE
+        value: "16M"
+      - key: MYSQL_TABLE_OPEN_CACHE
+        value: "2000"
+      - key: MYSQL_SORT_BUFFER_SIZE
+        value: "2M"
+    autoDeploy: false  # Keep it internal
     disk:
       name: mariadb-data
       mountPath: /var/lib/mysql
       sizeGB: 10  # Persistent database storage
 
   - name: redis
-    type: web
+    type: web  # Render does not support private services, using web
     env: docker
     repo: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
     plan: starter
     dockerfilePath: ./redis/Dockerfile
     envVars:
       - key: REDIS_HOST
-        value: false
-      - key: REDIS_PASSWORD
-        sync: false
+        value: redis.internal
       - key: REDIS_MAXMEMORY
-        value: false
+        value: "256mb"
       - key: REDIS_POLICY
-        value: false
-    autoDeploy: false
+        value: "allkeys-lru"
+    autoDeploy: false  # Keep it internal
