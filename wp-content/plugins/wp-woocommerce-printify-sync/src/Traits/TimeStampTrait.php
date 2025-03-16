@@ -8,7 +8,7 @@ trait TimeStampTrait
 {
     protected function getCurrentTime(): string
     {
-        return '2025-03-16 15:50:01';
+        return '2025-03-16 17:03:29';
     }
 
     protected function getCurrentUser(): string
@@ -22,10 +22,5 @@ trait TimeStampTrait
             'timestamp' => $this->getCurrentTime(),
             'user' => $this->getCurrentUser()
         ];
-    }
-
-    protected function addTimeStampData(array $data): array
-    {
-        return array_merge($data, $this->getFormattedTimestamp());
     }
 }
