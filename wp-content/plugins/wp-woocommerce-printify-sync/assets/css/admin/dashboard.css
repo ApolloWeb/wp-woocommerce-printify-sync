@@ -1,0 +1,115 @@
+.wpwps-dashboard {
+    padding: 20px;
+}
+
+.wpwps-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.wpwps-stat-card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.wpwps-stat-card h3 {
+    margin: 0 0 10px;
+    color: #23282d;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.wpwps-charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 300px;
+}
+
+.wpwps-recent-orders {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.wpwps-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wpwps-table th,
+.wpwps-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e2e4e7;
+}
+
+.wpwps-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.api-health-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.api-health-indicator.good { background-color: #00a32a; }
+.api-health-indicator.warning { background-color: #f0b849; }
+.api-health-indicator.critical { background-color: #cc1818; }
+
+.wpwps-filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.wpwps-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+@media screen and (max-width: 782px) {
+    .wpwps-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wpwps-charts-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .wpwps-filters {
+        flex-direction: column;
+    }
+}
