@@ -1,0 +1,50 @@
+.printify-settings {
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+.settings-section .card-header {
+    background-color: #f8f9fa;
+    border-bottom: none;
+}
+
+.settings-section .btn-link {
+    text-decoration: none;
+    color: #333;
+    padding: 0;
+}
+
+.settings-section .btn-link:hover {
+    color: #0d6efd;
+}
+
+.settings-section .card-body {
+    background-color: #fff;
+    border-top: 1px solid rgba(0,0,0,.125);
+}
+
+.settings-fields {
+    max-width: 600px;
+}
+
+.form-text {
+    font-size: 0.85em;
+    color: #6c757d;
+}
+
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+.toggle-password {
+    cursor: pointer;
+}
+
+.settings-footer {
+    margin-top: 20px;
+    padding: 20px;
+    background: #fff;
+    border-

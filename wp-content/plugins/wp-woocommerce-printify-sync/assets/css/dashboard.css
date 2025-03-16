@@ -1,0 +1,72 @@
+.printify-dashboard {
+    padding: 20px;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.icon {
+    opacity: 0.8;
+}
+
+.btn-group .btn {
+    border-radius: 20px;
+    padding: 5px 15px;
+}
+
+.btn-group .btn.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.stats-card {
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.stats-card h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.stats-card p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.recent-activity {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    padding: 10px 15px;
+    border-left: 3px solid #0d6efd;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 0 5px 5px 0;
+}
+
+.top-products-list {
+    list-style: none;
+    padding: 0;
+}
+
+.top-products-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}

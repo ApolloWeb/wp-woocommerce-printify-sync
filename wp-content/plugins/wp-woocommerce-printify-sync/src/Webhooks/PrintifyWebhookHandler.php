@@ -4,242 +4,108 @@ declare(strict_types=1);
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Webhooks;
 
-use ApolloWeb\WPWooCommercePrintifySync\Services\{
-    ConfigService,
-    LoggerInterface,
-    OrderHandler
-};
+use ApolloWeb\WPWooCommercePrintifySync\Services\ProductImportService;
+use ApolloWeb\WPWooCommercePrintifySync\Services\OrderSyncService;
+use ApolloWeb\WPWooCommercePrintifySync\Interfaces\LoggerInterface;
 
 class PrintifyWebhookHandler
 {
-    private const WEBHOOK_SECRET_OPTION = 'wpwps_webhook_secret';
-    private ConfigService $config;
+    private ProductImportService $productImporter;
+    private OrderSyncService $orderSync;
     private LoggerInterface $logger;
-    private OrderHandler $orderHandler;
 
     public function __construct(
-        ConfigService $config,
-        LoggerInterface $logger,
-        OrderHandler $orderHandler
+        ProductImportService $productImporter,
+        OrderSyncService $orderSync,
+        LoggerInterface $logger
     ) {
-        $this->config = $config;
+        $this->productImporter = $productImporter;
+        $this->orderSync = $orderSync;
         $this->logger = $logger;
-        $this->orderHandler = $orderHandler;
-
-        $this->initHooks();
     }
 
-    private function initHooks(): void
-    {
-        add_action('rest_api_init', [$this, 'registerEndpoints']);
-    }
-
-    public function registerEndpoints(): void
-    {
-        register_rest_route('wpwps/v1', '/webhook', [
-            'methods' => 'POST',
-            'callback' => [$this, 'handleWebhook'],
-            'permission_callback' => [$this, 'verifyWebhook']
-        ]);
-    }
-
-    public function verifyWebhook(\WP_REST_Request $request): bool
-    {
-        $signature = $request->get_header('X-Printify-Signature');
-        if (!$signature) {
-            $this->logger->error('Missing webhook signature');
-            return false;
-        }
-
-        $secret = get_option(self::WEBHOOK_SECRET_OPTION);
-        $payload = $request->get_body();
-        $expectedSignature = hash_hmac('sha256', $payload, $secret);
-
-        if (!hash_equals($expectedSignature, $signature)) {
-            $this->logger->error('Invalid webhook signature');
-            return false;
-        }
-
-        return true;
-    }
-
-    public function handleWebhook(\WP_REST_Request $request): \WP_REST_Response
+    public function handleWebhook(): void
     {
         try {
-            $payload = $request->get_json_params();
-            $event = $payload['event'] ?? '';
-            $data = $payload['data'] ?? [];
+            // Verify webhook signature
+            $this->verifyWebhook();
 
-            $this->logger->info('Received webhook', [
-                'event' => $event,
-                'timestamp' => current_time('mysql', true)
-            ]);
+            // Get webhook payload
+            $payload = json_decode(file_get_contents('php://input'), true);
+            $event = $_SERVER['HTTP_X_PRINTIFY_EVENT'] ?? '';
 
+            // Process webhook
             switch ($event) {
-                case 'order.status_updated':
-                    $this->handleOrderStatusUpdate($data);
+                case 'product.created':
+                case 'product.updated':
+                    $this->handleProductWebhook($payload['product']);
                     break;
 
-                case 'order.shipped':
-                    $this->handleOrderShipped($data);
+                case 'product.deleted':
+                    $this->handleProductDeletion($payload['product']['id']);
                     break;
 
-                case 'order.delivered':
-                    $this->handleOrderDelivered($data);
-                    break;
-
+                case 'order.created':
+                case 'order.updated':
                 case 'order.cancelled':
-                    $this->handleOrderCancelled($data);
+                    $this->handleOrderWebhook($payload['order']);
                     break;
 
                 default:
-                    throw new \Exception("Unsupported webhook event: {$event}");
+                    $this->logger->warning('Unknown webhook event', [
+                        'event' => $event,
+                        'payload' => $payload
+                    ]);
             }
 
-            return new \WP_REST_Response([
-                'success' => true,
-                'message' => 'Webhook processed successfully'
-            ], 200);
+            wp_send_json_success();
 
         } catch (\Exception $e) {
             $this->logger->error('Webhook processing failed', [
                 'error' => $e->getMessage(),
-                'event' => $event ?? 'unknown'
+                'trace' => $e->getTraceAsString()
             ]);
-
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            wp_send_json_error(['message' => $e->getMessage()], 500);
         }
     }
 
-    private function handleOrderStatusUpdate(array $data): void
+    private function verifyWebhook(): void
     {
-        $externalId = $data['external_id'] ?? null;
-        if (!$externalId) {
-            throw new \Exception('Missing external order ID');
-        }
+        $signature = $_SERVER['HTTP_X_PRINTIFY_SIGNATURE'] ?? '';
+        $payload = file_get_contents('php://input');
+        $secret = get_option('printify_webhook_secret');
 
-        $order = wc_get_order($externalId);
-        if (!$order) {
-            throw new \Exception("Order not found: {$externalId}");
-        }
+        $calculatedSignature = hash_hmac('sha256', $payload, $secret);
 
-        $status = $data['status'] ?? '';
-        $wcStatus = $this->mapPrintifyStatusToWooCommerce($status);
-
-        if ($wcStatus && $wcStatus !== $order->get_status()) {
-            $order->update_status(
-                $wcStatus,
-                sprintf(
-                    __('Order status updated by Printify to: %s', 'wp-woocommerce-printify-sync'),
-                    $status
-                )
-            );
-        }
-
-        $order->update_meta_data('_printify_status', $status);
-        $order->update_meta_data('_printify_status_updated', current_time('mysql', true));
-        $order->save();
-    }
-
-    private function handleOrderShipped(array $data): void
-    {
-        $externalId = $data['external_id'] ?? null;
-        if (!$externalId) {
-            throw new \Exception('Missing external order ID');
-        }
-
-        $order = wc_get_order($externalId);
-        if (!$order) {
-            throw new \Exception("Order not found: {$externalId}");
-        }
-
-        // Update tracking information
-        $tracking = $data['tracking'] ?? [];
-        if ($tracking) {
-            $order->update_meta_data('_printify_tracking_number', $tracking['number'] ?? '');
-            $order->update_meta_data('_printify_tracking_carrier', $tracking['carrier'] ?? '');
-            $order->update_meta_data('_printify_tracking_url', $tracking['url'] ?? '');
-        }
-
-        // Update order status
-        if ($order->get_status() === 'processing') {
-            $order->update_status(
-                'completed',
-                __('Order shipped by Printify', 'wp-woocommerce-printify-sync')
-            );
-        }
-
-        $order->save();
-
-        // Send customer notification
-        if ($this->config->get('send_shipping_notification', true)) {
-            do_action('wpwps_send_shipping_notification', $order);
+        if (!hash_equals($calculatedSignature, $signature)) {
+            throw new \Exception('Invalid webhook signature');
         }
     }
 
-    private function handleOrderDelivered(array $data): void
+    private function handleProductWebhook(array $product): void
     {
-        $externalId = $data['external_id'] ?? null;
-        if (!$externalId) {
-            throw new \Exception('Missing external order ID');
-        }
+        $this->productImporter->importProducts([$product]);
+    }
 
-        $order = wc_get_order($externalId);
-        if (!$order) {
-            throw new \Exception("Order not found: {$externalId}");
-        }
-
-        $order->update_meta_data('_printify_delivery_date', current_time('mysql', true));
+    private function handleProductDeletion(string $printifyId): void
+    {
+        global $wpdb;
         
-        if ($order->get_status() !== 'completed') {
-            $order->update_status(
-                'completed',
-                __('Order delivered - Printify', 'wp-woocommerce-printify-sync')
-            );
-        }
+        $productId = $wpdb->get_var($wpdb->prepare(
+            "SELECT post_id FROM $wpdb->postmeta 
+            WHERE meta_key = '_printify_id' 
+            AND meta_value = %s 
+            LIMIT 1",
+            $printifyId
+        ));
 
-        $order->save();
+        if ($productId) {
+            wp_delete_post($productId, true);
+        }
     }
 
-    private function handleOrderCancelled(array $data): void
+    private function handleOrderWebhook(array $order): void
     {
-        $externalId = $data['external_id'] ?? null;
-        if (!$externalId) {
-            throw new \Exception('Missing external order ID');
-        }
-
-        $order = wc_get_order($externalId);
-        if (!$order) {
-            throw new \Exception("Order not found: {$externalId}");
-        }
-
-        if ($order->get_status() !== 'cancelled') {
-            $order->update_status(
-                'cancelled',
-                sprintf(
-                    __('Order cancelled by Printify. Reason: %s', 'wp-woocommerce-printify-sync'),
-                    $data['reason'] ?? 'No reason provided'
-                )
-            );
-        }
-
-        $order->save();
-    }
-
-    private function mapPrintifyStatusToWooCommerce(string $status): ?string
-    {
-        $statusMap = [
-            'pending' => 'processing',
-            'in_production' => 'processing',
-            'shipped' => 'completed',
-            'delivered' => 'completed',
-            'cancelled' => 'cancelled',
-            'failed' => 'failed'
-        ];
-
-        return $statusMap[$status] ?? null;
+        $this->orderSync->handlePrintifyOrder($order);
     }
 }

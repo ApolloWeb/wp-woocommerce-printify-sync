@@ -4,97 +4,124 @@ declare(strict_types=1);
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Services;
 
-use ApolloWeb\WPWooCommercePrintifySync\Context\SyncContext;
 use ApolloWeb\WPWooCommercePrintifySync\Interfaces\LoggerInterface;
-use ApolloWeb\WPWooCommercePrintifySync\Services\RateLimiter;
-use ApolloWeb\WPWooCommercePrintifySync\Queue\QueueManager;
 
-class WebhookHandler
+class WebhookHandler extends AbstractService
 {
-    private const WEBHOOK_SECRET = 'your_webhook_secret';
-    private const MAX_REQUESTS_PER_MINUTE = 60;
-
-    private LoggerInterface $logger;
-    private SyncContext $context;
-    private QueueManager $queueManager;
-    private RateLimiter $rateLimiter;
+    private ProductImportService $productImporter;
+    private OrderSyncService $orderSync;
 
     public function __construct(
+        ProductImportService $productImporter,
+        OrderSyncService $orderSync,
         LoggerInterface $logger,
-        SyncContext $context,
-        QueueManager $queueManager,
-        RateLimiter $rateLimiter
+        ConfigService $config
     ) {
-        $this->logger = $logger;
-        $this->context = $context;
-        $this->queueManager = $queueManager;
-        $this->rateLimiter = $rateLimiter;
+        parent::__construct($logger, $config);
+        $this->productImporter = $productImporter;
+        $this->orderSync = $orderSync;
     }
 
-    public function handleRequest(\WP_REST_Request $request): \WP_REST_Response
+    public function handleWebhook(string $event, array $payload): void
     {
         try {
-            if (!$this->validateSignature($request)) {
-                return new \WP_REST_Response(['error' => 'Invalid signature'], 401);
-            }
-
-            if (!$this->rateLimiter->allowRequest('webhook', self::MAX_REQUESTS_PER_MINUTE)) {
-                return new \WP_REST_Response(['error' => 'Too many requests'], 429);
-            }
-
-            $payload = $request->get_json_params();
-            
-            if (!$this->validatePayload($payload)) {
-                return new \WP_REST_Response(['error' => 'Invalid payload'], 400);
-            }
-
-            $syncId = $this->queueManager->scheduleWebhookUpdate(
-                $payload['product_id'],
-                $payload['shop_id'],
-                $payload['event']
-            );
-
-            $this->logger->info('Webhook received', [
-                'sync_id' => $syncId,
-                'event' => $payload['event'],
-                'product_id' => $payload['product_id']
+            $this->logOperation('handleWebhook', [
+                'event' => $event,
+                'payload' => $payload
             ]);
 
-            return new \WP_REST_Response([
-                'status' => 'scheduled',
-                'sync_id' => $syncId
-            ], 202);
+            match ($event) {
+                'product.created' => $this->handleProductCreated($payload),
+                'product.updated' => $this->handleProductUpdated($payload),
+                'product.deleted' => $this->handleProductDeleted($payload),
+                'order.created' => $this->handleOrderCreated($payload),
+                'order.updated' => $this->handleOrderUpdated($payload),
+                'order.cancelled' => $this->handleOrderCancelled($payload),
+                'shipping.updated' => $this->handleShippingUpdated($payload),
+                default => $this->logOperation('handleWebhook', [
+                    'message' => 'Unhandled webhook event',
+                    'event' => $event
+                ])
+            };
 
         } catch (\Exception $e) {
-            $this->logger->error('Webhook handling failed', [
-                'error' => $e->getMessage(),
-                'payload' => $payload ?? null
+            $this->logError('handleWebhook', $e, [
+                'event' => $event,
+                'payload' => $payload
             ]);
-            return new \WP_REST_Response(['error' => $e->getMessage()], 500);
+
+            // Queue for retry if needed
+            $this->queueForRetry($event, $payload);
         }
     }
 
-    private function validateSignature(\WP_REST_Request $request): bool
+    private function handleProductCreated(array $payload): void
     {
-        $signature = $request->get_header('X-Printify-Signature');
-        if (!$signature) {
-            return false;
-        }
-
-        $payload = $request->get_body();
-        $expectedSignature = hash_hmac('sha256', $payload, self::WEBHOOK_SECRET);
-
-        return hash_equals($expectedSignature, $signature);
+        $this->productImporter->importProducts([$payload['product']]);
     }
 
-    private function validatePayload(array $payload): bool
+    private function handleProductUpdated(array $payload): void
     {
-        $required = ['product_id', 'shop_id', 'event'];
-        foreach ($required as $field) {
-            if (!isset($payload[$field])) {
-                return false;
-            }
+        $productId = $this->getWooCommerceProductId($payload['product']['id']);
+        if ($productId) {
+            $this->productImporter->updateProduct($productId, $payload['product']);
         }
-        return true;
+    }
+
+    private function handleProductDeleted(array $payload): void
+    {
+        $productId = $this->getWooCommerceProductId($payload['product']['id']);
+        if ($productId) {
+            $this->productImporter->deleteProduct($productId);
+        }
+    }
+
+    private function handleOrderCreated(array $payload): void
+    {
+        $this->orderSync->handlePrintifyOrder($payload['order']);
+    }
+
+    private function handleOrderUpdated(array $payload): void
+    {
+        $this->orderSync->updateOrderStatus($payload['order']);
+    }
+
+    private function handleOrderCancelled(array $payload): void
+    {
+        $this->orderSync->cancelOrder($payload['order']);
+    }
+
+    private function handleShippingUpdated(array $payload): void
+    {
+        // Implementation for shipping updates
+    }
+
+    private function getWooCommerceProductId(string $printifyId): ?int
+    {
+        global $wpdb;
+        
+        $productId = $wpdb->get_var($wpdb->prepare(
+            "SELECT post_id FROM $wpdb->postmeta 
+            WHERE meta_key = '_printify_id' 
+            AND meta_value = %s 
+            LIMIT 1",
+            $printifyId
+        ));
+
+        return $productId ? (int)$productId : null;
+    }
+
+    private function queueForRetry(string $event, array $payload): void
+    {
+        as_schedule_single_action(
+            time() + 300, // 5 minutes delay
+            'wpwps_retry_webhook',
+            [
+                'event' => $event,
+                'payload' => $payload,
+                'attempt' => ($payload['attempt'] ?? 0) + 1
+            ],
+            'printify-webhooks'
+        );
     }
 }

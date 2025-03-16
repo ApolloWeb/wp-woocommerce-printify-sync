@@ -1,0 +1,58 @@
+/* Dark Mode Styles */
+body.printify-dark-mode {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.printify-dark-mode .printify-card {
+    background: #2d2d2d;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+}
+
+.printify-dark-mode .printify-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.printify-dark-mode .printify-table th {
+    background: #363636;
+    border-bottom: 2px solid #404040;
+}
+
+.printify-dark-mode .printify-table td {
+    border-bottom: 1px solid #404040;
+}
+
+.printify-dark-mode .printify-table tr:hover {
+    background: #363636;
+}
+
+.printify-dark-mode .printify-search input {
+    background: #2d2d2d;
+    border: 1px solid #404040;
+    color: #e0e0e0;
+}
+
+.printify-dark-mode .printify-filter {
+    background: #363636;
+    color: #e0e0e0;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 10px;
+    border-radius: 50%;
+    background: #6366f1;
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}

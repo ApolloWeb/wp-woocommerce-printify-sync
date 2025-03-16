@@ -6,122 +6,43 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Template;
 
 class Engine
 {
-    private string $viewsPath;
-    private string $cachePath;
+    private string $templatePath;
     private array $data = [];
-    private array $sections = [];
-    private string $currentSection = '';
 
-    public function __construct(string $viewsPath, string $cachePath)
+    public function __construct()
     {
-        $this->viewsPath = rtrim($viewsPath, '/');
-        $this->cachePath = rtrim($cachePath, '/');
+        $this->templatePath = WPWPS_PLUGIN_DIR . '/templates';
     }
 
-    public function render(string $view, array $data = []): string
+    public function render(string $template, array $data = []): string
     {
-        $this->data = array_merge($this->data, $data);
-        $cachedFile = $this->getCachedFile($view);
+        $this->data = $data;
+        $file = $this->resolvePath($template);
 
-        if (!$this->isCached($view, $cachedFile)) {
-            $this->compile($view);
-        }
-
-        return $this->evaluateTemplate($cachedFile, $this->data);
-    }
-
-    public function directive(string $name, callable $handler): void
-    {
-        $this->customDirectives[$name] = $handler;
-    }
-
-    private function compile(string $view): void
-    {
-        $content = file_get_contents($this->getViewPath($view));
-        
-        // Compile the content
-        $content = $this->compileExtends($content);
-        $content = $this->compileIncludes($content);
-        $content = $this->compileSections($content);
-        $content = $this->compileYields($content);
-        $content = $this->compileEchos($content);
-        $content = $this->compilePhp($content);
-        
-        // Create cache directory if it doesn't exist
-        if (!is_dir(dirname($this->getCachedFile($view)))) {
-            mkdir(dirname($this->getCachedFile($view)), 0755, true);
-        }
-
-        file_put_contents($this->getCachedFile($view), $content);
-    }
-
-    private function compileExtends(string $content): string
-    {
-        return preg_replace_callback('/@extends\(\'([^\']+)\'\)/', function($matches) {
-            return "<?php echo \$this->render('{$matches[1]}'); ?>";
-        }, $content);
-    }
-
-    private function compileIncludes(string $content): string
-    {
-        return preg_replace_callback('/@include\(\'([^\']+)\'\)/', function($matches) {
-            return "<?php echo \$this->render('{$matches[1]}'); ?>";
-        }, $content);
-    }
-
-    private function compileSections(string $content): string
-    {
-        $content = preg_replace_callback('/@section\(\'([^\']+)\'\)(.*?)@endsection/s', function($matches) {
-            return "<?php \$this->startSection('{$matches[1]}'); ?>{$matches[2]}<?php \$this->endSection(); ?>";
-        }, $content);
-
-        return $content;
-    }
-
-    private function compileYields(string $content): string
-    {
-        return preg_replace_callback('/@yield\(\'([^\']+)\'\)/', function($matches) {
-            return "<?php echo \$this->yieldContent('{$matches[1]}'); ?>";
-        }, $content);
-    }
-
-    private function compileEchos(string $content): string
-    {
-        $content = preg_replace('/\{\{\s*(.+?)\s*\}\}/', '<?php echo htmlspecialchars($1); ?>', $content);
-        return preg_replace('/\{!!\s*(.+?)\s*!!\}/', '<?php echo $1; ?>', $content);
-    }
-
-    private function compilePhp(string $content): string
-    {
-        return preg_replace_callback('/@php(.*?)@endphp/s', function($matches) {
-            return "<?php {$matches[1]} ?>";
-        }, $content);
-    }
-
-    private function evaluateTemplate(string $file, array $data): string
-    {
-        extract($data);
         ob_start();
-        include $file;
+        $this->renderTemplate($file);
         return ob_get_clean();
     }
 
-    private function getViewPath(string $view): string
+    private function renderTemplate(string $file): void
     {
-        return $this->viewsPath . '/' . str_replace('.', '/', $view) . '.php';
+        extract($this->data);
+        include $file;
     }
 
-    private function getCachedFile(string $view): string
+    public function include(string $partial, array $data = []): void
     {
-        return $this->cachePath . '/' . md5($view) . '.php';
+        echo $this->render($partial, array_merge($this->data, $data));
     }
 
-    private function isCached(string $view, string $cachedFile): bool
+    private function resolvePath(string $template): string
     {
-        if (!file_exists($cachedFile)) {
-            return false;
+        $file = $this->templatePath . '/' . $template . '.php';
+        
+        if (!file_exists($file)) {
+            throw new \RuntimeException("Template not found: {$template}");
         }
 
-        return filemtime($this->getViewPath($view)) <= filemtime($cachedFile);
+        return $file;
     }
 }

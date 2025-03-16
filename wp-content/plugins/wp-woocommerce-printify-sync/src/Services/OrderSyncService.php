@@ -4,106 +4,92 @@ declare(strict_types=1);
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Services;
 
-use Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore;
-use Automattic\WooCommerce\Utilities\OrderUtil;
-
-class OrderSyncService
+class OrderSyncService extends AbstractService
 {
-    private $context;
-    private $logger;
+    private PrintifyAPI $api;
+    private OrderStatusManager $statusManager;
 
-    public function __construct(SyncContext $context, LoggerInterface $logger)
-    {
-        $this->context = $context;
-        $this->logger = $logger;
+    public function __construct(
+        PrintifyAPI $api,
+        OrderStatusManager $statusManager,
+        LoggerInterface $logger,
+        ConfigService $config
+    ) {
+        parent::__construct($logger, $config);
+        $this->api = $api;
+        $this->statusManager = $statusManager;
     }
 
-    public function syncOrder(int $orderId): void
+    public function handlePrintifyOrder(array $printifyOrder): void
     {
         try {
-            // Get order using HPOS if available
-            $order = self::isHPOSEnabled() 
-                ? wc_get_order($orderId) 
-                : new \WC_Order($orderId);
-
-            if (!$order) {
-                throw new \Exception("Order not found: {$orderId}");
+            $orderId = $this->getWooCommerceOrderId($printifyOrder['id']);
+            if (!$orderId) {
+                $this->logOperation('handlePrintifyOrder', [
+                    'message' => 'No matching WooCommerce order found',
+                    'printify_order_id' => $printifyOrder['id']
+                ]);
+                return;
             }
 
-            // Prepare order data for Printify
-            $printifyOrder = $this->preparePrintifyOrder($order);
+            $order = wc_get_order($orderId);
+            if (!$order) {
+                throw new \Exception("WooCommerce order not found: {$orderId}");
+            }
 
-            // Send to Printify
-            $this->sendOrderToPrintify($printifyOrder);
+            // Update order status
+            $this->statusManager->updateOrderStatus($order, $printifyOrder['status']);
 
-            // Update order meta
-            $order->update_meta_data('_printify_sync_status', 'synced');
-            $order->update_meta_data('_printify_last_sync', $this->context->getCurrentTime());
-            $order->save();
+            // Update shipping information if available
+            if (!empty($printifyOrder['shipment'])) {
+                $this->updateShippingInfo($order, $printifyOrder['shipment']);
+            }
 
-            $this->logger->info('Order synced successfully', [
+            // Update Printify metadata
+            $this->updatePrintifyMetadata($order, $printifyOrder);
+
+            $this->logOperation('handlePrintifyOrder', [
                 'order_id' => $orderId,
-                'sync_time' => $this->context->getCurrentTime()
+                'printify_order_id' => $printifyOrder['id'],
+                'status' => $printifyOrder['status']
             ]);
 
         } catch (\Exception $e) {
-            $this->logger->error('Order sync failed', [
-                'order_id' => $orderId,
-                'error' => $e->getMessage()
-            ]);
-            throw $e;
-        }
-    }
-
-    public function getOrdersByStatus(string $status): array
-    {
-        if (self::isHPOSEnabled()) {
-            global $wpdb;
-            $orderTable = OrderUtil::get_orders_table_name();
-            
-            return $wpdb->get_col($wpdb->prepare(
-                "SELECT id FROM {$orderTable} WHERE status = %s",
-                $status
-            ));
-        } else {
-            return wc_get_orders([
-                'status' => $status,
-                'return' => 'ids',
+            $this->logError('handlePrintifyOrder', $e, [
+                'printify_order' => $printifyOrder
             ]);
         }
     }
 
-    private function preparePrintifyOrder(\WC_Order $order): array
+    private function updateShippingInfo(\WC_Order $order, array $shipment): void
     {
-        // Prepare order data
-        $orderData = [
-            'external_id' => $order->get_id(),
-            'line_items' => [],
-            'shipping_address' => $this->getShippingAddress($order),
-            'billing_address' => $this->getBillingAddress($order),
-        ];
-
-        // Get line items
-        foreach ($order->get_items() as $item) {
-            $product = $item->get_product();
-            if (!$product) continue;
-
-            $printifyId = $product->get_meta('_printify_id');
-            if (!$printifyId) continue;
-
-            $orderData['line_items'][] = [
-                'product_id' => $printifyId,
-                'quantity' => $item->get_quantity(),
-                'variant_id' => $product->get_meta('_printify_variant_id'),
-            ];
-        }
-
-        return $orderData;
+        $order->update_meta_data('_tracking_provider', $shipment['carrier']);
+        $order->update_meta_data('_tracking_number', $shipment['tracking_number']);
+        $order->update_meta_data('_tracking_url', $shipment['tracking_url']);
+        
+        // Add shipping note
+        $order->add_order_note(
+            sprintf(
+                __('Shipping updated by Printify - Carrier: %s, Tracking: %s', 'wp-woocommerce-printify-sync'),
+                $shipment['carrier'],
+                $shipment['tracking_number']
+            ),
+            true // Customer note
+        );
     }
 
-    public static function isHPOSEnabled(): bool
+    private function updatePrintifyMetadata(\WC_Order $order, array $printifyOrder): void
     {
-        return class_exists(\Automattic\WooCommerce\Utilities\OrderUtil::class) && 
-               \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+        $order->update_meta_data('_printify_status', $printifyOrder['status']);
+        $order->update_meta_data('_printify_last_sync', $this->getCurrentTime());
+        $order->update_meta_data('_printify_order_data', [
+            'line_items' => $printifyOrder['line_items'],
+            'shipping_method' => $printifyOrder['shipping_method'],
+            'shipping_cost' => $printifyOrder['shipping_cost'],
+            'total_cost' => $printifyOrder['total_cost'],
+            'created_at' => $printifyOrder['created_at'],
+            'updated_at' => $printifyOrder['updated_at']
+        ]);
+        $order->save();
     }
 }

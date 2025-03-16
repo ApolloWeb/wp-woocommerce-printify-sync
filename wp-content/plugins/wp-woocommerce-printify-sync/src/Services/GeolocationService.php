@@ -4,80 +4,66 @@ declare(strict_types=1);
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Services;
 
-use ApolloWeb\WPWooCommercePrintifySync\Exceptions\GeolocationException;
-
-class GeolocationService
+class GeolocationService extends AbstractService
 {
-    private const API_URL = 'https://api.ipgeolocation.io/ipgeo';
-    private const CACHE_GROUP = 'wpwps_geolocation';
-    private ConfigService $config;
-    private CacheService $cache;
+    private const GEOLOCATION_ENDPOINT = 'https://api.ipapi.com/api/';
+    private const CACHE_GROUP = 'printify_geolocation';
+    private const CACHE_DURATION = 86400; // 24 hours
 
-    public function __construct(ConfigService $config, CacheService $cache)
+    public function getUserLocation(): array
     {
-        $this->config = $config;
-        $this->cache = $cache;
-    }
-
-    public function getLocation(string $ip = ''): array
-    {
-        if (empty($ip)) {
-            $ip = $this->getClientIP();
-        }
-
-        $cacheKey = 'geo_' . md5($ip);
-        $cached = $this->cache->get($cacheKey, self::CACHE_GROUP);
-
-        if ($cached !== false) {
-            return $cached;
-        }
-
         try {
+            $ip = $this->getClientIP();
+            $cacheKey = 'geo_' . md5($ip);
+
+            // Check cache first
+            $cached = wp_cache_get($cacheKey, self::CACHE_GROUP);
+            if ($cached) {
+                return $cached;
+            }
+
+            // Get location from API
             $location = $this->fetchLocation($ip);
-            $this->cache->set($cacheKey, $location, self::CACHE_GROUP, 24 * HOUR_IN_SECONDS);
+            
+            // Cache the result
+            wp_cache_set($cacheKey, $location, self::CACHE_GROUP, self::CACHE_DURATION);
+
             return $location;
+
         } catch (\Exception $e) {
-            throw new GeolocationException($e->getMessage(), $e->getCode(), $e);
+            $this->logError('getUserLocation', $e);
+            return $this->getDefaultLocation();
         }
     }
 
     private function fetchLocation(string $ip): array
     {
-        $apiKey = $this->config->get('ipgeolocation_api_key');
-        if (empty($apiKey)) {
-            throw new GeolocationException('Geolocation API key not configured');
-        }
-
-        $response = wp_remote_get(add_query_arg([
-            'apiKey' => $apiKey,
-            'ip' => $ip
-        ], self::API_URL));
+        $apiKey = $this->config->get('ipapi_key');
+        $response = wp_remote_get(self::GEOLOCATION_ENDPOINT . $ip . '?access_key=' . $apiKey);
 
         if (is_wp_error($response)) {
-            throw new GeolocationException($response->get_error_message());
+            throw new \Exception($response->get_error_message());
         }
 
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-
+        $data = json_decode(wp_remote_retrieve_body($response), true);
         if (empty($data) || isset($data['error'])) {
-            throw new GeolocationException($data['error']['message'] ?? 'Invalid response from geolocation service');
+            throw new \Exception('Invalid geolocation response');
         }
 
         return [
-            'country_code' => $data['country_code2'],
-            'country_name' => $data['country_name'],
+            'country_code' => $data['country_code'],
+            'country' => $data['country_name'],
+            'region' => $data['region_name'],
             'city' => $data['city'],
-            'currency' => $data['currency']['code'],
-            'timezone' => $data['time_zone']['name'],
+            'postal' => $data['zip'],
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
+            'timezone' => $data['timezone']
         ];
     }
 
     private function getClientIP(): string
     {
-        $ipAddress = '';
-
-        // Check for proxies
         $headers = [
             'HTTP_CLIENT_IP',
             'HTTP_X_FORWARDED_FOR',
@@ -90,12 +76,25 @@ class GeolocationService
 
         foreach ($headers as $header) {
             if (!empty($_SERVER[$header])) {
-                $addresses = explode(',', $_SERVER[$header]);
-                $ipAddress = trim($addresses[0]);
-                break;
+                $ips = explode(',', $_SERVER[$header]);
+                return trim($ips[0]);
             }
         }
 
-        return $ipAddress;
+        return '127.0.0.1';
+    }
+
+    private function getDefaultLocation(): array
+    {
+        return [
+            'country_code' => 'US',
+            'country' => 'United States',
+            'region' => 'Unknown',
+            'city' => 'Unknown',
+            'postal' => '',
+            'latitude' => 0,
+            'longitude' => 0,
+            'timezone' => 'UTC'
+        ];
     }
 }
