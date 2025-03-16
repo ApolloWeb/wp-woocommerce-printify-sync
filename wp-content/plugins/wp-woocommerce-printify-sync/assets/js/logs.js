@@ -1,133 +1,142 @@
-class LogViewer {
-    constructor() {
-        this.filters = {
-            search: '',
-            level: '',
-            date_from: '',
-            date_to: '',
-            page: 1,
-            per_page: 25
-        };
-        
-        this.bindEvents();
-        this.loadLogs();
-    }
+(function($) {
+    'use strict';
 
-    bindEvents() {
-        document.getElementById('searchLogs').addEventListener('input', this.debounce(() => {
-            this.filters.search = event.target.value;
-            this.filters.page = 1;
-            this.loadLogs();
-        }, 500));
+    const WPWPS_Logs = {
+        init: function() {
+            this.bindEvents();
+            this.initTooltips();
+            this.initModals();
+            this.initSyntaxHighlighting();
+        },
 
-        document.getElementById('logLevel').addEventListener('change', () => {
-            this.filters.level = event.target.value;
-            this.filters.page = 1;
-            this.loadLogs();
-        });
+        bindEvents: function() {
+            $('#clearLogs').on('click', this.handleClearLogs.bind(this));
+            $('#exportLogs').on('click', this.handleExportLogs.bind(this));
+            $('.view-context').on('click', this.handleViewContext.bind(this));
+        },
 
-        document.getElementById('dateFrom').addEventListener('change', () => {
-            this.filters.date_from = event.target.value;
-            this.filters.page = 1;
-            this.loadLogs();
-        });
+        initTooltips: function() {
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        },
 
-        document.getElementById('dateTo').addEventListener('change', () => {
-            this.filters.date_to = event.target.value;
-            this.filters.page = 1;
-            this.loadLogs();
-        });
+        initModals: function() {
+            this.contextModal = new bootstrap.Modal('#contextModal');
+        },
 
-        document.getElementById('refreshLogs').addEventListener('click', () => {
-            this.loadLogs();
-        });
-
-        document.getElementById('exportLogs').addEventListener('click', () => {
-            this.exportLogs();
-        });
-    }
-
-    async loadLogs() {
-        try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'get_printify_logs',
-                    nonce: printifySync.nonce,
-                    ...this.filters
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                this.renderLogs(data.data.logs);
-                this.renderPagination(data.data.pagination);
+        initSyntaxHighlighting: function() {
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
             }
-        } catch (error) {
-            console.error('Error loading logs:', error);
+        },
+
+        handleClearLogs: function(e) {
+            e.preventDefault();
+
+            if (!confirm(wpwpsLogs.i18n.confirmClear)) {
+                return;
+            }
+
+            this.showLoading('#clearLogs');
+
+            $.ajax({
+                url: wpwpsLogs.ajaxUrl,
+                method: 'POST',
+                data: {
+                    action: 'wpwps_clear_logs',
+                    nonce: wpwpsLogs.nonce
+                },
+                success: response => {
+                    if (response.success) {
+                        this.showToast('success', response.data.message);
+                        window.location.reload();
+                    } else {
+                        this.showToast('error', response.data.message);
+                    }
+                },
+                error: () => {
+                    this.showToast('error', wpwpsLogs.i18n.error);
+                },
+                complete: () => {
+                    this.hideLoading('#clearLogs');
+                }
+            });
+        },
+
+        handleExportLogs: function(e) {
+            e.preventDefault();
+            
+            this.showLoading('#exportLogs');
+
+            $.ajax({
+                url: wpwpsLogs.ajaxUrl,
+                method: 'POST',
+                data: {
+                    action: 'wpwps_export_logs',
+                    nonce: wpwpsLogs.nonce
+                },
+                success: response => {
+                    if (response.success) {
+                        this.showToast('success', response.data.message);
+                        window.location.href = response.data.download_url;
+                    } else {
+                        this.showToast('error', response.data.message);
+                    }
+                },
+                error: () => {
+                    this.showToast('error', wpwpsLogs.i18n.error);
+                },
+                complete: () => {
+                    this.hideLoading('#exportLogs');
+                }
+            });
+        },
+
+        handleViewContext: function(e) {
+            e.preventDefault();
+            const $row = $(e.currentTarget).closest('tr');
+            const context = $row.find('.log-context').html();
+            
+            $('.context-content').html(context);
+            this.contextModal.show();
+            
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightElement($('.context-content')[0]);
+            }
+        },
+
+        showToast: function(type, message) {
+            const toast = $(`
+                <div class="toast align-items-center text-white bg-${type}" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `);
+
+            $('.toast-container').append(toast);
+            const bsToast = new bootstrap.Toast(toast[0]);
+            bsToast.show();
+
+            toast.on('hidden.bs.toast', () => toast.remove());
+        },
+
+        showLoading: function(selector) {
+            const $el = $(selector);
+            $el.prop('disabled', true)
+               .addClass('position-relative')
+               .append('<span class="spinner-border spinner-border-sm position-absolute end-0 me-2"></span>');
+        },
+
+        hideLoading: function(selector) {
+            const $el = $(selector);
+            $el.prop('disabled', false)
+               .removeClass('position-relative')
+               .find('.spinner-border')
+               .remove();
         }
-    }
+    };
 
-    renderLogs(logs) {
-        const tbody = document.querySelector('#logsTable tbody');
-        tbody.innerHTML = '';
+    $(document).ready(() => WPWPS_Logs.init());
 
-        logs.forEach(log => {
-            const tr = document.createElement('tr');
-            tr.className = `log-level-${log.level}`;
-            tr.innerHTML = `
-                <td>${this.formatDate(log.created_at)}</td>
-                <td><span class="badge bg-${this.getLevelColor(log.level)}">${log.level}</span></td>
-                <td>${this.truncate(log.message, 100)}</td>
-                <td>${this.formatContext(log.context)}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary view-log" data-log-id="${log.id}">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    ${log.cloud_url ? `
-                        <a href="${log.cloud_url}" class="btn btn-sm btn-outline-secondary" target="_blank">
-                            <i class="fas fa-cloud-download-alt"></i>
-                        </a>
-                    ` : ''}
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        // Bind view log events
-        document.querySelectorAll('.view-log').forEach(btn => {
-            btn.addEventListener('click', () => this.viewLogDetail(btn.dataset.logId));
-        });
-    }
-
-    getLevelColor(level) {
-        return {
-            error: 'danger',
-            warning: 'warning',
-            info: 'info',
-            debug: 'secondary'
-        }[level] || 'secondary';
-    }
-
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    // ... Additional methods for pagination, export, etc.
-}
-
-// Initialize on document load
-document.addEventListener('DOMContentLoaded', () => {
-    new LogViewer();
-});
+})(jQuery);

@@ -1,0 +1,62 @@
+// Variables
+$primary: #674399;  // WooCommerce Purple
+$success: #28a745;
+$warning: #ffc107;
+$danger: #dc3545;
+$info: #17a2b8;
+
+// Mixins
+@mixin card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+@mixin status-indicator($color) {
+    color: $color;
+    border-left: 4px solid $color;
+}
+
+// Dashboard Layout
+.wpwps-dashboard {
+    padding: 20px;
+
+    .wpwps-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+}
+
+// Cards
+.wpwps-card {
+    @include card;
+
+    .card-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+}
+
+// Stats Grid
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+
+    .
