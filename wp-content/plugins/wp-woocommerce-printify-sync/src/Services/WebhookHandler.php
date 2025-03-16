@@ -4,90 +4,97 @@ declare(strict_types=1);
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Services;
 
+use ApolloWeb\WPWooCommercePrintifySync\Context\SyncContext;
+use ApolloWeb\WPWooCommercePrintifySync\Interfaces\LoggerInterface;
+use ApolloWeb\WPWooCommercePrintifySync\Services\RateLimiter;
+use ApolloWeb\WPWooCommercePrintifySync\Queue\QueueManager;
+
 class WebhookHandler
 {
-    private string $currentTime = '2025-03-15 19:50:00';
-    private string $currentUser = 'ApolloWeb';
-    
-    public function __construct()
-    {
-        add_action('rest_api_init', [$this, 'registerWebhookEndpoint']);
+    private const WEBHOOK_SECRET = 'your_webhook_secret';
+    private const MAX_REQUESTS_PER_MINUTE = 60;
+
+    private LoggerInterface $logger;
+    private SyncContext $context;
+    private QueueManager $queueManager;
+    private RateLimiter $rateLimiter;
+
+    public function __construct(
+        LoggerInterface $logger,
+        SyncContext $context,
+        QueueManager $queueManager,
+        RateLimiter $rateLimiter
+    ) {
+        $this->logger = $logger;
+        $this->context = $context;
+        $this->queueManager = $queueManager;
+        $this->rateLimiter = $rateLimiter;
     }
 
-    public function registerWebhookEndpoint(): void
+    public function handleRequest(\WP_REST_Request $request): \WP_REST_Response
     {
-        register_rest_route('wpwps/v1', '/printify', [
-            'methods' => 'POST',
-            'callback' => [$this, 'handleWebhook'],
-            'permission_callback' => [$this, 'validateWebhook']
-        ]);
+        try {
+            if (!$this->validateSignature($request)) {
+                return new \WP_REST_Response(['error' => 'Invalid signature'], 401);
+            }
+
+            if (!$this->rateLimiter->allowRequest('webhook', self::MAX_REQUESTS_PER_MINUTE)) {
+                return new \WP_REST_Response(['error' => 'Too many requests'], 429);
+            }
+
+            $payload = $request->get_json_params();
+            
+            if (!$this->validatePayload($payload)) {
+                return new \WP_REST_Response(['error' => 'Invalid payload'], 400);
+            }
+
+            $syncId = $this->queueManager->scheduleWebhookUpdate(
+                $payload['product_id'],
+                $payload['shop_id'],
+                $payload['event']
+            );
+
+            $this->logger->info('Webhook received', [
+                'sync_id' => $syncId,
+                'event' => $payload['event'],
+                'product_id' => $payload['product_id']
+            ]);
+
+            return new \WP_REST_Response([
+                'status' => 'scheduled',
+                'sync_id' => $syncId
+            ], 202);
+
+        } catch (\Exception $e) {
+            $this->logger->error('Webhook handling failed', [
+                'error' => $e->getMessage(),
+                'payload' => $payload ?? null
+            ]);
+            return new \WP_REST_Response(['error' => $e->getMessage()], 500);
+        }
     }
 
-    public function validateWebhook(\WP_REST_Request $request): bool
+    private function validateSignature(\WP_REST_Request $request): bool
     {
         $signature = $request->get_header('X-Printify-Signature');
-        $webhookSecret = get_option('wpwps_webhook_secret');
-
-        if (!$signature || !$webhookSecret) {
-            error_log('[WPWPS] Webhook validation failed: Missing signature or secret');
+        if (!$signature) {
             return false;
         }
 
         $payload = $request->get_body();
-        $expectedSignature = hash_hmac('sha256', $payload, $webhookSecret);
+        $expectedSignature = hash_hmac('sha256', $payload, self::WEBHOOK_SECRET);
 
         return hash_equals($expectedSignature, $signature);
     }
 
-    public function handleWebhook(\WP_REST_Request $request): \WP_REST_Response
-    {
-        try {
-            $payload = $request->get_json_params();
-
-            // Validate payload
-            if (!$this->validatePayload($payload)) {
-                throw new \Exception('Invalid payload structure');
-            }
-
-            // Queue the import
-            $importQueue = new ImportQueue();
-            $batchId = $importQueue->queueProduct($payload);
-
-            return new \WP_REST_Response([
-                'success' => true,
-                'message' => 'Product queued for import',
-                'batch_id' => $batchId
-            ], 200);
-
-        } catch (\Exception $e) {
-            error_log(sprintf(
-                '[WPWPS] Webhook handling failed: %s - %s',
-                $e->getMessage(),
-                $this->currentTime
-            ));
-
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     private function validatePayload(array $payload): bool
     {
-        $required = ['product_id', 'title', 'description', 'variants', 'images'];
-        
+        $required = ['product_id', 'shop_id', 'event'];
         foreach ($required as $field) {
             if (!isset($payload[$field])) {
-                error_log(sprintf(
-                    '[WPWPS] Missing required field: %s - %s',
-                    $field,
-                    $this->currentTime
-                ));
                 return false;
             }
         }
-
         return true;
     }
 }

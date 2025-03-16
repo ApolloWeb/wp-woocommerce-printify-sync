@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Repositories;
 
+use ApolloWeb\WPWooCommercePrintifySync\DataTransferObjects\PrintifyProductData;
+
 class ProductRepository
 {
     private string $currentTime;
@@ -11,46 +13,43 @@ class ProductRepository
 
     public function __construct(string $currentTime, string $currentUser)
     {
-        $this->currentTime = $currentTime; // 2025-03-15 18:13:12
-        $this->currentUser = $currentUser; // ApolloWeb
+        $this->currentTime = $currentTime;
+        $this->currentUser = $currentUser;
     }
 
-    public function getProductByPrintifyId(string $printifyId): ?\WC_Product
+    public function updateProductMetadata(\WC_Product $product, PrintifyProductData $dto): void
     {
-        $args = [
-            'post_type' => 'product',
-            'posts_per_page' => 1,
-            'meta_query' => [
-                [
-                    'key' => '_printify_product_id',
-                    'value' => $printifyId,
-                    'compare' => '='
-                ]
-            ]
-        ];
-
-        $products = wc_get_products($args);
-        return !empty($products) ? $products[0] : null;
-    }
-
-    public function getProductBySku(string $sku): ?\WC_Product
-    {
-        return wc_get_product_id_by_sku($sku) ? wc_get_product_by_sku($sku) : null;
-    }
-
-    public function updateProductMeta(\WC_Product $product, array $printifyData): void
-    {
-        $product->update_meta_data('_printify_product_id', $printifyData['id']);
-        $product->update_meta_data('_printify_provider_id', $printifyData['print_provider_id']);
-        $product->update_meta_data('_printify_blueprint_id', $printifyData['blueprint_id']);
-        $product->update_meta_data('_printify_shop_id', $printifyData['shop_id']);
-        $product->update_meta_data('_printify_updated_at', $this->currentTime);
-        $product->update_meta_data('_printify_updated_by', $this->currentUser);
+        // Basic Printify metadata
+        $product->update_meta_data('_printify_id', $dto->id);
+        $product->update_meta_data('_printify_blueprint_id', $dto->blueprintId);
+        $product->update_meta_data('_printify_provider_id', $dto->printProviderId);
+        $product->update_meta_data('_printify_shop_id', $dto->shopId);
+        
+        // Cost and pricing data
+        $product->update_meta_data('_printify_cost_price', $dto->costPrice);
+        $product->update_meta_data('_printify_retail_price', $dto->retailPrice);
+        
+        // Print provider data
+        $product->update_meta_data('_printify_print_areas', json_encode($dto->printAreas));
+        $product->update_meta_data('_printify_provider_data', json_encode($dto->printProviderData));
+        
+        // Shipping profiles
+        $product->update_meta_data('_printify_shipping_profiles', json_encode($dto->shippingProfiles));
+        
+        // External reference and status
+        $product->update_meta_data('_printify_external_id', $dto->externalId);
+        $product->update_meta_data('_printify_is_published', $dto->isPublished);
+        
+        // Sync metadata
+        $product->update_meta_data('_printify_last_sync', $this->currentTime);
+        $product->update_meta_data('_printify_sync_user', $this->currentUser);
+        $product->update_meta_data('_printify_created_at', $dto->createdAt);
+        $product->update_meta_data('_printify_updated_at', $dto->updatedAt);
         
         $product->save();
     }
 
-    public function logProductSync(int $productId, array $printifyData, string $action = 'sync'): void
+    public function logProductSync(int $productId, PrintifyProductData $dto, string $action = 'sync'): void
     {
         global $wpdb;
 
@@ -58,14 +57,20 @@ class ProductRepository
             $wpdb->prefix . 'wpwps_product_sync_log',
             [
                 'product_id' => $productId,
-                'printify_id' => $printifyData['id'],
-                'provider_id' => $printifyData['print_provider_id'],
+                'printify_id' => $dto->id,
+                'provider_id' => $dto->printProviderId,
                 'action' => $action,
-                'sync_data' => json_encode($printifyData),
+                'sync_data' => json_encode([
+                    'cost_price' => $dto->costPrice,
+                    'retail_price' => $dto->retailPrice,
+                    'variants' => $dto->variants,
+                    'shipping_profiles' => $dto->shippingProfiles,
+                    'print_areas' => $dto->printAreas,
+                    'provider_data' => $dto->printProviderData
+                ]),
                 'created_at' => $this->currentTime,
                 'created_by' => $this->currentUser
-            ],
-            ['%d', '%s', '%s', '%s', '%s', '%s', '%s']
+            ]
         );
     }
 }

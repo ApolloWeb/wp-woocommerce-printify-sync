@@ -1,0 +1,102 @@
+// Variables
+$switcher-bg: #ffffff;
+$switcher-border: #e2e8f0;
+$switcher-text: #2d3748;
+$switcher-hover: #f7fafc;
+$switcher-active: #4361ee;
+$switcher-shadow: rgba(0, 0, 0, 0.1);
+
+.wpwps-currency-switcher {
+    position: relative;
+    display: inline-block;
+    margin: 1rem 0;
+    
+    .dropdown {
+        .btn-outline-secondary {
+            border-color: $switcher-border;
+            color: $switcher-text;
+            background: $switcher-bg;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            
+            &:hover {
+                border-color: $switcher-active;
+                color: $switcher-active;
+            }
+            
+            &:focus {
+                box-shadow: 0 0 0 0.2rem rgba($switcher-active, 0.25);
+            }
+        }
+        
+        .dropdown-menu {
+            min-width: 200px;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+            background: $switcher-bg;
+            border: 1px solid $switcher-border;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px $switcher-shadow;
+            
+            .dropdown-item {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+                color: $switcher-text;
+                transition: all 0.2s ease;
+                
+                &:hover {
+                    background: $switcher-hover;
+                }
+                
+                &.active {
+                    background: rgba($switcher-active, 0.1);
+                    color: $switcher-active;
+                    
+                    &:hover {
+                        background: rgba($switcher-active, 0.15);
+                    }
+                }
+            }
+        }
+    }
+
+    // Loading state
+    &.loading {
+        pointer-events: none;
+        opacity: 0.7;
+        
+        .btn-outline-secondary::after {
+            content: '';
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            border: 0.2em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner 0.75s linear infinite;
+        }
+    }
+}
+
+// Animation keyframes
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+    .wpwps-currency-switcher {
+        display: block;
+        text-align: center;
+        
+        .dropdown-menu {
+            width: 100%;
+            min-width: unset;
+        }
+    }
+}

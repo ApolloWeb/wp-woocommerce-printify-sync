@@ -4,131 +4,96 @@ declare(strict_types=1);
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Database;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
+
 class Migrations
 {
-    public function up(): void
+    private const SCHEMA_VERSION = '2025.03.15';
+    private const OPTION_NAME = 'wpwps_schema_version';
+
+    public function run(): void
     {
-        global $wpdb;
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-
-        $charset_collate = $wpdb->get_charset_collate();
-
-        // Logs table
-        $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wpwps_logs (
-            id bigint(20) NOT NULL AUTO_INCREMENT,
-            level varchar(20) NOT NULL,
-            message text NOT NULL,
-            context longtext,
-            component varchar(50) NOT NULL,
-            created_at datetime NOT NULL,
-            created_by varchar(60) NOT NULL,
-            PRIMARY KEY  (id),
-            KEY level (level),
-            KEY component (component),
-            KEY created_at (created_at)
-        ) $charset_collate;";
-        dbDelta($sql);
-
-        // Exchange rates table
-        $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wpwps_exchange_rates (
-            id bigint(20) NOT NULL AUTO_INCREMENT,
-            currency_from varchar(3) NOT NULL,
-            currency_to varchar(3) NOT NULL,
-            rate decimal(10,6) NOT NULL,
-            last_updated datetime NOT NULL,
-            PRIMARY KEY  (id),
-            UNIQUE KEY currency_pair (currency_from,currency_to),
-            KEY last_updated (last_updated)
-        ) $charset_collate;";
-        dbDelta($sql);
-
-        // Product sync status table
-        $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wpwps_product_sync (
-            id bigint(20) NOT NULL AUTO_INCREMENT,
-            printify_id varchar(60) NOT NULL,
-            wc_product_id bigint(20) NOT NULL,
-            last_synced datetime NOT NULL,
-            sync_status varchar(20) NOT NULL,
-            sync_message text,
-            created_at datetime NOT NULL,
-            updated_at datetime NOT NULL,
-            PRIMARY KEY  (id),
-            UNIQUE KEY printify_id (printify_id),
-            KEY wc_product_id (wc_product_id),
-            KEY sync_status (sync_status)
-        ) $charset_collate;";
-        dbDelta($sql);
-
-        // Shipping profiles table
-        $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wpwps_shipping_profiles (
-            id bigint(20) NOT NULL AUTO_INCREMENT,
-            printify_profile_id varchar(60) NOT NULL,
-            wc_zone_id bigint(20) NOT NULL,
-            profile_data longtext NOT NULL,
-            is_active tinyint(1) NOT NULL DEFAULT 1,
-            last_synced datetime NOT NULL,
-            created_at datetime NOT NULL,
-            updated_at datetime NOT NULL,
-            PRIMARY KEY  (id),
-            UNIQUE KEY printify_profile_id (printify_profile_id),
-            KEY wc_zone_id (wc_zone_id),
-            KEY is_active (is_active)
-        ) $charset_collate;";
-        dbDelta($sql);
-
-        // Support tickets table
-        $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wpwps_tickets (
-            id bigint(20) NOT NULL AUTO_INCREMENT,
-            ticket_number varchar(20) NOT NULL,
-            customer_email varchar(100) NOT NULL,
-            subject varchar(255) NOT NULL,
-            content longtext NOT NULL,
-            status varchar(20) NOT NULL,
-            priority varchar(20) NOT NULL,
-            order_id bigint(20),
-            assigned_to bigint(20),
-            created_at datetime NOT NULL,
-            updated_at datetime NOT NULL,
-            PRIMARY KEY  (id),
-            UNIQUE KEY ticket_number (ticket_number),
-            KEY customer_email (customer_email),
-            KEY status (status),
-            KEY order_id (order_id),
-            KEY assigned_to (assigned_to)
-        ) $charset_collate;";
-        dbDelta($sql);
-
-        // Ticket messages table
-        $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wpwps_ticket_messages (
-            id bigint(20) NOT NULL AUTO_INCREMENT,
-            ticket_id bigint(20) NOT NULL,
-            message_type varchar(20) NOT NULL,
-            content longtext NOT NULL,
-            attachments text,
-            created_by varchar(60) NOT NULL,
-            created_at datetime NOT NULL,
-            PRIMARY KEY  (id),
-            KEY ticket_id (ticket_id),
-            KEY message_type (message_type)
-        ) $charset_collate;";
-        dbDelta($sql);
+        $installedVersion = get_option(self::OPTION_NAME);
+        
+        if ($installedVersion !== self::SCHEMA_VERSION) {
+            $this->createTables();
+            $this->createIndices();
+            $this->migrateData();
+            
+            update_option(self::OPTION_NAME, self::SCHEMA_VERSION);
+        }
     }
 
-    public function down(): void
+    private function createTables(): void
+    {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+
+        // Sync tracking table
+        $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wpwps_sync_tracking (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            entity_id bigint(20) NOT NULL,
+            entity_type varchar(50) NOT NULL,
+            printify_id varchar(100) NOT NULL,
+            sync_status varchar(20) NOT NULL DEFAULT 'pending',
+            last_sync datetime DEFAULT NULL,
+            created_at datetime NOT NULL,
+            updated_at datetime NOT NULL,
+            PRIMARY KEY (id),
+            KEY entity (entity_id, entity_type),
+            KEY printify_id (printify_id),
+            KEY sync_status (sync_status)
+        ) $charset_collate;";
+
+        // Product metadata table (HPOS compatible)
+        if (OrderUtil::custom_orders_table_usage_is_enabled()) {
+            $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wpwps_product_meta (
+                product_id bigint(20) NOT NULL,
+                meta_key varchar(255) NOT NULL,
+                meta_value longtext,
+                created_at datetime NOT NULL,
+                updated_at datetime NOT NULL,
+                PRIMARY KEY (product_id, meta_key),
+                KEY meta_key (meta_key)
+            ) $charset_collate;";
+        }
+
+        // Execute queries
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        foreach ($sql as $query) {
+            dbDelta($query);
+        }
+    }
+
+    private function createIndices(): void
     {
         global $wpdb;
 
-        $tables = [
-            'wpwps_logs',
-            'wpwps_exchange_rates',
-            'wpwps_product_sync',
-            'wpwps_shipping_profiles',
-            'wpwps_tickets',
-            'wpwps_ticket_messages'
+        // Add indices for better performance
+        $indices = [
+            'wpwps_sync_tracking_last_sync' => "ALTER TABLE {$wpdb->prefix}wpwps_sync_tracking ADD INDEX last_sync (last_sync);",
+            'wpwps_sync_tracking_created_at' => "ALTER TABLE {$wpdb->prefix}wpwps_sync_tracking ADD INDEX created_at (created_at);"
         ];
 
-        foreach ($tables as $table) {
-            $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}{$table}");
+        foreach ($indices as $index_name => $sql) {
+            $wpdb->query($sql);
         }
+    }
+
+    private function migrateData(): void
+    {
+        if (!OrderUtil::custom_orders_table_usage_is_enabled()) {
+            return;
+        }
+
+        global $wpdb;
+
+        // Migrate existing Printify metadata to new HPOS compatible table
+        $wpdb->query("
+            INSERT IGNORE INTO {$wpdb->prefix}wpwps_product_meta (product_id, meta_key, meta_value, created_at, updated_at)
+            SELECT post_id, meta_key, meta_value, NOW(), NOW()
+            FROM {$wpdb->postmeta}
+            WHERE meta_key LIKE '_printify_%'
+        ");
     }
 }
