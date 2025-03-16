@@ -3,154 +3,113 @@
 
     const WPWPS_Dashboard = {
         charts: {},
-        refreshInterval: 60000, // 1 minute
         
         init: function() {
+            this.loadStats();
             this.initCharts();
             this.initRefresh();
-            this.initActions();
+        },
+
+        loadStats: function() {
+            $.ajax({
+                url: wpwpsAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'wpwps_get_ticket_stats',
+                    _ajax_nonce: wpwpsAdmin.nonce
+                },
+                success: (response) => {
+                    if (response.success) {
+                        this.updateStats(response.data);
+                    } else {
+                        this.showError(wpwpsAdmin.i18n.error_loading);
+                    }
+                },
+                error: () => {
+                    this.showError(wpwpsAdmin.i18n.error_loading);
+                }
+            });
+        },
+
+        updateStats: function(data) {
+            $('#open-tickets').text(data.open);
+            $('#pending-tickets').text(data.pending);
+            $('#avg-response-time').text(this.formatTime(data.response_time));
+            $('#resolution-rate').text(this.calculateResolutionRate(data) + '%');
+            
+            this.updateCharts(data);
         },
 
         initCharts: function() {
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenue-chart');
-            if (revenueCtx) {
-                this.charts.revenue = new Chart(revenueCtx, {
-                    type: 'line',
-                    data: this.getRevenueChartData(),
-                    options: this.getChartOptions('Revenue')
-                });
-            }
+            this.charts.categories = new Chart($('#categories-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#2271b1',
+                            '#8c8f94',
+                            '#d63638',
+                            '#00a32a'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
 
-            // Orders Chart
-            const ordersCtx = document.getElementById('orders-chart');
-            if (ordersCtx) {
-                this.charts.orders = new Chart(ordersCtx, {
-                    type: 'bar',
-                    data: this.getOrdersChartData(),
-                    options: this.getChartOptions('Orders')
-                });
-            }
+            this.charts.responseTime = new Chart($('#response-time-chart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Response Time (hours)',
+                        data: [],
+                        borderColor: '#2271b1',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        },
+
+        updateCharts: function(data) {
+            // Update category chart
+            this.charts.categories.data.labels = data.categories.map(c => c.name);
+            this.charts.categories.data.datasets[0].data = data.categories.map(c => c.count);
+            this.charts.categories.update();
+
+            // Update other charts...
         },
 
         initRefresh: function() {
-            setInterval(() => this.refreshData(), this.refreshInterval);
+            setInterval(() => this.loadStats(), 30000); // Refresh every 30 seconds
         },
 
-        initActions: function() {
-            $('.wpwps-sync-now').on('click', (e) => {
-                e.preventDefault();
-                this.syncNow();
-            });
-        },
-
-        refreshData: function() {
-            $.ajax({
-                url: wpwpsDashboard.ajaxUrl,
-                method: 'POST',
-                data: {
-                    action: 'wpwps_refresh_dashboard',
-                    nonce: wpwpsDashboard.nonce
-                },
-                success: (response) => {
-                    if (response.success) {
-                        this.updateStats(response.data.stats);
-                        this.updateCharts(response.data.charts);
-                        this.updateOrders(response.data.recentOrders);
-                        this.updateApiStatus(response.data.apiStatus);
-                    }
-                }
-            });
-        },
-
-        syncNow: function() {
-            const $button = $('.wpwps-sync-now');
-            $button.prop('disabled', true).addClass('updating-message');
-
-            $.ajax({
-                url: wpwpsDashboard.ajaxUrl,
-                method: 'POST',
-                data: {
-                    action: 'wpwps_sync_now',
-                    nonce: wpwpsDashboard.nonce
-                },
-                success: (response) => {
-                    if (response.success) {
-                        this.refreshData();
-                        this.showNotice('success', response.data.message);
-                    } else {
-                        this.showNotice('error', response.data.message);
-                    }
-                },
-                complete: () => {
-                    $button.prop('disabled', false).removeClass('updating-message');
-                }
-            });
-        },
-
-        updateStats: function(stats) {
-            Object.entries(stats).forEach(([key, value]) => {
-                $(`.stat-value[data-stat="${key}"]`).text(value);
-            });
-        },
-
-        updateCharts: function(chartData) {
-            if (this.charts.revenue) {
-                this.charts.revenue.data = this.getRevenueChartData(chartData.revenue);
-                this.charts.revenue.update();
+        formatTime: function(hours) {
+            if (hours < 1) {
+                return Math.round(hours * 60) + ' min';
             }
-            if (this.charts.orders) {
-                this.charts.orders.data = this.getOrdersChartData(chartData.orders);
-                this.charts.orders.update();
-            }
+            return hours.toFixed(1) + ' hrs';
         },
 
-        updateOrders: function(orders) {
-            const $tbody = $('.recent-orders tbody');
-            $tbody.empty();
-
-            orders.forEach(order => {
-                $tbody.append(this.getOrderRow(order));
-            });
+        calculateResolutionRate: function(data) {
+            return Math.round((data.resolved / data.total) * 100);
         },
 
-        updateApiStatus: function(status) {
-            Object.entries(status).forEach(([key, value]) => {
-                const $item = $(`.status-item[data-api="${key}"]`);
-                $item.removeClass('success error warning')
-                     .addClass(value ? 'success' : 'error');
-            });
-        },
-
-        showNotice: function(type, message) {
-            const $notice = $('<div>')
-                .addClass(`notice notice-${type} is-dismissible`)
-                .append($('<p>').text(message));
-
-            $('.wrap > h1').after($notice);
-
-            setTimeout(() => {
-                $notice.fadeOut(() => $notice.remove());
-            }, 3000);
-        },
-
-        getChartOptions: function(label) {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    },
-                    title: {
-                        display: true,
-                        text: label
-                    }
-                }
-            };
+        showError: function(message) {
+            // Implementation
         }
     };
 
-    $(document).ready(() => WPWPS_Dashboard.init());
+    $(document).ready(function() {
+        WPWPS_Dashboard.init();
+    });
 
 })(jQuery);

@@ -10,7 +10,6 @@
     "WP_SITEURL": "https://apolloweb.ngrok.dev"
   },
   "plugins": [
-    "./wp-content/plugins/wp-woocommerce-printify-sync",
     "https://downloads.wordpress.org/plugin/wordpress-seo.latest-stable.zip",
     "https://downloads.wordpress.org/plugin/wp-smushit.latest-stable.zip",
     "https://downloads.wordpress.org/plugin/postie.latest-stable.zip",
