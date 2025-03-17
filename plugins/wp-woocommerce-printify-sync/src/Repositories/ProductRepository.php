@@ -17,7 +17,7 @@ class ProductRepository
         $this->currentUser = $currentUser;
     }
 
-    public function updateProductMetadata(\WC_Product $product, PrintifyProductData $dto): void
+    public function updateProductMetadata(WC_Product $product, PrintifyProductData $dto): void
     {
         // Basic Printify metadata
         $product->update_meta_data('_printify_id', $dto->id);

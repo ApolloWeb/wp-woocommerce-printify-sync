@@ -24,7 +24,7 @@ class MenuManager
             self::CAPABILITY,
             self::MENU_SLUG,
             [$this, 'renderDashboard'],
-            'dashicons-synchronization',
+            'fa fa-tshirt', // Changed to Font Awesome icon
             30
         );
 

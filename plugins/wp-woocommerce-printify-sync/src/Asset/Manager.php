@@ -123,6 +123,14 @@ class Manager
             ['jquery'],
             '1.10.24'
         ));
+
+        // Font Awesome
+        $this->styles->add(new Style(
+            'font-awesome',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css',
+            [],
+            '5.15.3'
+        ));
     }
 
     public function enqueuePageAssets(string $page): void

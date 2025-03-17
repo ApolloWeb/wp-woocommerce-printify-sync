@@ -100,6 +100,3 @@ showCleanupResults(cleaned) {
     bsModal.show();
     
     modal.addEventListener('hidden.bs.modal', () => {
-        modal.remove();
-    });
-}
