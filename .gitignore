@@ -1,9 +1,10 @@
-# Ignore logs
+# Logs
 logs/
-*.log
+*.logs
+*.sh
 
-# Ignore everything in the plugins/ directory
+# Plugins and Themes
 plugins/*
 
-# But do not ignore plugins/wp-woocommerce-printify-sync
-!plugins/wp-woocommerce-printify-sync
+# WooCommerce Printify Sync
+!plugins/wp-woocommerce-printify-sync/*
