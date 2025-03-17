@@ -1,7 +1,6 @@
 # Ignore logs
 logs/
 *.log
-ngrok.log
 
 # Ignore everything in the plugins/ directory
 plugins/*
