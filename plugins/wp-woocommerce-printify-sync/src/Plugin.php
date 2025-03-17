@@ -1,32 +1,49 @@
-private function registerCustomOrderStatuses(): void
-{
-    add_action('init', function() {
-        register_post_status('wc-refund-requested', [
-            'label' => 'Refund Requested',
-            'public' => true,
-            'show_in_admin_status_list' => true,
-            'show_in_admin_all_list' => true,
-            'exclude_from_search' => false,
-            'label_count' => _n_noop(
-                'Refund Requested <span class="count">(%s)</span>',
-                'Refund Requested <span class="count">(%s)</span>'
-            )
-        ]);
+<?php
 
-        // Register other custom statuses...
-    });
+declare(strict_types=1);
 
-    add_filter('wc_order_statuses', function($order_statuses) {
-        $new_statuses = [
-            'wc-refund-requested' => 'Refund Requested',
-            'wc-reprint-requested' => 'Reprint Requested',
-            'wc-refund-approved' => 'Refund Approved',
-            'wc-reprint-approved' => 'Reprint Approved',
-            'wc-refund-denied' => 'Refund Denied',
-            'wc-awaiting-evidence' => 'Awaiting Evidence',
-            'wc-evidence-submitted' => 'Evidence Submitted'
-        ];
+namespace ApolloWeb\WPWooCommercePrintifySync;
+
+use ApolloWeb\WPWooCommercePrintifySync\Container\Container;
+
+final class Plugin {
+    private static ?Plugin $instance = null;
+    private Container $container;
+    
+    public static function getInstance(): self {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+    
+    private function __construct() {
+        $this->container = new Container();
+        $this->initializeServices();
+        $this->registerHooks();
+    }
+    
+    private function initializeServices(): void {
+        // Core Services
+        $this->container->register('config', ConfigService::class);
+        $this->container->register('logger', LogManager::class);
+        $this->container->register('cache', CacheManager::class);
         
-        return array_merge($order_statuses, $new_statuses);
-    });
+        // API Services
+        $this->container->register('printify.api', PrintifyAPIClient::class);
+        $this->container->register('currency.converter', CurrencyConverter::class);
+        
+        // Sync Services
+        $this->container->register('product.sync', ProductSyncService::class);
+        $this->container->register('order.sync', OrderSyncService::class);
+        
+        // Admin Services
+        $this->container->register('admin.manager', AdminManager::class);
+    }
+    
+    private function registerHooks(): void {
+        add_action('init', [$this, 'init']);
+        add_action('admin_init', [$this, 'adminInit']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueueAssets']);
+    }
 }

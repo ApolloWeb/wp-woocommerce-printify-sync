@@ -8,21 +8,26 @@ use ApolloWeb\WPWooCommercePrintifySync\Asset\Collection\{ScriptCollection, Styl
 
 class Manager
 {
+    private const VERSION = '2025-03-17-19-33-45'; // Current timestamp
     private ScriptCollection $scripts;
     private StyleCollection $styles;
+    
     private array $pageAssets = [
         'dashboard' => [
             'styles' => ['dashboard', 'charts'],
             'scripts' => ['dashboard', 'charts'],
+            'deps' => ['wpwps-chartjs', 'wpwps-fontawesome']
         ],
         'products' => [
             'styles' => ['products', 'tables'],
             'scripts' => ['products', 'datatables'],
+            'deps' => ['wpwps-fontawesome', 'datatables']
         ],
         'settings' => [
             'styles' => ['settings'],
             'scripts' => ['settings'],
-        ],
+            'deps' => ['wpwps-fontawesome']
+        ]
     ];
 
     public function __construct(
@@ -35,15 +40,14 @@ class Manager
         $this->registerAssets();
     }
 
-    private function registerAssets(): void
-    {
-        // Register core assets
-        $this->registerCoreAssets();
-        
-        // Register vendor assets
+    private function registerAssets(): void {
+        // Register vendor assets first
         $this->registerVendorAssets();
         
-        // Register page assets
+        // Then register core assets
+        $this->registerCoreAssets();
+        
+        // Finally register page assets
         $this->registerPageAssets();
         
         // Register the collections
@@ -51,62 +55,36 @@ class Manager
         $this->styles->register();
     }
 
-    private function registerCoreAssets(): void
-    {
-        // Core CSS
-        $this->styles->add(new Style(
-            'wpwps-core',
-            $this->getAssetUrl('css/core.css'),
-            [],
-            WPWPS_VERSION
-        ));
-
-        // Core JS
+    private function registerVendorAssets(): void {
+        // Chart.js - Local version
         $this->scripts->add(new Script(
-            'wpwps-core',
-            $this->getAssetUrl('js/core.js'),
-            ['jquery'],
-            WPWPS_VERSION,
-            true,
-            [
-                'ajaxUrl' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('wpwps-admin')
-            ]
-        ));
-    }
-
-    private function registerPageAssets(): void
-    {
-        foreach ($this->pageAssets as $page => $assets) {
-            foreach ($assets['styles'] ?? [] as $style) {
-                $this->styles->add(new Style(
-                    "wpwps-{$style}",
-                    $this->getAssetUrl("css/{$style}.css"),
-                    ['wpwps-core'],
-                    WPWPS_VERSION
-                ));
-            }
-
-            foreach ($assets['scripts'] ?? [] as $script) {
-                $this->scripts->add(new Script(
-                    "wpwps-{$script}",
-                    $this->getAssetUrl("js/{$script}.js"),
-                    ['wpwps-core'],
-                    WPWPS_VERSION,
-                    true
-                ));
-            }
-        }
-    }
-
-    private function registerVendorAssets(): void
-    {
-        // Chart.js
-        $this->scripts->add(new Script(
-            'chart.js',
+            'wpwps-chartjs',
             $this->getAssetUrl('vendor/chart.js/chart.min.js'),
             [],
-            '3.7.0'
+            '4.4.0'
+        ));
+
+        // FontAwesome - Local version (all components)
+        $this->styles->add(new Style(
+            'wpwps-fontawesome',
+            $this->getAssetUrl('vendor/fontawesome/css/all.min.css'),
+            [],
+            '6.5.1'
+        ));
+        
+        // FontAwesome individual components if needed
+        $this->scripts->add(new Script(
+            'wpwps-fontawesome-solid',
+            $this->getAssetUrl('vendor/fontawesome/js/solid.min.js'),
+            [],
+            '6.5.1'
+        ));
+        
+        $this->scripts->add(new Script(
+            'wpwps-fontawesome-brands',
+            $this->getAssetUrl('vendor/fontawesome/js/brands.min.js'),
+            [],
+            '6.5.1'
         ));
 
         // DataTables
@@ -123,33 +101,55 @@ class Manager
             ['jquery'],
             '1.10.24'
         ));
+    }
 
-        // Font Awesome
+    private function registerCoreAssets(): void {
+        // Core CSS
         $this->styles->add(new Style(
-            'font-awesome',
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css',
-            [],
-            '5.15.3'
+            'wpwps-core',
+            $this->getAssetUrl('css/core.css'),
+            ['wpwps-fontawesome'],
+            self::VERSION
+        ));
+
+        // Core JS
+        $this->scripts->add(new Script(
+            'wpwps-core',
+            $this->getAssetUrl('js/core.js'),
+            ['jquery', 'wpwps-chartjs', 'wpwps-fontawesome-solid', 'wpwps-fontawesome-brands'],
+            self::VERSION,
+            true,
+            [
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('wpwps-admin')
+            ]
         ));
     }
 
-    public function enqueuePageAssets(string $page): void
-    {
-        if (!isset($this->pageAssets[$page])) {
-            return;
-        }
+    private function registerPageAssets(): void {
+        foreach ($this->pageAssets as $page => $assets) {
+            foreach ($assets['styles'] ?? [] as $style) {
+                $this->styles->add(new Style(
+                    "wpwps-{$style}",
+                    $this->getAssetUrl("css/{$style}.css"),
+                    array_merge(['wpwps-core'], $assets['deps'] ?? []),
+                    self::VERSION
+                ));
+            }
 
-        foreach ($this->pageAssets[$page]['styles'] ?? [] as $style) {
-            $this->styles->enqueue("wpwps-{$style}");
-        }
-
-        foreach ($this->pageAssets[$page]['scripts'] ?? [] as $script) {
-            $this->scripts->enqueue("wpwps-{$script}");
+            foreach ($assets['scripts'] ?? [] as $script) {
+                $this->scripts->add(new Script(
+                    "wpwps-{$script}",
+                    $this->getAssetUrl("js/{$script}.js"),
+                    array_merge(['wpwps-core'], $assets['deps'] ?? []),
+                    self::VERSION,
+                    true
+                ));
+            }
         }
     }
 
-    private function getAssetUrl(string $path): string
-    {
+    private function getAssetUrl(string $path): string {
         return plugins_url("assets/{$path}", WPWPS_PLUGIN_FILE);
     }
 }
