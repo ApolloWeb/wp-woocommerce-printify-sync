@@ -24,7 +24,7 @@ class MenuManager
             self::CAPABILITY,
             self::MENU_SLUG,
             [$this, 'renderDashboard'],
-            'fa fa-tshirt', // Font Awesome T-shirt icon
+            'fas fa-tshirt', // Font Awesome T-shirt icon
             30
         );
 
@@ -75,16 +75,16 @@ class MenuManager
 
         wp_enqueue_style(
             'wpwps-admin',
-            plugins_url('assets/css/admin/style.css', WPWPS_PLUGIN_FILE),
+            plugin_dir_url(__FILE__) . 'assets/css/admin/style.css',
             [],
-            WPWPS_VERSION
+            '1.0.0'
         );
 
         wp_enqueue_script(
             'wpwps-admin',
-            plugins_url('assets/js/admin/admin.js', WPWPS_PLUGIN_FILE),
+            plugin_dir_url(__FILE__) . 'assets/js/admin/admin.js',
             ['jquery'],
-            WPWPS_VERSION,
+            '1.0.0',
             true
         );
 
@@ -102,21 +102,21 @@ class MenuManager
 
     public function renderDashboard(): void
     {
-        require_once WPWPS_PLUGIN_DIR . 'templates/admin/dashboard.php';
+        require_once plugin_dir_path(__FILE__) . 'templates/admin/dashboard.php';
     }
 
     public function renderProducts(): void
     {
-        require_once WPWPS_PLUGIN_DIR . 'templates/admin/products.php';
+        require_once plugin_dir_path(__FILE__) . 'templates/admin/products.php';
     }
 
     public function renderOrders(): void
     {
-        require_once WPWPS_PLUGIN_DIR . 'templates/admin/orders.php';
+        require_once plugin_dir_path(__FILE__) . 'templates/admin/orders.php';
     }
 
     public function renderSettings(): void
     {
-        require_once WPWPS_PLUGIN_DIR . 'templates/admin/settings.php';
+        require_once plugin_dir_path(__FILE__) . 'templates/admin/settings.php';
     }
 }
