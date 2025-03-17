@@ -1,94 +1,44 @@
-class PrintifyAdmin {
-    constructor() {
+jQuery(document).ready(function ($) {
+    function PrintifyAdmin() {
         this.initialize();
     }
 
-    initialize() {
-        this.setupMenuHighlighting();
+    PrintifyAdmin.prototype.initialize = function () {
         this.initializeStats();
-        this.bindEvents();
-    }
+    };
 
-    setupMenuHighlighting() {
-        const currentUrl = window.location.href;
-        const menuItems = document.querySelectorAll('#adminmenu a');
+    PrintifyAdmin.prototype.initializeStats = function () {
+        // Ensure jQuery is defined before using it
+        if (typeof $ === 'undefined' || typeof $.ajax === 'undefined') {
+            console.error('jQuery or $.ajax is not defined');
+            return;
+        }
 
-        menuItems.forEach(item => {
-            if (currentUrl.includes(item.getAttribute('href'))) {
-                item.closest('li').classList.add('current');
-            }
-        });
-    }
-
-    initializeStats() {
         this.updateStats();
-        // Update stats every 30 seconds
-        setInterval(() => this.updateStats(), 30000);
-    }
+    };
 
-    updateStats() {
+    PrintifyAdmin.prototype.updateStats = function () {
         $.ajax({
             url: wpwpsAdmin.ajaxUrl,
             method: 'POST',
             data: {
-                action: 'wpwps_get_dashboard_stats',
+                action: 'wpwps_update_stats',
                 nonce: wpwpsAdmin.nonce
             },
-            success: (response) => {
-                if (response.success) {
-                    this.updateStatsDisplay(response.data);
-                }
+            success: function (response) {
+                // Update stats on the dashboard
+                $('#pending-orders .stat-value').text(response.data.pending_orders);
+                $('#in-production .stat-value').text(response.data.in_production);
+                $('#completed-orders .stat-value').text(response.data.completed_orders);
+                $('#failed-orders .stat-value').text(response.data.failed_orders);
+            },
+            error: function (error) {
+                console.error('Error updating stats:', error);
             }
         });
-    }
+    };
 
-    updateStatsDisplay(data) {
-        // Update products synced
-        $('#products-synced').text(data.products_synced);
-
-        // Update orders processing
-        $('#orders-processing').text(data.orders_processing);
-
-        // Update API status
-        const apiStatus = $('#api-status');
-        apiStatus.find('.status-indicator')
-            .removeClass('online offline warning')
-            .addClass(data.api_status.state);
-        apiStatus.find('.status-text').text(data.api_status.message);
-    }
-
-    bindEvents() {
-        // Handle navigation tabs
-        $('.wpwps-nav-tabs .nav-tab').on('click', (e) => {
-            e.preventDefault();
-            this.handleTabChange($(e.currentTarget));
-        });
-
-        // Handle refresh buttons
-        $('.wpwps-refresh').on('click', (e) => {
-            e.preventDefault();
-            this.updateStats();
-        });
-    }
-
-    handleTabChange($tab) {
-        const target = $tab.data('target');
-        
-        // Update active tab
-        $('.wpwps-nav-tabs .nav-tab').removeClass('nav-tab-active');
-        $tab.addClass('nav-tab-active');
-
-        // Update content
-        $('.wpwps-tab-content').hide();
-        $(`#${target}`).show();
-
-        // Update URL without reload
-        const newUrl = $tab.attr('href');
-        window.history.pushState({ path: newUrl }, '', newUrl);
-    }
-}
-
-// Initialize admin functionality
-jQuery(document).ready(function($) {
-    window.printifyAdmin = new PrintifyAdmin();
+    $(function () {
+        new PrintifyAdmin();
+    });
 });

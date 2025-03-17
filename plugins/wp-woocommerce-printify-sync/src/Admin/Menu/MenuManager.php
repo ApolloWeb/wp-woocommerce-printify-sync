@@ -24,7 +24,7 @@ class MenuManager
             self::CAPABILITY,
             self::MENU_SLUG,
             [$this, 'renderDashboard'],
-            'fa fa-tshirt', // Changed to Font Awesome icon
+            'fa fa-tshirt', // Font Awesome T-shirt icon
             30
         );
 

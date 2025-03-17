@@ -26,4 +26,7 @@
     </div>
 
     <div class="wpwps-recent-orders">
-        <h2><?php esc_html
+        <h2><?php esc_html_e('Recent Orders', 'wp-woocommerce-printify-sync'); ?></h2>
+        <!-- Recent orders content here -->
+    </div>
+</div>

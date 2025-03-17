@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Admin\Settings;
 
+use ApolloWeb\WPWooCommercePrintifySync\Admin\Settings\Contracts\ConfigInterface;
+use ApolloWeb\WPWooCommercePrintifySync\Admin\Settings\Contracts\GeolocationInterface;
+use ApolloWeb\WPWooCommercePrintifySync\Admin\Settings\Contracts\CurrencyInterface;
+
 class GeoCurrencyTab
 {
-    private ConfigService $config;
-    private GeolocationService $geoService;
-    private CurrencyService $currencyService;
+    private ConfigInterface $config;
+    private GeolocationInterface $geoService;
+    private CurrencyInterface $currencyService;
 
     public function __construct(
-        ConfigService $config,
-        GeolocationService $geoService,
-        CurrencyService $currencyService
+        ConfigInterface $config,
+        GeolocationInterface $geoService,
+        CurrencyInterface $currencyService
     ) {
         $this->config = $config;
         $this->geoService = $geoService;

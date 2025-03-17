@@ -149,7 +149,7 @@
                                 <h3><?php echo esc_html($product['title']); ?></h3>
                                 <p class="price"><?php echo wc_price($product['price']); ?></p>
                                 <button type="button" class="button import-product" <?php echo $product['imported'] ? 'disabled' : ''; ?>>
-                                    <?php echo $product['imported'] 
+                                    <?php echo $product['imported']
                                         ? esc_html__('Imported', 'wp-woocommerce-printify-sync')
                                         : esc_html__('Import', 'wp-woocommerce-printify-sync'); 
                                     ?>
