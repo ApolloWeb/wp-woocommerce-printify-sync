@@ -12,6 +12,17 @@ class ImageHandler implements ServiceProvider
         // No actions needed on boot
     }
 
+    /**
+     * Register services to the container
+     * 
+     * @return void
+     */
+    public function register()
+    {
+        // Register image handling services
+        add_action('wp_wc_printify_process_images', [$this, 'processProductImages']);
+    }
+
     public function addImageToMediaLibrary($image_url)
     {
         $upload_dir = wp_upload_dir();

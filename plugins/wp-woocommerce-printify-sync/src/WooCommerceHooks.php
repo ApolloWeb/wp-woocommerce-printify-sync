@@ -18,6 +18,18 @@ class WooCommerceHooks implements ServiceProvider
         $this->printify_api = new PrintifyAPI($api_key);
     }
 
+    /**
+     * Register services to the container
+     * 
+     * @return void
+     */
+    public function register()
+    {
+        // Register WooCommerce hooks for order processing and product display
+        add_action('woocommerce_order_status_changed', [$this, 'handleOrderStatusChange'], 10, 4);
+        add_filter('woocommerce_product_data_tabs', [$this, 'addPrintifyProductTab']);
+    }
+
     public function onProductUpdate($product_id)
     {
         $product = wc_get_product($product_id);

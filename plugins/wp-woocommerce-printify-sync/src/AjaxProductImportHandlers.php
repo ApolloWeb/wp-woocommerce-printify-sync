@@ -10,6 +10,18 @@ class AjaxProductImportHandlers implements ServiceProvider
         add_action('wp_ajax_import_printify_products', [$this, 'importPrintifyProducts']);
     }
 
+    /**
+     * Register services to the container
+     * 
+     * @return void
+     */
+    public function register()
+    {
+        // Register AJAX handlers for product import
+        add_action('wp_ajax_printify_import_product', [$this, 'importProduct']);
+        add_action('wp_ajax_printify_get_products', [$this, 'getProducts']);
+    }
+
     public function retrievePrintifyProducts()
     {
         check_ajax_referer('printify_sync_nonce', 'nonce');

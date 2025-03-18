@@ -17,6 +17,12 @@
 
 defined('ABSPATH') || exit;
 
+// Define plugin constants
+define('PRINTIFY_SYNC_VERSION', '1.0.0');
+define('PRINTIFY_SYNC_FILE', __FILE__);
+define('PRINTIFY_SYNC_PATH', plugin_dir_path(__FILE__));
+define('PRINTIFY_SYNC_URL', plugin_dir_url(__FILE__));
+
 require_once plugin_dir_path(__FILE__) . 'src/autoloader.php';
 
 if (!class_exists('WP_WooCommerce_Printify_Sync')) {
@@ -28,9 +34,6 @@ if (!class_exists('WP_WooCommerce_Printify_Sync')) {
         {
             // Initialize plugin
             $this->init();
-
-            // Register services
-            $this->load_services();
         }
 
         private function init()
@@ -47,27 +50,46 @@ if (!class_exists('WP_WooCommerce_Printify_Sync')) {
                 new ApolloWeb\WPWooCommercePrintifySync\EnqueueAssets(),
             ];
 
-            $this->boot_services();
+            foreach ($this->services as $service) {
+                $service->register();
+                $service->boot();
+            }
         }
 
         private function load_services()
         {
-            foreach ($this->services as $service) {
-                if (method_exists($service, 'boot')) {
-                    $service->boot();
-                }
-            }
+            // This method is now handled in init()
         }
 
         private function boot_services()
         {
-            foreach ($this->services as $service) {
-                if (method_exists($service, 'boot')) {
-                    $service->boot();
-                }
-            }
+            // This method is now handled in init()
         }
     }
 
     new WP_WooCommerce_Printify_Sync();
+}
+
+// Bootstrap the plugin
+function wp_woocommerce_printify_sync_bootstrap() {
+    $container = new ApolloWeb\WPWooCommercePrintifySync\Container\Container();
+    
+    // Register core services
+    $container->bind(
+        ApolloWeb\WPWooCommercePrintifySync\Contracts\ProductRepositoryInterface::class,
+        ApolloWeb\WPWooCommercePrintifySync\Repositories\PrintifyProductRepository::class
+    );
+    
+    // Register and boot service providers
+    $providers = [
+        ApolloWeb\WPWooCommercePrintifySync\AdminSettings::class,
+        ApolloWeb\WPWooCommercePrintifySync\WebhookManager::class,
+        // ...other providers
+    ];
+    
+    foreach ($providers as $provider) {
+        $instance = new $provider($container);
+        $instance->register();
+        $instance->boot();
+    }
 }

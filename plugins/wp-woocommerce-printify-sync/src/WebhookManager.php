@@ -15,6 +15,17 @@ class WebhookManager implements ServiceProvider
         $this->printify_api = new PrintifyAPI($api_key);
     }
 
+    /**
+     * Register services to the container
+     * 
+     * @return void
+     */
+    public function register()
+    {
+        // Register webhook endpoints and handlers
+        add_action('rest_api_init', [$this, 'registerWebhookEndpoints']);
+    }
+
     public function createWebhook($url, $event)
     {
         return $this->printify_api->createWebhook($url, $event);

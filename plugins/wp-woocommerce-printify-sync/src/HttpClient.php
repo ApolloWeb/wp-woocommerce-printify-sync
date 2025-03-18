@@ -18,38 +18,26 @@ class HttpClient
 
     public function get($url, $args = [])
     {
-        $retries = 0;
+        $args['method'] = 'GET';
+        return wp_remote_request($url, $args);
+    }
 
-        while ($retries <= $this->maxRetries) {
-            $response = wp_remote_get($url, $args);
+    public function post($url, $args = [])
+    {
+        $args['method'] = 'POST';
+        return wp_remote_request($url, $args);
+    }
 
-            if (is_wp_error($response)) {
-                $retries++;
-                $this->backoff($retries);
-                continue;
-            }
+    public function put($url, $args = [])
+    {
+        $args['method'] = 'PUT';
+        return wp_remote_request($url, $args);
+    }
 
-            $rateLimitRemaining = wp_remote_retrieve_header($response, 'x-ratelimit-remaining');
-            $rateLimitReset = wp_remote_retrieve_header($response, 'x-ratelimit-reset');
-
-            if ($rateLimitRemaining === '0') {
-                $waitTime = $rateLimitReset - time();
-                if ($waitTime > 0) {
-                    sleep($waitTime);
-                }
-                $retries++;
-                continue;
-            }
-
-            if (wp_remote_retrieve_response_code($response) === 200) {
-                return wp_remote_retrieve_body($response);
-            } else {
-                $retries++;
-                $this->backoff($retries);
-            }
-        }
-
-        return new \WP_Error('http_request_failed', __('HTTP request failed after multiple retries', 'wp-woocommerce-printify-sync'));
+    public function delete($url, $args = [])
+    {
+        $args['method'] = 'DELETE';
+        return wp_remote_request($url, $args);
     }
 
     private function backoff($retries)

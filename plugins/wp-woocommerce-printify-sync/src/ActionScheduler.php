@@ -2,15 +2,27 @@
 
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
-// Login: ApolloWeb
-// Timestamp: 2025-03-18 07:24:52
+use ApolloWeb\WPWooCommercePrintifySync\Contracts\ServiceProviderInterface;
 
-class ActionScheduler implements ServiceProvider
+class ActionScheduler implements ServiceProviderInterface
 {
-    public function boot()
+    /**
+     * Register services to the container
+     * 
+     * @return void
+     */
+    public function register()
     {
         add_action('init', [$this, 'scheduleActions']);
         add_action('printify_import_products', [$this, 'importProducts']);
+    }
+
+    /**
+     * Boot the service
+     */
+    public function boot()
+    {
+        // Boot implementation
     }
 
     public function scheduleActions()
