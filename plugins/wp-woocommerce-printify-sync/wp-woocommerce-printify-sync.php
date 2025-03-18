@@ -15,10 +15,9 @@
  * @package ApolloWeb\WPWooCommercePrintifySync
  */
 
-// Login: ApolloWeb
-// Timestamp: 2025-03-18 07:58:33
-
 defined('ABSPATH') || exit;
+
+require_once plugin_dir_path(__FILE__) . 'src/autoloader.php';
 
 if (!class_exists('WP_WooCommerce_Printify_Sync')) {
     class WP_WooCommerce_Printify_Sync
@@ -27,9 +26,6 @@ if (!class_exists('WP_WooCommerce_Printify_Sync')) {
 
         public function __construct()
         {
-            // Load the autoloader
-            require_once plugin_dir_path(__FILE__) . 'src/autoloader.php';
-
             // Initialize plugin
             $this->init();
 

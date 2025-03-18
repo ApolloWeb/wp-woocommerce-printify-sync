@@ -2,10 +2,10 @@
 
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
-// Login: ApolloWeb
-// Timestamp: 2025-03-18 08:07:12
+use ApolloWeb\WPWooCommercePrintifySync\Abstracts\ServiceProvider;
+use ApolloWeb\WPWooCommercePrintifySync\Helpers\ApiHelper;
 
-class AjaxHandlers implements ServiceProvider
+class AjaxHandlers extends ServiceProvider
 {
     public function boot()
     {
@@ -25,8 +25,9 @@ class AjaxHandlers implements ServiceProvider
         }
 
         $api_key = get_option('printify_api_key');
-        $printify_api = new PrintifyAPI($this->decryptApiKey($api_key));
-        $response = $printify_api->fetchShops();
+        $api_base_url = get_option('printify_api_base_url', 'https://api.printify.com/v1/');
+        $decrypted_api_key = ApiHelper::decryptApiKey($api_key);
+        $response = ApiHelper::fetchFromApi($api_base_url . 'shops.json', $decrypted_api_key);
 
         if (is_wp_error($response)) {
             wp_send_json_error($response->get_error_message());
@@ -44,13 +45,15 @@ class AjaxHandlers implements ServiceProvider
         }
 
         $api_key = get_option('printify_api_key');
-        $printify_api = new PrintifyAPI($this->decryptApiKey($api_key));
-        $products = $printify_api->fetchProducts();
+        $api_base_url = get_option('printify_api_base_url', 'https://api.printify.com/v1/');
+        $decrypted_api_key = ApiHelper::decryptApiKey($api_key);
+        $response = ApiHelper::fetchFromApi($api_base_url . 'shops.json', $decrypted_api_key);
 
-        if (is_wp_error($products)) {
-            wp_send_json_error($products->get_error_message());
+        if (is_wp_error($response)) {
+            wp_send_json_error($response->get_error_message());
         }
 
+        $products = $response['products'] ?? [];
         set_transient('printify_products', $products, 3600);
 
         wp_send_json_success($products);
@@ -65,7 +68,6 @@ class AjaxHandlers implements ServiceProvider
         }
 
         as_schedule_single_action(time(), 'printify_import_products');
-
         wp_send_json_success();
     }
 
@@ -78,14 +80,15 @@ class AjaxHandlers implements ServiceProvider
         }
 
         $api_key = get_option('printify_api_key');
-        $printify_api = new PrintifyAPI($this->decryptApiKey($api_key));
-        $shops = $printify_api->fetchShops();
+        $api_base_url = get_option('printify_api_base_url', 'https://api.printify.com/v1/');
+        $decrypted_api_key = ApiHelper::decryptApiKey($api_key);
+        $response = ApiHelper::fetchFromApi($api_base_url . 'shops.json', $decrypted_api_key);
 
-        if (is_wp_error($shops)) {
-            wp_send_json_error($shops->get_error_message());
+        if (is_wp_error($response)) {
+            wp_send_json_error($response->get_error_message());
         }
 
-        wp_send_json_success($shops);
+        wp_send_json_success($response);
     }
 
     public function checkApiKeyStatus()
@@ -97,13 +100,6 @@ class AjaxHandlers implements ServiceProvider
         }
 
         $api_key_present = !empty(get_option('printify_api_key'));
-
         wp_send_json_success(['api_key_present' => $api_key_present]);
-    }
-
-    private function decryptApiKey($encrypted_api_key)
-    {
-        $salt = wp_salt();
-        return openssl_decrypt(base64_decode($encrypted_api_key), 'aes-256-cbc', $salt, 0, substr($salt, 0, 16));
     }
 }

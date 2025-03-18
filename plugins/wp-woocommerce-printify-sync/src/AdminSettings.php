@@ -2,10 +2,9 @@
 
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
-// Login: ApolloWeb
-// Timestamp: 2025-03-18 07:58:33
+use ApolloWeb\WPWooCommercePrintifySync\Abstracts\ServiceProvider;
 
-class AdminSettings implements ServiceProvider
+class AdminSettings extends ServiceProvider
 {
     public function boot()
     {
@@ -28,6 +27,7 @@ class AdminSettings implements ServiceProvider
     {
         register_setting('printify_settings', 'printify_endpoint');
         register_setting('printify_settings', 'printify_api_key');
+        register_setting('printify_settings', 'printify_api_base_url'); // Add API base URL setting
     }
 
     public function createAdminPage()
