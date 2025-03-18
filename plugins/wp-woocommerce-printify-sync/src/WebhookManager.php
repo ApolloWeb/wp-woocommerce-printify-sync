@@ -2,6 +2,9 @@
 
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
+// Login: ApolloWeb
+// Timestamp: 2025-03-18 07:24:52
+
 class WebhookManager implements ServiceProvider
 {
     private $printify_api;

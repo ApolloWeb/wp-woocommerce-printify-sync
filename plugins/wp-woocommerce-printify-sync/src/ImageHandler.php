@@ -3,7 +3,7 @@
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
 // Login: ApolloWeb
-// Timestamp: 2025-03-18 07:14:00
+// Timestamp: 2025-03-18 07:24:52
 
 class ImageHandler implements ServiceProvider
 {

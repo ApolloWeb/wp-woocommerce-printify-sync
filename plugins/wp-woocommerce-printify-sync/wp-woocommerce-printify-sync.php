@@ -16,7 +16,7 @@
  */
 
 // Login: ApolloWeb
-// Timestamp: 2025-03-18 07:14:00
+// Timestamp: 2025-03-18 07:28:05
 
 defined('ABSPATH') || exit;
 
@@ -27,29 +27,14 @@ if (!class_exists('WP_WooCommerce_Printify_Sync')) {
 
         public function __construct()
         {
-            // Load dependencies
-            $this->load_dependencies();
+            // Load the autoloader
+            require_once plugin_dir_path(__FILE__) . 'src/autoloader.php';
 
             // Initialize plugin
             $this->init();
 
             // Enqueue admin styles and scripts
             add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
-        }
-
-        private function load_dependencies()
-        {
-            require_once plugin_dir_path(__FILE__) . 'src/ServiceProvider.php';
-            require_once plugin_dir_path(__FILE__) . 'src/AdminSettings.php';
-            require_once plugin_dir_path(__FILE__) . 'src/AjaxHandlers.php';
-            require_once plugin_dir_path(__FILE__) . 'src/WebhookManager.php';
-            require_once plugin_dir_path(__FILE__) . 'src/WooCommerceHooks.php';
-            require_once plugin_dir_path(__FILE__) . 'src/ActionScheduler.php';
-            require_once plugin_dir_path(__FILE__) . 'src/ImageHandler.php';
-            require_once plugin_dir_path(__FILE__) . 'src/AdminProductImport.php';
-            require_once plugin_dir_path(__FILE__) . 'src/AjaxProductImportHandlers.php';
-            require_once plugin_dir_path(__FILE__) . 'src/HttpClient.php';
-            require_once plugin_dir_path(__FILE__) . 'src/PrintifyAPI.php';
         }
 
         private function init()
