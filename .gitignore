@@ -8,3 +8,4 @@ plugins/
 
 # WooCommerce Printify Sync
 !plugins/wp-woocommerce-printify-sync/
+!plugins/wp-woocommerce-printify-sync/**
