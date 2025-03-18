@@ -4,8 +4,9 @@ logs/*
 *.sh
 
 # Plugins and Themes
-plugins/*
+wp-content/
+wp-content/plugins/
 
 # WooCommerce Printify Sync
-!plugins/
-!plugins/woocommerce-printify-sync/*
+!wp-content/plugins/
+!wp-content/plugins/woocommerce-printify-sync/*

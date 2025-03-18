@@ -23,7 +23,7 @@
     "https://downloads.wordpress.org/theme/extendable.2.0.17.zip"
   ],
   "mappings": {
-    "wp-content/plugins": "./plugins",
-    "wp-content/themes": "./themes"
+    "wp-content/plugins": "./wp-content/plugins",
+    "wp-content/themes": "./wp-content/themes"
   }
 }
