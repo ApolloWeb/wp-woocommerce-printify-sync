@@ -3,7 +3,7 @@
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
 // Login: ApolloWeb
-// Timestamp: 2025-03-18 07:24:52
+// Timestamp: 2025-03-18 07:58:33
 
 class AdminSettings implements ServiceProvider
 {
@@ -15,33 +15,23 @@ class AdminSettings implements ServiceProvider
 
     public function addAdminMenu()
     {
-        add_options_page('Printify Settings', 'Printify Settings', 'manage_options', 'printify-settings', [$this, 'createAdminPage']);
-    }
-
-    public function createAdminPage()
-    {
-        include plugin_dir_path(__FILE__) . '../templates/admin-settings-template.html';
+        add_options_page(
+            'Printify Sync Settings',
+            'Printify Sync',
+            'manage_options',
+            'printify-settings',
+            [$this, 'createAdminPage']
+        );
     }
 
     public function registerSettings()
     {
         register_setting('printify_settings', 'printify_endpoint');
-        register_setting('printify_settings', 'printify_api_key', ['sanitize_callback' => [$this, 'encryptApiKey']]);
+        register_setting('printify_settings', 'printify_api_key');
     }
 
-    public function encryptApiKey($api_key)
+    public function createAdminPage()
     {
-        if (empty($api_key)) {
-            return '';
-        }
-
-        $salt = wp_salt();
-        return base64_encode(openssl_encrypt($api_key, 'aes-256-cbc', $salt, 0, substr($salt, 0, 16)));
-    }
-
-    public function decryptApiKey($encrypted_api_key)
-    {
-        $salt = wp_salt();
-        return openssl_decrypt(base64_decode($encrypted_api_key), 'aes-256-cbc', $salt, 0, substr($salt, 0, 16));
+        include plugin_dir_path(__FILE__) . '../templates/admin-settings-template.html';
     }
 }

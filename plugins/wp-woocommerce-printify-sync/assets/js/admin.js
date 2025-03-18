@@ -32,6 +32,9 @@ jQuery(document).ready(function($) {
                 } else {
                     alert('Failed to fetch shops.');
                 }
+            },
+            error: function() {
+                alert('An error occurred while fetching shops.');
             }
         });
     });
@@ -52,6 +55,9 @@ jQuery(document).ready(function($) {
                 } else {
                     $('#test-api-result').html('<div class="notice notice-error"><p>' + response.data + '</p></div>');
                 }
+            },
+            error: function() {
+                $('#test-api-result').html('<div class="notice notice-error"><p>An error occurred while testing the API.</p></div>');
             }
         });
     });
@@ -73,6 +79,9 @@ jQuery(document).ready(function($) {
                 } else {
                     alert('Failed to retrieve products.');
                 }
+            },
+            error: function() {
+                alert('An error occurred while retrieving products.');
             }
         });
     });
@@ -94,6 +103,9 @@ jQuery(document).ready(function($) {
                 } else {
                     alert('Failed to start product import.');
                 }
+            },
+            error: function() {
+                alert('An error occurred while starting product import.');
             }
         });
     });

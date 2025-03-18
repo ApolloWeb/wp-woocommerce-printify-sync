@@ -3,7 +3,7 @@
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
 // Login: ApolloWeb
-// Timestamp: 2025-03-18 07:47:24
+// Timestamp: 2025-03-18 08:07:12
 
 class AjaxHandlers implements ServiceProvider
 {
@@ -13,6 +13,7 @@ class AjaxHandlers implements ServiceProvider
         add_action('wp_ajax_retrieve_printify_products', [$this, 'retrievePrintifyProducts']);
         add_action('wp_ajax_import_printify_products', [$this, 'importPrintifyProducts']);
         add_action('wp_ajax_fetch_printify_shops', [$this, 'fetchPrintifyShops']);
+        add_action('wp_ajax_check_api_key_status', [$this, 'checkApiKeyStatus']);
     }
 
     public function testPrintifyApi()
@@ -85,6 +86,19 @@ class AjaxHandlers implements ServiceProvider
         }
 
         wp_send_json_success($shops);
+    }
+
+    public function checkApiKeyStatus()
+    {
+        check_ajax_referer('printify_sync_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $api_key_present = !empty(get_option('printify_api_key'));
+
+        wp_send_json_success(['api_key_present' => $api_key_present]);
     }
 
     private function decryptApiKey($encrypted_api_key)

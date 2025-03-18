@@ -16,7 +16,7 @@
  */
 
 // Login: ApolloWeb
-// Timestamp: 2025-03-18 07:40:35
+// Timestamp: 2025-03-18 07:58:33
 
 defined('ABSPATH') || exit;
 
@@ -33,27 +33,34 @@ if (!class_exists('WP_WooCommerce_Printify_Sync')) {
             // Initialize plugin
             $this->init();
 
-            // Enqueue admin styles and scripts
-            add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
+            // Register services
+            $this->load_services();
         }
 
         private function init()
         {
-            $this->register_service(new ApolloWeb\WPWooCommercePrintifySync\AdminSettings());
-            $this->register_service(new ApolloWeb\WPWooCommercePrintifySync\AjaxHandlers());
-            $this->register_service(new ApolloWeb\WPWooCommercePrintifySync\WebhookManager());
-            $this->register_service(new ApolloWeb\WPWooCommercePrintifySync\WooCommerceHooks());
-            $this->register_service(new ApolloWeb\WPWooCommercePrintifySync\ActionScheduler());
-            $this->register_service(new ApolloWeb\WPWooCommercePrintifySync\ImageHandler());
-            $this->register_service(new ApolloWeb\WPWooCommercePrintifySync\AdminProductImport());
-            $this->register_service(new ApolloWeb\WPWooCommercePrintifySync\AjaxProductImportHandlers());
+            $this->services = [
+                new ApolloWeb\WPWooCommercePrintifySync\AdminSettings(),
+                new ApolloWeb\WPWooCommercePrintifySync\AjaxHandlers(),
+                new ApolloWeb\WPWooCommercePrintifySync\WebhookManager(),
+                new ApolloWeb\WPWooCommercePrintifySync\WooCommerceHooks(),
+                new ApolloWeb\WPWooCommercePrintifySync\ActionScheduler(),
+                new ApolloWeb\WPWooCommercePrintifySync\ImageHandler(),
+                new ApolloWeb\WPWooCommercePrintifySync\AdminProductImport(),
+                new ApolloWeb\WPWooCommercePrintifySync\AjaxProductImportHandlers(),
+                new ApolloWeb\WPWooCommercePrintifySync\EnqueueAssets(),
+            ];
 
             $this->boot_services();
         }
 
-        private function register_service($service)
+        private function load_services()
         {
-            $this->services[] = $service;
+            foreach ($this->services as $service) {
+                if (method_exists($service, 'boot')) {
+                    $service->boot();
+                }
+            }
         }
 
         private function boot_services()
@@ -63,21 +70,6 @@ if (!class_exists('WP_WooCommerce_Printify_Sync')) {
                     $service->boot();
                 }
             }
-        }
-
-        public function enqueue_admin_assets()
-        {
-            wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
-            wp_enqueue_style('bootstrap-css', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');
-            wp_enqueue_script('bootstrap-js', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js', ['jquery'], '4.5.2', true);
-            wp_enqueue_style('printify-sync-admin', plugin_dir_url(__FILE__) . 'assets/css/admin.css', [], '1.0.0');
-            wp_enqueue_script('printify-sync-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', ['jquery'], '1.0.0', true);
-
-            // Localize script for AJAX
-            wp_localize_script('printify-sync-admin', 'printifySync', [
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('printify_sync_nonce'),
-            ]);
         }
     }
 

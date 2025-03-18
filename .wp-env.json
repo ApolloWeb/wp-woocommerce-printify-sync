@@ -19,7 +19,11 @@
     "https://downloads.wordpress.org/plugin/smtp-mailer.latest-stable.zip",
     "https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip"
   ],
+  "themes": [
+    "https://downloads.wordpress.org/theme/extendable.2.0.17.zip"
+  ],
   "mappings": {
-    "wp-content/plugins": "./plugins"
+    "wp-content/plugins": "./plugins",
+    "wp-content/themes": "./themes"
   }
 }

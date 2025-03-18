@@ -16,6 +16,9 @@ jQuery(document).ready(function($) {
                 } else {
                     alert('Failed to retrieve products.');
                 }
+            },
+            error: function() {
+                alert('An error occurred while retrieving products.');
             }
         });
     });
@@ -37,6 +40,9 @@ jQuery(document).ready(function($) {
                 } else {
                     alert('Failed to start product import.');
                 }
+            },
+            error: function() {
+                alert('An error occurred while starting product import.');
             }
         });
     });
