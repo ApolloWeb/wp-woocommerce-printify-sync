@@ -1,29 +1,30 @@
 <?php
-
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
-class Autoloader
-{
-    public static function register()
-    {
+class Autoloader {
+    /**
+     * Register the autoloader.
+     */
+    public static function register(): void {
         spl_autoload_register([__CLASS__, 'autoload']);
     }
 
-    private static function autoload($class)
-    {
-        $prefix = 'ApolloWeb\\WPWooCommercePrintifySync\\';
-        $base_dir = __DIR__ . '/';
-
+    /**
+     * Autoload the given class.
+     *
+     * @param string $class Fully-qualified class name.
+     */
+    public static function autoload(string $class): void {
+        $prefix = __NAMESPACE__ . '\\';
+        $baseDir = __DIR__ . '/';
         $len = strlen($prefix);
         if (strncmp($prefix, $class, $len) !== 0) {
             return;
         }
-
-        $relative_class = substr($class, $len);
-        $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-
+        $relativeClass = substr($class, $len);
+        $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
         if (file_exists($file)) {
-            require $file;
+            require_once $file;
         }
     }
 }
