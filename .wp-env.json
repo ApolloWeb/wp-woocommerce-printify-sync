@@ -20,7 +20,6 @@
     "https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip"
   ],
   "mappings": {
-    "wp-content/plugins": "./plugins",
-    "wp-content/": "/wp-content"
+    "wp-content/plugins": "./plugins"
   }
 }
