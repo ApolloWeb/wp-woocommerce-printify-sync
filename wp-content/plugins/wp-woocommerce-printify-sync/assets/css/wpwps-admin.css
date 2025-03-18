@@ -1,0 +1,180 @@
+/**
+ * Admin styles for Printify Sync
+ */
+
+/* General AdminLTE Overrides */
+.card-primary.card-outline {
+    border-top: 3px solid #2271b1;
+}
+
+.btn-primary {
+    background-color: #2271b1;
+    border-color: #2271b1;
+}
+
+.btn-primary:hover {
+    background-color: #135e96;
+    border-color: #135e96;
+}
+
+/* Product Grid */
+.wpwps-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.wpwps-product-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+
+.wpwps-product-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.wpwps-product-image {
+    height: 200px;
+    overflow: hidden;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.wpwps-product-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.wpwps-product-details {
+    padding: 15px;
+}
+
+.wpwps-product-details h5 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.wpwps-product-meta {
+    margin-bottom: 15px;
+}
+
+.wpwps-product-meta .badge {
+    margin-right: 5px;
+    padding: 5px 10px;
+}
+
+.wpwps-product-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wpwps-import-status {
+    flex-grow: 1;
+    text-align: right;
+    margin-left: 10px;
+    min-height: 24px;
+    font-size: 0.9rem;
+}
+
+.wpwps-import-status .success {
+    color: #28a745;
+}
+
+.wpwps-import-status .error {
+    color: #dc3545;
+}
+
+/* Loader Animation */
+.wpwps-loader {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid rgba(0,0,0,0.1);
+    border-radius: 50%;
+    border-top-color: #2271b1;
+    animation: wpwps-spin 1s linear infinite;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+@keyframes wpwps-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Dashboard Improvements */
+.small-box {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.small-box .icon {
+    font-size: 70px;
+    opacity: 0.2;
+}
+
+.small-box:hover .icon {
+    font-size: 75px;
+}
+
+/* Settings Page */
+.wpwps-settings-section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.wpwps-api-status {
+    border-left: 4px solid #2271b1;
+    background: #fff;
+    margin: 15px 0;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.wpwps-settings-wrapper .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.wpwps-settings-wrapper label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.wpwps-settings-wrapper .form-control {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    width: 100%;
+    max-width: 25rem;
+}
+
+.wpwps-settings-wrapper .card-footer {
+    background-color: #f8f9fa;
+}
+
+.wpwps-api-test {
+    margin-top: 1rem;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-size: 85%;
+    font-weight: 500;
+}
+
+.badge i {
+    opacity: 0.8;
+}

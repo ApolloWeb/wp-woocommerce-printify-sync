@@ -1,12 +1,65 @@
-# Logs
+# Ignore all plugins and themes except for wp-woocommerce-printify-sync
+/wp-content/plugins/*
+!/wp-content/plugins/wp-woocommerce-printify-sync/
+/wp-content/themes/*
+
+# Ignore WordPress core files
+/wp-admin/
+/wp-includes/
+/wp-content/languages/
+/wp-content/upgrade/
+/wp-content/cache/
+/wp-content/backup-*
+
+# Ignore WordPress configuration files
+wp-config.php
+wp-config-sample.php
+wp-settings.php
+wp-load.php
+wp-blog-header.php
+readme.html
+license.txt
+
+# Ignore Composer dependencies
+/vendor/
+/composer.lock
+
+# Ignore Node.js dependencies
+/node_modules/
+/npm-debug.log
+/yarn-error.log
+
+# Ignore log files and databases
+*.log
+*.sql
+*.sqlite
 logs/*
-*.logs
+bin/
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE and editor specific files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore build directories
+/build/
+/dist/
+
+# Ignore environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore other files
+*.bak
+*.swp
+*.tmp
+*.temp
 *.sh
-
-# Plugins and Themes
-wp-content/
-wp-content/plugins/
-
-# WooCommerce Printify Sync
-!wp-content/plugins/
-!wp-content/plugins/woocommerce-printify-sync/*
