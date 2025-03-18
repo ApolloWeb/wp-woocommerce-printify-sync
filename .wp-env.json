@@ -6,8 +6,8 @@
     "WP_DEBUG": true,
     "SCRIPT_DEBUG": true,
     "WPLANG": "en_GB",
-    "WP_HOME": "https://apolloweb.ngrok.dev",
-    "WP_SITEURL": "https://apolloweb.ngrok.dev"
+    "WP_HOME": "https://bigfootfashion.ngrok.app",
+    "WP_SITEURL": "https://bigfootfashion.ngrok.app"
   },
   "plugins": [
     "https://downloads.wordpress.org/plugin/wordpress-seo.latest-stable.zip",
