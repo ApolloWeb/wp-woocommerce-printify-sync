@@ -8,6 +8,3 @@ plugins/*
 
 # WooCommerce Printify Sync
 !plugins/wp-woocommerce-printify-sync/*
-
-# WooCommerce Printify Sync
-verify-vendors.php
