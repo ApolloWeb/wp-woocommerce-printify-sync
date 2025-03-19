@@ -1,0 +1,34 @@
+.wpwps-settings .card {
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.wpwps-settings .card-header {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.wpwps-settings .form-check {
+    padding-left: 2rem;
+}
+
+.wpwps-settings .btn-primary {
+    background-color: #0d6efd;
+}
+
+.wpwps-settings .btn-secondary {
+    background-color: #6c757d;
+}
+
+.wpwps-settings .btn-success {
+    background-color: #198754;
+}
+
+.wpwps-settings .alert {
+    animation: fadeInOut 0.5s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}

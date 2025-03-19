@@ -1,0 +1,32 @@
+.wpwps-admin {
+    margin: 0 -20px;
+}
+
+.wpwps-admin .navbar {
+    padding: 0.5rem 1rem;
+}
+
+.wpwps-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    background: white;
+}
+
+/* Force full width for cards */
+.col-12 .wpwps-card {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Ensure all content areas fill full width */
+.container-fluid {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+/* Ensure tables use full card width */
+.table-responsive {
+    width: 100%;
+}

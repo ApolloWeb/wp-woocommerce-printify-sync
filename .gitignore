@@ -1,6 +1,6 @@
 # Ignore all in wp-content/plugins except our plugin
-/wp-content/plugins/
-!/wp-content/plugins/wp-woocommerce-printify-sync/*
+/wp-content/plugins/*
+!/wp-content/plugins/wp-woocommerce-printify-sync/
 
 # WordPress core files and directories
 /wp-admin/

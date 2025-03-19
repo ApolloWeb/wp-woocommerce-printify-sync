@@ -1,0 +1,20 @@
+.wpwps-admin {
+    margin: 0 -20px;
+}
+
+.wpwps-admin .navbar {
+    padding: 0.5rem 1rem;
+}
+
+.wpwps-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    background: white;
+    width: 100%;
+}
+
+/* Ensure cards in container rows take full width */
+.row > div > .wpwps-card {
+    width: 100%;
+}
