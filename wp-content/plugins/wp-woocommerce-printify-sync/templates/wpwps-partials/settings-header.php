@@ -50,4 +50,5 @@ if (!defined('WPINC')) {
     </a>
 </div>
 
+<!-- Alert for shop name fetch operations -->
 <div id="name-fetch-alert" class="alert d-none mb-3"></div>

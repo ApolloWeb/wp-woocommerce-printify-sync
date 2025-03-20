@@ -345,6 +345,7 @@ jQuery(document).ready(function($) {
     
     // Fetch shop name button handler
     $('#fetch-shop-name').on('click', function() {
+        console.log('Fetch shop name button clicked');
         const btn = $(this);
         const originalHtml = btn.html();
         
@@ -356,12 +357,14 @@ jQuery(document).ready(function($) {
                 nonce: wpwps.nonce
             },
             beforeSend: function() {
+                console.log('Sending AJAX request to fetch shop name');
                 btn.prop('disabled', true)
                    .html('<i class="fas fa-spinner fa-spin me-1"></i> ' + 'Fetching...');
                 
                 showNameFetchMessage('Fetching shop name from Printify...', 'info');
             },
             success: function(response) {
+                console.log('Shop name fetch response:', response);
                 btn.prop('disabled', false)
                    .html(originalHtml);
                 
@@ -376,7 +379,8 @@ jQuery(document).ready(function($) {
                     showNameFetchMessage(response.data.message, 'danger');
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Shop name fetch error:', error, xhr.responseText);
                 btn.prop('disabled', false)
                    .html(originalHtml);
                 
@@ -393,12 +397,12 @@ jQuery(document).ready(function($) {
     /**
      * Show a message in the name fetch alert
      * 
-
-
-
-
-
-        const $container = $('#name-fetch-alert');    function showNameFetchMessage(message, type) {     */     * @param {string} type The message type (success, info, warning, danger)     * @param {string} message The message to show        $container.removeClass('d-none alert-success alert-info alert-warning alert-danger');
+     * @param {string} message The message to show
+     * @param {string} type The message type (success, info, warning, danger)
+     */
+    function showNameFetchMessage(message, type) {
+        const $container = $('#name-fetch-alert');
+        $container.removeClass('d-none alert-success alert-info alert-warning alert-danger');
         $container.addClass('alert-' + type);
         $container.html(message);
     }

@@ -4,6 +4,8 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Core;
 
 use ApolloWeb\WPWooCommercePrintifySync\Admin\AdminMenu;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\AjaxHandler;
+use ApolloWeb\WPWooCommercePrintifySync\Admin\ProductImport;
+use ApolloWeb\WPWooCommercePrintifySync\Import\ActionSchedulerIntegration;
 
 class Plugin
 {
@@ -23,6 +25,12 @@ class Plugin
         
         // Initialize AJAX handlers
         $this->initAjaxHandlers();
+        
+        // Initialize product import
+        $this->initProductImport();
+        
+        // Initialize Action Scheduler
+        ActionSchedulerIntegration::init();
         
         // Load translations
         add_action('plugins_loaded', [$this, 'loadTextDomain']);
@@ -49,6 +57,16 @@ class Plugin
     {
         $ajaxHandler = new AjaxHandler();
         $ajaxHandler->registerHandlers();
+    }
+    
+    /**
+     * Initialize product import
+     *
+     * @return void
+     */
+    private function initProductImport(): void
+    {
+        new ProductImport();
     }
     
     /**

@@ -174,6 +174,14 @@ class AdminMenu
                 WPWPS_VERSION,
                 true
             );
+        } elseif ($current_page === 'printify-sync-import') {
+            wp_enqueue_script(
+                'wpwps-import',
+                WPWPS_PLUGIN_URL . 'assets/js/wpwps-import.js',
+                ['jquery', 'wpwps-bootstrap'],
+                WPWPS_VERSION,
+                true
+            );
         } else {
             // Dashboard scripts
             wp_enqueue_script(

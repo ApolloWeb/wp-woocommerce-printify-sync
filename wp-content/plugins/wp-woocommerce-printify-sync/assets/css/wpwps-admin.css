@@ -159,6 +159,13 @@ button i {
 
 .shop-badge-link:hover {
     background-color: #fff3cd !important;
+    text-decoration: none;
+}
+
+#shop-info-fetch:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
 }
 
 .shop-badge-link .fa-external-link-alt,
@@ -296,4 +303,30 @@ canvas {
 #chatgpt-response {
     font-family: monospace;
     white-space: pre-wrap;
+}
+
+/* Product Import Page Styles */
+.wpwps-import-page .progress {
+    height: 20px;
+}
+
+.wpwps-import-page .badge {
+    font-size: 1rem;
+    padding: 5px 10px;
+}
+
+.wpwps-import-page .table-sm {
+    font-size: 0.9rem;
+}
+
+.wpwps-import-page .table-sm code {
+    background-color: #f8f9fa;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+.wpwps-import-page .table-bordered th,
+.wpwps-import-page .table-bordered td {
+    padding: 0.5rem;
 }

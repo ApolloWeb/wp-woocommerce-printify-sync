@@ -58,6 +58,9 @@ class AjaxHandler
         
         // Get shop name by ID
         add_action('wp_ajax_wpwps_fetch_shop_name', [$this, 'fetchShopName']);
+        
+        // Product import handlers
+        add_action('wp_ajax_wpwps_check_import_progress', [$this, 'checkImportProgress']);
     }
     
     /**
@@ -602,18 +605,18 @@ class AjaxHandler
         }
         
         // Get shops from API
-        $shops = $this->api->getShops();
+        $result = $this->api->getShops();
         
-        if (is_wp_error($shops)) {
+        if (is_wp_error($result)) {
             wp_send_json_error([
-                'message' => $shops->get_error_message(),
+                'message' => $result->get_error_message(),
             ]);
             return;
         }
         
         // Find shop with matching ID
         $shopName = '';
-        foreach ($shops as $shop) {
+        foreach ($result as $shop) {
             if (isset($shop['id']) && $shop['id'] == $shopId) {
                 $shopName = sanitize_text_field($shop['title'] ?? '');
                 break;
@@ -634,5 +637,27 @@ class AjaxHandler
             'message' => __('Shop name retrieved and saved successfully!', 'wp-woocommerce-printify-sync'),
             'shop_name' => $shopName
         ]);
+    }
+    
+    /**
+     * Check product import progress
+     *
+     * @return void
+     */
+    public function checkImportProgress(): void
+    {
+        // Check nonce for security
+        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
+        
+        // Check user capability
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Get import status information
+        $importStatus = \ApolloWeb\WPWooCommercePrintifySync\Import\ActionSchedulerIntegration::getImportStatus();
+        
+        wp_send_json_success($importStatus);
     }
 }
