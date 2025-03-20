@@ -1,25 +1,19 @@
 <?php
-// Get products for display
+// Initialize variables with default values to prevent errors
 $products = [];
-$current_page = isset($_GET['products_page']) ? max(1, intval($_GET['products_page'])) : 1;
-$per_page = 10;
+$total_products = 0;
 
 try {
     if (isset($container) && $container !== null) {
         /** @var PrintifyAPIInterface $printifyApi */
         $printifyApi = $container->get('printify_api');
         $shop_id = get_option('wpwps_printify_shop_id', '');
-        $allProducts = $printifyApi->getCachedProducts($shop_id);
         
-        // Handle pagination
-        $total_products = count($allProducts);
-        $offset = ($current_page - 1) * $per_page;
-        $products = array_slice($allProducts, $offset, $per_page);
-        $total_pages = ceil($total_products / $per_page);
-    } else {
-        // Fallback if container is not available
-        $products = [];
-        $total_pages = 0;
+        // Don't try to get products on initial page load - we'll fetch via AJAX
+        // Just ensure we have the shop ID configured
+        if (!empty($shop_id)) {
+            $total_products = 0; // Will be updated via AJAX
+        }
     }
 } catch (\Exception $e) {
     $error_message = $e->getMessage();
@@ -56,49 +50,6 @@ try {
                 </div>
                 
                 <div class="table-responsive">
-                    <?php if (!empty($products)): ?>
-                    <table class="table table-striped" id="products-table">
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="select-all"></th>
-                                <th style="width: 80px">Image</th>
-                                <th>Title</th>
-                                <th>Printify ID</th>
-                                <th>Status</th>
-                                <th>Last Updated</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($products as $product): ?>
-                            <tr>
-                                <td>
-                                    <input type="checkbox" class="product-select" value="<?php echo esc_attr($product['id']); ?>">
-                                </td>
-                                <td>
-                                    <img src="<?php echo esc_url($product['images'][0]['src'] ?? ''); ?>" 
-                                         alt="<?php echo esc_attr($product['title']); ?>"
-                                         style="width: 50px; height: 50px; object-fit: cover;">
-                                </td>
-                                <td><?php echo esc_html($product['title']); ?></td>
-                                <td><?php echo esc_html($product['id']); ?></td>
-                                <td>
-                                    <span class="badge bg-<?php echo $product['visible'] ? 'success' : 'secondary'; ?>">
-                                        <?php echo $product['visible'] ? 'Active' : 'Draft'; ?>
-                                    </span>
-                                </td>
-                                <td><?php echo date('Y-m-d H:i', strtotime($product['updated_at'])); ?></td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-outline-primary import-single" 
-                                            data-id="<?php echo esc_attr($product['id']); ?>">
-                                        <i class="fas fa-download"></i> Import
-                                    </button>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                    <?php else: ?>
                     <table class="table table-striped" id="products-table">
                         <thead>
                             <tr>
@@ -117,18 +68,12 @@ try {
                             </tr>
                         </tbody>
                     </table>
-                    <?php endif; ?>
-                    
-                    <!-- Pagination section with improved structure -->
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div class="text-muted" id="products-count">
-                            Showing <span id="showing-start"><?php echo !empty($products) ? (($current_page - 1) * $per_page) + 1 : 0; ?></span> to <span id="showing-end"><?php echo !empty($products) ? min($current_page * $per_page, $total_products) : 0; ?></span> of <span id="total-products"><?php echo $total_products ?? 0; ?></span> products
-                        </div>
-                        <nav aria-label="Products navigation" class="pagination-container">
-                            <ul class="pagination" id="products-pagination">
-                                <!-- Pagination will be generated by JavaScript -->
-                            </ul>
-                        </nav>
+                </div>
+
+                <!-- Product counter without pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-muted" id="products-count">
+                        Showing <span id="showing-start">0</span> to <span id="showing-end">0</span> of <span id="total-products">0</span> products
                     </div>
                 </div>
             </div>

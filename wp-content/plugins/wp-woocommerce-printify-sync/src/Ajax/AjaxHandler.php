@@ -5,7 +5,6 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Ajax;
 use ApolloWeb\WPWooCommercePrintifySync\Core\ServiceContainer;
 use ApolloWeb\WPWooCommercePrintifySync\API\Interfaces\PrintifyAPIInterface;
 use ApolloWeb\WPWooCommercePrintifySync\WooCommerce\Interfaces\ProductImporterInterface;
-use ApolloWeb\WPWooCommercePrintifySync\Core\Cache;
 
 class AjaxHandler
 {
@@ -18,27 +17,11 @@ class AjaxHandler
     
     public function handleAjax()
     {
-        // Check both POST and GET for the nonce
-        $nonce = sanitize_text_field($_REQUEST['nonce'] ?? '');
-        if (!wp_verify_nonce($nonce, 'wpwps_nonce')) {
+        if (!check_ajax_referer('wpwps_nonce', 'nonce', false)) {
             wp_send_json_error(['message' => 'Invalid security token']);
-            return;
         }
 
-        // Check for action_type in both POST and GET
-        $action = '';
-        if (isset($_POST['action_type'])) {
-            $action = sanitize_text_field($_POST['action_type']);
-        } elseif (isset($_GET['action_type'])) {
-            $action = sanitize_text_field($_GET['action_type']);
-        }
-
-        if (empty($action)) {
-            wp_send_json_error(['message' => 'Missing action_type parameter']);
-            return;
-        }
-
-        error_log("WPWPS: Processing AJAX action: {$action}, Method: " . $_SERVER['REQUEST_METHOD']);
+        $action = sanitize_text_field($_POST['action_type'] ?? '');
 
         switch ($action) {
             case 'sync_products':
@@ -74,12 +57,8 @@ class AjaxHandler
             case 'fetch_printify_orders':
                 $this->fetchPrintifyOrders();
                 break;
-            case 'clear_cache':
-                $this->clearCache();
-                break;
             default:
-                error_log("WPWPS: Invalid action received: {$action}");
-                wp_send_json_error(['message' => "Invalid action: {$action}"]);
+                wp_send_json_error(['message' => 'Invalid action']);
         }
     }
 
@@ -290,18 +269,16 @@ class AjaxHandler
 
             // Get pagination params
             $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-            $perPage = isset($_GET['per_page']) ? max(1, (int)$_GET['per_page']) : 10;
-            $refreshCache = isset($_GET['refresh_cache']) && $_GET['refresh_cache'] === 'true';
+            $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
 
             // Clear cache if requested
+            $refreshCache = isset($_GET['refresh_cache']) && $_GET['refresh_cache'] === 'true';
             if ($refreshCache) {
                 Cache::deleteProducts($shopId);
             }
 
             // Get products
             $result = $printifyApi->getProducts($shopId, $page, $perPage);
-            
-            error_log("Printify API product result: " . json_encode($result));
             
             if (!isset($result['data'])) {
                 throw new \Exception('Invalid API response format - missing data array');
@@ -321,7 +298,7 @@ class AjaxHandler
                 $processedProducts[] = [
                     'printify_id' => $printifyId,
                     'title' => $product['title'] ?? 'Untitled Product',
-                    'thumbnail' => isset($product['images'][0]['src']) ? $product['images'][0]['src'] : '',
+                    'thumbnail' => $product['images'][0]['src'] ?? '',
                     'woo_product_id' => $wooProductId,
                     'status' => !empty($product['visible']) ? 'active' : 'draft',
                     'last_updated' => date('Y-m-d H:i:s', strtotime($product['updated_at'] ?? 'now')),
@@ -329,31 +306,12 @@ class AjaxHandler
                 ];
             }
 
-            // Ensure we have valid pagination data
-            $total = isset($result['total']) ? (int)$result['total'] : count($processedProducts);
-            $currentPage = isset($result['current_page']) ? (int)$result['current_page'] : $page;
-            $lastPage = isset($result['last_page']) ? (int)$result['last_page'] : 
-                         max(1, ceil($total / $perPage));
-                         
-            // Make sure we never have a last_page of 0
-            if ($lastPage < 1) {
-                $lastPage = 1;
-            }
-
-            // Force lastPage to be higher than 1 if we have more items than perPage
-            if ($total > $perPage && $lastPage <= 1) {
-                $lastPage = ceil($total / $perPage);
-            }
-
-            // Debug log pagination data
-            error_log("Pagination data: total={$total}, current_page={$currentPage}, last_page={$lastPage}, per_page={$perPage}");
-
             wp_send_json_success([
                 'products' => $processedProducts,
-                'total' => $total,
-                'current_page' => $currentPage,
-                'last_page' => $lastPage,
-                'per_page' => $perPage
+                'total' => $result['total'] ?? 0,
+                'current_page' => $result['current_page'] ?? $page,
+                'last_page' => $result['last_page'] ?? 1,
+                'per_page' => $result['per_page'] ?? $perPage
             ]);
 
         } catch (\Exception $e) {
@@ -430,7 +388,7 @@ class AjaxHandler
             
             // Get pagination params from GET
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-            $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
+            $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10; // Fixed syntax error, removed extra )
             $refreshCache = isset($_GET['refresh_cache']) && $_GET['refresh_cache'] === 'true';
             
             // Get Printify API
@@ -496,41 +454,6 @@ class AjaxHandler
             
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
-        }
-    }
-
-    private function clearCache()
-    {
-        $shopId = get_option('wpwps_printify_shop_id', '');
-        
-        if (empty($shopId)) {
-            wp_send_json_error(['message' => 'Shop ID not configured']);
-            return;
-        }
-        
-        // Determine which cache to clear based on the request
-        $clearType = sanitize_text_field($_POST['clear_type'] ?? 'all');
-        
-        $result = false;
-        switch ($clearType) {
-            case 'products':
-                $result = Cache::deleteProducts($shopId);
-                break;
-            case 'orders':
-                $result = Cache::deleteOrders($shopId);
-                break;
-            case 'all':
-            default:
-                $productsCleared = Cache::deleteProducts($shopId);
-                $ordersCleared = Cache::deleteOrders($shopId);
-                $result = $productsCleared || $ordersCleared;
-                break;
-        }
-        
-        if ($result) {
-            wp_send_json_success(['message' => 'Cache cleared successfully', 'cache_type' => $clearType]);
-        } else {
-            wp_send_json_success(['message' => 'Cache was already empty', 'cache_type' => $clearType]);
         }
     }
 }

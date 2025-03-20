@@ -78,9 +78,15 @@ function init() {
 
         // Register AJAX handlers first - before other services
         add_action('wp_ajax_printify_sync', function() use ($container) {
-            check_ajax_referer('wpwps_nonce', 'nonce');
-            $handler = $container->get('ajax_handler');
-            $handler->handleAjax();
+            try {
+                check_ajax_referer('wpwps_nonce', 'nonce');
+                error_log('AJAX printify_sync request received: ' . json_encode($_REQUEST));
+                $handler = $container->get('ajax_handler');
+                $handler->handleAjax();
+            } catch (\Exception $e) {
+                error_log('AJAX Error: ' . $e->getMessage());
+                wp_send_json_error(['message' => 'Error processing request: ' . $e->getMessage()]);
+            }
         });
         
         add_action('wp_ajax_nopriv_printify_sync', function() {
@@ -105,78 +111,3 @@ add_action('admin_enqueue_scripts', function() {
         'ajax_url' => admin_url('admin-ajax.php')
     ]);
 }, 999);
-
-// Add emergency fix for button click issues
-add_action('admin_footer', function() {
-    // Only run on our plugin pages
-    $screen = get_current_screen();
-    if (!$screen || strpos($screen->id, 'wpwps-') === false) {
-        return;
-    }
-    
-    echo <<<HTML
-    <script>
-    jQuery(document).ready(function($) {
-        console.log('Emergency button fix loaded');
-        
-        // Fix for pagination
-        $(document).on('click', '.page-link', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Pagination clicked!');
-            
-            var page = $(this).data('page');
-            if (page && !isNaN(page)) {
-                console.log('Fetching page:', page);
-                
-                // Call the fetchProducts function or reload with page parameter
-                if (typeof fetchProducts === 'function') {
-                    fetchProducts(parseInt(page), false);
-                } else {
-                    // Direct AJAX call if function isn't accessible
-                    $.ajax({
-                        url: wpwps_data.ajax_url,
-                        type: 'GET',
-                        data: {
-                            action: 'printify_sync',
-                            action_type: 'fetch_printify_products',
-                            nonce: wpwps_data.nonce,
-                            page: page,
-                            per_page: 10,
-                            refresh_cache: false
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                location.reload();
-                            }
-                        }
-                    });
-                }
-            }
-        });
-        
-        // Fix for fetch products button
-        $('#fetch-products').on('click', function(e) {
-            console.log('Fetch products button clicked');
-            $.ajax({
-                url: wpwps_data.ajax_url,
-                type: 'GET',
-                data: {
-                    action: 'printify_sync',
-                    action_type: 'fetch_printify_products',
-                    nonce: wpwps_data.nonce,
-                    page: 1,
-                    per_page: 10,
-                    refresh_cache: true
-                },
-                success: function(response) {
-                    if (response.success) {
-                        location.reload();
-                    }
-                }
-            });
-        });
-    });
-    </script>
-    HTML;
-});
