@@ -38,4 +38,33 @@ class Plugin
     {
         $this->loader->run();
     }
+
+    /**
+     * Check if HPOS is active in WooCommerce
+     *
+     * @return bool
+     */
+    public function isHPOSActive(): bool
+    {
+        if (class_exists('\Automattic\WooCommerce\Utilities\OrderUtil')) {
+            return \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Get admin URL for editing orders (HPOS compatible)
+     *
+     * @param int $orderId
+     * @return string
+     */
+    public function getOrderEditUrl(int $orderId): string
+    {
+        if ($this->isHPOSActive()) {
+            return admin_url("admin.php?page=wc-orders&action=edit&id={$orderId}");
+        }
+        
+        return get_edit_post_link($orderId, 'raw');
+    }
 }

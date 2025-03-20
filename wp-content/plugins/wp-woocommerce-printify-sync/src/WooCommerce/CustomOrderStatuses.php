@@ -65,6 +65,25 @@ class CustomOrderStatuses
             'label_count' => _n_noop('Ready for Shipping <span class="count">(%s)</span>',
                 'Ready for Shipping <span class="count">(%s)</span>', 'wp-woocommerce-printify-sync')
         ]);
+
+        // Let WooCommerce know these are valid order statuses
+        add_filter('woocommerce_register_shop_order_post_statuses', [$this, 'registerPostStatuses']);
+        
+        // Add our custom statuses to the list of WooCommerce order statuses
+        add_filter('woocommerce_order_statuses', [$this, 'addOrderStatusesToWooCommerce']);
+    }
+
+    /**
+     * Register custom order statuses for both HPOS and traditional post-based storage
+     */
+    public function registerPostStatuses($order_statuses)
+    {
+        $order_statuses['wc-printify-pending'] = _x('Printify Pending', 'Order status', 'wp-woocommerce-printify-sync');
+        $order_statuses['wc-printify-on-hold'] = _x('Printify On Hold', 'Order status', 'wp-woocommerce-printify-sync');
+        $order_statuses['wc-printify-fulfillment'] = _x('Printify Fulfillment', 'Order status', 'wp-woocommerce-printify-sync');
+        $order_statuses['wc-printify-ready-shipping'] = _x('Ready for Shipping', 'Order status', 'wp-woocommerce-printify-sync');
+        
+        return $order_statuses;
     }
 
     /**
@@ -110,6 +129,34 @@ class CustomOrderStatuses
      * @return string|null Printify status or null if not mappable
      */
     public function convertWcStatusToPrintify($wcStatus)
+    {
+        // Remove 'wc-' prefix if present
+        if (strpos($wcStatus, 'wc-') === 0) {
+            $wcStatus = substr($wcStatus, 3);
+        }
+
+        // Find the Printify status that maps to this WC status
+        return array_search($wcStatus, self::PRINTIFY_TO_WC_STATUS_MAP) ?: null;
+    }
+
+    /**
+     * Map Printify status to WooCommerce status
+     *
+     * @param string $printifyStatus
+     * @return string|null WooCommerce status (without wc- prefix) or null if not found
+     */
+    public function mapPrintifyStatusToWooStatus(string $printifyStatus): ?string
+    {
+        return self::PRINTIFY_TO_WC_STATUS_MAP[$printifyStatus] ?? null;
+    }
+    
+    /**
+     * Map WooCommerce status to Printify status
+     *
+     * @param string $wcStatus
+     * @return string|null Printify status or null if not found
+     */
+    public function mapWooStatusToPrintifyStatus(string $wcStatus): ?string
     {
         // Remove 'wc-' prefix if present
         if (strpos($wcStatus, 'wc-') === 0) {

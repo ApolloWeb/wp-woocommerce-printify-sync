@@ -6,6 +6,7 @@ use ApolloWeb\WPWooCommercePrintifySync\Ajax\Handler\AbstractAjaxHandler;
 use ApolloWeb\WPWooCommercePrintifySync\Ajax\Handler\ProductHandler;
 use ApolloWeb\WPWooCommercePrintifySync\Ajax\Handler\OrderHandler;
 use ApolloWeb\WPWooCommercePrintifySync\Ajax\Handler\SettingsHandler;
+use ApolloWeb\WPWooCommercePrintifySync\Ajax\Handler\ProgressTrackerHandler;
 use ApolloWeb\WPWooCommercePrintifySync\Core\ServiceContainer;
 
 class HandlerFactory
@@ -42,12 +43,15 @@ class HandlerFactory
         $this->handlers['fetch_printify_products'] = [ProductHandler::class, 'handle'];
         $this->handlers['import_product_to_woo'] = [ProductHandler::class, 'importProduct'];
         $this->handlers['bulk_import_products'] = [ProductHandler::class, 'bulkImportProducts'];
+        $this->handlers['import_all_products'] = [ProductHandler::class, 'importAllProducts'];
         $this->handlers['manual_sync'] = [ProductHandler::class, 'manualSync'];
         
         // Order handlers
         $this->handlers['fetch_printify_orders'] = [OrderHandler::class, 'handle'];
         $this->handlers['import_order_to_woo'] = [OrderHandler::class, 'importOrder'];
         $this->handlers['bulk_import_orders'] = [OrderHandler::class, 'bulkImportOrders'];
+        $this->handlers['import_all_orders'] = [OrderHandler::class, 'importAllOrders'];
+        $this->handlers['get_order_import_progress'] = [OrderHandler::class, 'getOrderImportProgress'];
         $this->handlers['manual_sync_orders'] = [OrderHandler::class, 'manualSyncOrders'];
         
         // Settings handlers
@@ -55,6 +59,19 @@ class HandlerFactory
         $this->handlers['test_connection'] = [SettingsHandler::class, 'testConnection'];
         $this->handlers['fetch_shops'] = [SettingsHandler::class, 'fetchShops'];
         $this->handlers['select_shop'] = [SettingsHandler::class, 'selectShop'];
+        
+        // Progress tracker handlers
+        $this->handlers['get_import_progress'] = [ProgressTrackerHandler::class, 'getImportProgress'];
+        $this->handlers['get_image_import_progress'] = [ProgressTrackerHandler::class, 'getImageImportProgress'];
+        
+        // Debug handlers - explicitly list the clear_all_data handler
+        $this->handlers['debug_direct_orders'] = [DebugHandler::class, 'directOrdersRequest'];
+        $this->handlers['clear_all_data'] = [DebugHandler::class, 'clearAllData'];
+        
+        // Conditionally add test_ajax handler in debug mode
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $this->handlers['test_ajax'] = [DebugHandler::class, 'testAjax'];
+        }
     }
     
     /**

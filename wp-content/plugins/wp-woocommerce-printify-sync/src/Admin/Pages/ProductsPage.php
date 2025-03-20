@@ -56,7 +56,7 @@ class ProductsPage extends AbstractAdminPage
     {
         return [
             'styles' => ['wpwps-products', 'wpwps-common'],
-            'scripts' => ['wpwps-products']
+            'scripts' => ['wpwps-products', 'wpwps-import-progress']
         ];
     }
 }

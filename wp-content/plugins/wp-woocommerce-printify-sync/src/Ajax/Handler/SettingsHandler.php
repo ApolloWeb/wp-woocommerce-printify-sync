@@ -11,7 +11,34 @@ class SettingsHandler extends AbstractAjaxHandler
      */
     public function handle(): void
     {
-        $this->saveSettings();
+        if (!isset($_POST['form_data'])) {
+            wp_send_json_error(['message' => 'No form data provided']);
+            return;
+        }
+        
+        parse_str($_POST['form_data'], $form_data);
+        
+        // Update API key
+        if (isset($form_data['printify_api_key'])) {
+            update_option('wpwps_printify_api_key', sanitize_text_field($form_data['printify_api_key']));
+        }
+        
+        // Update API endpoint
+        if (isset($form_data['printify_endpoint'])) {
+            update_option('wpwps_printify_endpoint', esc_url_raw($form_data['printify_endpoint']));
+        }
+        
+        // Update shop ID
+        if (isset($form_data['printify_shop_id'])) {
+            update_option('wpwps_printify_shop_id', sanitize_text_field($form_data['printify_shop_id']));
+        }
+        
+        // Update currency
+        if (isset($form_data['currency'])) {
+            update_option('wpwps_currency', sanitize_text_field($form_data['currency']));
+        }
+        
+        wp_send_json_success(['message' => 'Settings saved successfully']);
     }
     
     /**

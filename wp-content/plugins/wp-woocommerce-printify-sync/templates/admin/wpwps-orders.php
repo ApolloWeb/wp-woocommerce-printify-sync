@@ -10,11 +10,18 @@
                     <button type="button" class="btn btn-primary btn-sm me-2" id="fetch-orders">
                         <i class="fas fa-sync"></i> Fetch Orders
                     </button>
-                    <button type="button" class="btn btn-success btn-sm" id="import-all-orders" disabled>
-                        <i class="fas fa-download"></i> Import All Orders
+                    <button type="button" class="btn btn-info btn-sm me-2" id="import-all-orders">
+                        <i class="fas fa-cloud-download-alt"></i> Import All
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm" id="bulk-import-orders" disabled>
+                        <i class="fas fa-download"></i> Import Selected
                     </button>
                 </div>
             </div>
+            
+            <!-- Add progress container -->
+            <div id="order-import-progress-container" style="display: none;" class="p-3"></div>
+            
             <div class="card-body">
                 <!-- Alert container -->
                 <div id="orders-alerts" class="mb-3">

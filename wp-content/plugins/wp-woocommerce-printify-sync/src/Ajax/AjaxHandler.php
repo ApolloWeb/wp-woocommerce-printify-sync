@@ -118,4 +118,29 @@ class AjaxHandler
     {
         call_user_func($this->factory->createHandler('bulk_import_orders'));
     }
+    
+    private function debugDirectOrders()
+    {
+        call_user_func($this->factory->createHandler('debug_direct_orders'));
+    }
+    
+    private function clearAllData()
+    {
+        call_user_func($this->factory->createHandler('clear_all_data'));
+    }
+
+    private function importAllProducts()
+    {
+        call_user_func($this->factory->createHandler('import_all_products'));
+    }
+
+    private function importAllOrders()
+    {
+        call_user_func($this->factory->createHandler('import_all_orders'));
+    }
+
+    private function getOrderImportProgress()
+    {
+        call_user_func($this->factory->createHandler('get_order_import_progress'));
+    }
 }

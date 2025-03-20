@@ -1,5 +1,7 @@
 jQuery(document).ready(function($) {
-    const perPage = 50; // Increase per page to maximum
+    // Maximum 10 per page for Printify Orders API according to documentation
+    const perPage = 10; 
+    let orderImportProgressInterval = null;
 
     // Event handlers
     $('#fetch-orders').on('click', function() {
@@ -10,9 +12,14 @@ jQuery(document).ready(function($) {
         fetchOrders(true);
     });
     
-    // New import all orders button handler
+    // Import all orders button handler
     $('#import-all-orders').on('click', function() {
         importAllOrders();
+    });
+
+    // Bulk import orders button handler - rename the existing function
+    $('#bulk-import-orders').on('click', function() {
+        bulkImportOrders();
     });
 
     // Initialize import button handlers
@@ -57,7 +64,23 @@ jQuery(document).ready(function($) {
         const originalHtml = button.html();
         button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
 
-        $('#orders-table tbody').html('<tr><td colspan="8" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading orders from Printify...</td></tr>');
+        // Clear existing alerts
+        $('#orders-alerts').empty();
+        
+        $('#orders-table tbody').html(
+            '<tr><td colspan="8" class="text-center">' +
+            '<i class="fas fa-spinner fa-spin"></i> Loading orders from Printify...' +
+            '</td></tr>'
+        );
+
+        console.log('Fetching orders with params:', {
+            action: 'printify_sync',
+            action_type: 'fetch_printify_orders',
+            nonce: wpwps_data.nonce,
+            page: 1,
+            per_page: perPage,
+            refresh_cache: refreshCache ? 'true' : 'false'
+        });
 
         $.ajax({
             url: ajaxurl || wpwps_data.ajax_url,
@@ -72,24 +95,37 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 console.log('Orders API response:', response);
-                if (response && response.success && response.data) {
+                if (response?.success && response?.data?.orders) {
                     updateOrdersTable(response.data);
                     
-                    // Enable the import all button if we have orders
-                    if (response.data.orders && response.data.orders.length > 0) {
-                        $('#import-all-orders').prop('disabled', false);
-                    } else {
-                        $('#import-all-orders').prop('disabled', true);
+                    // Show success message if cache was refreshed
+                    if (refreshCache) {
+                        $('#orders-alerts').html(`
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle me-2"></i> Orders refreshed successfully
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `);
                     }
+                    
+                    // Enable bulk import if we have orders
+                    $('#import-all-orders').prop('disabled', !response.data.orders.length);
                 } else {
-                    const errorMsg = response?.data?.message || 'Unknown error occurred';
-                    handleError(errorMsg);
+                    handleError(response?.data?.message || 'Failed to fetch orders');
                     $('#import-all-orders').prop('disabled', true);
                 }
             },
             error: function(xhr, status, error) {
-                console.error('AJAX error:', error, xhr.responseText);
-                handleError('Failed to fetch orders: ' + error);
+                console.error('AJAX error:', {xhr: xhr, status: status, error: error});
+                console.error('Response Text:', xhr.responseText);
+                
+                try {
+                    var jsonResponse = JSON.parse(xhr.responseText);
+                    handleError('Failed to fetch orders: ' + (jsonResponse.message || error || 'Unknown error'));
+                } catch(e) {
+                    handleError('Failed to fetch orders: ' + (error || 'Server error (500)'));
+                }
+                
                 $('#import-all-orders').prop('disabled', true);
             },
             complete: function() {
@@ -98,8 +134,199 @@ jQuery(document).ready(function($) {
         });
     }
     
-    // New function to import all orders
+    // Function to import all orders from Printify
     function importAllOrders() {
+        if (!confirm('Are you sure you want to import ALL orders from Printify? This may take some time for stores with many orders.')) {
+            return;
+        }
+        
+        const button = $('#import-all-orders');
+        const originalHtml = button.html();
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Starting...');
+        
+        // Show progress container
+        $('#order-import-progress-container').show().html(`
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-sync fa-spin me-2"></i> Starting All Orders Import...</h6>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-2">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                            role="progressbar" 
+                            style="width: 0%" 
+                            aria-valuenow="0" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100">
+                            0%
+                        </div>
+                    </div>
+                    <div class="small text-muted">
+                        Preparing to import all orders...
+                    </div>
+                </div>
+            </div>
+        `);
+        
+        $.ajax({
+            url: ajaxurl || wpwps_data.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'printify_sync',
+                action_type: 'import_all_orders',
+                nonce: wpwps_data.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update any orders that were imported in the first batch
+                    if (response.data.imported && response.data.imported.length > 0) {
+                        response.data.imported.forEach(function(item) {
+                            const button = $(`.import-order[data-id="${item.printify_id}"]`);
+                            if (button.length > 0) {
+                                button.prop('disabled', true)
+                                    .html('<i class="fas fa-check"></i> Imported')
+                                    .addClass('btn-success')
+                                    .removeClass('btn-primary');
+                                button.closest('tr').addClass('bg-light');
+                            }
+                        });
+                    }
+                    
+                    // Show success message
+                    $('#orders-alerts').html(`
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i> ${response.data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `);
+                    
+                    // If more processing needed, start progress tracking
+                    if (response.data.needs_more_processing) {
+                        startOrderProgressTracking();
+                    } else {
+                        // Refresh orders list
+                        setTimeout(function() {
+                            fetchOrders(true);
+                        }, 2000);
+                        
+                        $('#order-import-progress-container').html(`
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Order import completed!
+                            </div>
+                        `);
+                        
+                        // Hide progress after 5 seconds
+                        setTimeout(function() {
+                            $('#order-import-progress-container').fadeOut();
+                        }, 5000);
+                    }
+                } else {
+                    // Show error
+                    $('#orders-alerts').html(`
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i> ${response.data.message || 'Failed to import orders'}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `);
+                    
+                    $('#order-import-progress-container').hide();
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#orders-alerts').html(`
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Failed to import orders: ${error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `);
+                
+                $('#order-import-progress-container').hide();
+            },
+            complete: function() {
+                button.prop('disabled', false).html(originalHtml);
+            }
+        });
+    }
+    
+    // Poll for order import progress
+    function startOrderProgressTracking() {
+        // Clear any existing interval
+        if (orderImportProgressInterval) {
+            clearInterval(orderImportProgressInterval);
+        }
+        
+        // Start new polling interval
+        orderImportProgressInterval = setInterval(checkOrderImportProgress, 3000);
+    }
+    
+    // Check order import progress
+    function checkOrderImportProgress() {
+        $.ajax({
+            url: ajaxurl || wpwps_data.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'printify_sync',
+                action_type: 'get_order_import_progress',
+                nonce: wpwps_data.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    const data = response.data;
+                    const percentage = data.percentage || 0;
+                    
+                    $('#order-import-progress-container').html(`
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-sync fa-spin me-2"></i> Import In Progress</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="progress mb-2">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                        role="progressbar" 
+                                        style="width: ${percentage}%" 
+                                        aria-valuenow="${percentage}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                        ${percentage}%
+                                    </div>
+                                </div>
+                                <div class="small text-muted">
+                                    Importing page ${data.current_page} of ${data.last_page}
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    // Check if import completed
+                    clearInterval(orderImportProgressInterval);
+                    
+                    // Refresh orders list
+                    fetchOrders(true);
+                    
+                    $('#order-import-progress-container').html(`
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Order import completed!
+                        </div>
+                    `);
+                    
+                    // Hide progress after 5 seconds
+                    setTimeout(function() {
+                        $('#order-import-progress-container').fadeOut();
+                    }, 5000);
+                }
+            },
+            error: function() {
+                // On error, stop polling
+                clearInterval(orderImportProgressInterval);
+                $('#order-import-progress-container').hide();
+            }
+        });
+    }
+
+    // Renamed the original bulk import to avoid confusion
+    function bulkImportOrders() {
         if (!confirm('Are you sure you want to import all orders from Printify to WooCommerce?')) {
             return;
         }
@@ -181,6 +408,32 @@ jQuery(document).ready(function($) {
         });
     }
 
+    // Local formatCurrency function as fallback
+    function formatCurrencyLocal(amount) {
+        // Ensure amount is treated as a number
+        const numAmount = parseFloat(amount);
+        if (isNaN(numAmount)) return 'N/A';
+        
+        // Default to GBP if wpwps_data is not available
+        const currency = (typeof wpwps_data !== 'undefined' && wpwps_data.currency) ? wpwps_data.currency : 'GBP';
+        // Use WooCommerce's currency symbols or fall back to defaults
+        const symbols = (typeof wpwps_data !== 'undefined' && wpwps_data.currency_symbols) ? 
+            wpwps_data.currency_symbols : 
+            {
+                'GBP': '£',
+                'USD': '$',
+                'EUR': '€'
+            };
+        
+        // Check if the amount needs to be divided by 100
+        const valueToFormat = numAmount.toString().includes('.') ? 
+            numAmount : 
+            (numAmount / 100);
+        
+        // Format the amount
+        return `${symbols[currency] || symbols['GBP']}${valueToFormat.toFixed(2)}`;
+    }
+
     function updateOrdersTable(data) {
         const orders = data.orders || [];
         const tbody = $('#orders-table tbody');
@@ -220,8 +473,12 @@ jQuery(document).ready(function($) {
             // Format created date
             const orderDate = order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A';
 
-            // Format price (convert from cents to dollars)
-            const price = order.total_price ? `$${(order.total_price/100).toFixed(2)}` : 'N/A';
+            // Format price - use global function if available, otherwise use local function
+            const price = order.total_price ? 
+                (typeof window.formatCurrency === 'function' ? 
+                    window.formatCurrency(order.total_price) : 
+                    formatCurrencyLocal(order.total_price)) : 
+                'N/A';
             
             // Format shipping status
             let shippingStatus = 'Pending';

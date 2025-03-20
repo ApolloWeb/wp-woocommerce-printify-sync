@@ -1,18 +1,34 @@
 <?php
 /**
  * Plugin Name: WP WooCommerce Printify Sync
- * Description: Sync products from Printify to WooCommerce
- * Plugin URI: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
+ * Plugin URI: https://github.com/apolloweb/wp-woocommerce-printify-sync
+ * Description: Synchronize products and orders between WooCommerce and Printify
  * Version: 1.0.0
- * Author: ApolloWeb
- * Author URI: https://github.com/ApolloWeb
+ * Author: Apollo Web
+ * Author URI: https://apolloweb.com
  * Text Domain: wp-woocommerce-printify-sync
  * Domain Path: /languages
+ * WC requires at least: 6.0
+ * WC tested up to: 8.0
  * Requires at least: 5.6
- * Requires PHP: 7.3
- * License: MIT
+ * Requires PHP: 7.4
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * @package ApolloWeb\WPWooCommercePrintifySync
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package WPWooCommercePrintifySync
  */
 
 namespace ApolloWeb\WPWooCommercePrintifySync;
@@ -44,6 +60,26 @@ $autoloader->register();
 
 // Direct asset loader fallback
 require_once WPWPS_PLUGIN_DIR . 'direct-asset-loader.php';
+
+// Initialize Action Scheduler integration
+use ApolloWeb\WPWooCommercePrintifySync\Core\ActionScheduler\Bootstrapper;
+
+// Detect plugin activation
+register_activation_hook(__FILE__, function() {
+    // Initialize Action Scheduler
+    Bootstrapper::init();
+});
+
+// Add HPOS compatibility
+add_action('before_woocommerce_init', function() {
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'custom_order_tables',
+            __FILE__,
+            true
+        );
+    }
+});
 
 // Initialize plugin
 function init() {
@@ -106,6 +142,12 @@ function init() {
         add_action('wp_ajax_nopriv_printify_sync', function() {
             wp_send_json_error(['message' => 'Unauthorized access']);
         });
+
+        // Initialize Action Scheduler
+        Bootstrapper::init();
+        
+        // Fire initialization complete action
+        do_action('wpwps_initialized');
 
         // Run the plugin
         $container->get('plugin')->run();

@@ -26,8 +26,8 @@ if (empty($api_key) || empty($shop_id) || empty($endpoint)):
     </div>
     <div class="wpwps-stat-card wpwps-card">
         <h4>Total Orders</h4>
-        <p class="h2">0</p>
-        <small>Orders will appear here after syncing</small>
+        <p class="h2"><?php echo intval(get_option('wpwps_orders_synced', 0)); ?></p>
+        <small>Last synced: <?php echo get_option('wpwps_last_orders_sync', 'Never'); ?></small>
     </div>
     <div class="wpwps-stat-card wpwps-card">
         <h4>Quick Actions</h4>
@@ -38,6 +38,14 @@ if (empty($api_key) || empty($shop_id) || empty($endpoint)):
             <a href="admin.php?page=wpwps-settings" class="btn btn-outline-secondary">
                 <i class="fas fa-cogs"></i> Settings
             </a>
+            <button type="button" id="clear-all-data" class="btn btn-danger mt-3" onclick="console.log('Clear data inline click');">
+                <i class="fas fa-exclamation-triangle"></i> Clear All Data
+            </button>
+            <?php if (defined('WP_DEBUG') && WP_DEBUG): ?>
+            <button type="button" id="wpwps-test-ajax" class="btn btn-info mt-2">
+                <i class="fas fa-vial"></i> Test AJAX
+            </button>
+            <?php endif; ?>
         </div>
     </div>
 </div>

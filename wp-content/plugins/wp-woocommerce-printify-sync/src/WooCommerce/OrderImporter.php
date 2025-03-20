@@ -11,20 +11,35 @@ class OrderImporter implements OrderImporterInterface
      */
     public function importOrder(array $printifyOrder): int
     {
-        // For now, just store the mapping
-        $orderId = wp_insert_post([
-            'post_title' => $printifyOrder['id'],
-            'post_type' => 'shop_order',
-            'post_status' => 'wc-pending'
-        ]);
-
-        if (is_wp_error($orderId)) {
-            throw new \Exception($orderId->get_error_message());
+        // Check if order already exists
+        $existingOrderId = $this->getWooOrderIdByPrintifyId($printifyOrder['id']);
+        if ($existingOrderId) {
+            return $existingOrderId;
         }
 
-        update_post_meta($orderId, '_printify_id', $printifyOrder['id']);
+        // Create order object using WooCommerce CRUD methods
+        $order = wc_create_order([
+            'status' => 'pending',
+        ]);
+
+        if (is_wp_error($order)) {
+            throw new \Exception($order->get_error_message());
+        }
+
+        // Add order metadata using HPOS-compatible methods
+        $order->update_meta_data('_printify_id', $printifyOrder['id']);
         
-        return $orderId;
+        // Add order notes if needed
+        $order->add_order_note(
+            sprintf('Order imported from Printify (ID: %s)', $printifyOrder['id']),
+            0, // not customer-facing
+            true // added by system
+        );
+        
+        // Save the order
+        $order->save();
+        
+        return $order->get_id();
     }
 
     /**
@@ -32,14 +47,67 @@ class OrderImporter implements OrderImporterInterface
      */
     public function getWooOrderIdByPrintifyId(string $printifyId): ?int
     {
-        global $wpdb;
+        // Use WooCommerce's HPOS-compatible query method
+        $orders = wc_get_orders([
+            'limit' => 1,
+            'meta_key' => '_printify_id',
+            'meta_value' => $printifyId,
+            'return' => 'ids',
+        ]);
         
-        $orderId = $wpdb->get_var($wpdb->prepare(
-            "SELECT post_id FROM {$wpdb->postmeta} 
-            WHERE meta_key = '_printify_id' AND meta_value = %s",
-            $printifyId
-        ));
+        return !empty($orders) ? (int)$orders[0] : null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateOrderStatus(int $orderId, string $status): bool
+    {
+        $order = wc_get_order($orderId);
         
-        return $orderId ? (int) $orderId : null;
+        if (!$order) {
+            return false;
+        }
+        
+        // Map Printify status to WooCommerce status if needed
+        // This assumes there's a method in CustomOrderStatuses to map them
+        $customOrderStatuses = new CustomOrderStatuses();
+        $wcStatus = $customOrderStatuses->mapPrintifyStatusToWooStatus($status);
+        
+        if ($wcStatus) {
+            $order->update_status($wcStatus, sprintf('Status updated from Printify to: %s', $status));
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Delete all orders imported from Printify
+     * 
+     * @return int Number of orders deleted
+     */
+    public function deleteAllPrintifyOrders(): int
+    {
+        // Find all orders with Printify ID using HPOS-compatible method
+        $orders = wc_get_orders([
+            'limit' => -1,
+            'meta_key' => '_printify_id',
+            'return' => 'ids',
+        ]);
+        
+        if (empty($orders)) {
+            return 0;
+        }
+        
+        $count = 0;
+        foreach ($orders as $orderId) {
+            $order = wc_get_order($orderId);
+            if ($order && $order->delete(true)) {
+                $count++;
+            }
+        }
+        
+        return $count;
     }
 }

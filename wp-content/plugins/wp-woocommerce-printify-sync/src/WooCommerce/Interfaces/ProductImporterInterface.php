@@ -19,4 +19,20 @@ interface ProductImporterInterface
      * @return int|null The WooCommerce product ID or null if not found
      */
     public function getWooProductIdByPrintifyId(string $printifyId): ?int;
+
+    /**
+     * Delete all products imported from Printify
+     *
+     * @return int Number of products deleted
+     */
+    public function deleteAllPrintifyProducts(): int;
+
+    /**
+     * Update a WooCommerce product with data from Printify
+     *
+     * @param int $wooProductId
+     * @param array $printifyProduct
+     * @return bool True if the update was successful, false otherwise
+     */
+    public function updateProduct(int $wooProductId, array $printifyProduct): bool;
 }

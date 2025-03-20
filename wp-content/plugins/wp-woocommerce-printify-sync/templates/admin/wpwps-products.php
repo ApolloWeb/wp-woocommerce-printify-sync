@@ -32,11 +32,19 @@ try {
                     <button type="button" class="btn btn-primary btn-sm me-2" id="fetch-products">
                         <i class="fas fa-sync"></i> Fetch Products
                     </button>
+                    <button type="button" class="btn btn-info btn-sm me-2" id="import-all-products">
+                        <i class="fas fa-cloud-download-alt"></i> Import All
+                    </button>
                     <button type="button" class="btn btn-success btn-sm" id="import-selected" disabled>
                         <i class="fas fa-download"></i> Import Selected (0)
                     </button>
                 </div>
             </div>
+            
+            <!-- Add progress container -->
+            <div id="import-progress-container" style="display: none;" class="p-3"></div>
+            <div id="all-import-progress-container" style="display: none;" class="p-3"></div>
+            
             <div class="card-body">
                 <!-- Add a container for alerts -->
                 <div id="products-alerts" class="mb-3">

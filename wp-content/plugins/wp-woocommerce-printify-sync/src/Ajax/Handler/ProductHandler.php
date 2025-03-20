@@ -149,45 +149,69 @@ class ProductHandler extends AbstractAjaxHandler
             /** @var PrintifyAPIInterface $printifyApi */
             $printifyApi = $this->container->get('printify_api');
             
-            /** @var ProductImporterInterface $productImporter */
-            $productImporter = $this->container->get('product_importer');
-
-            $imported = [];
-            $failed = [];
+            $products = [];
             
+            // Fetch each product from the API and collect them
             foreach ($printifyIds as $printifyId) {
                 try {
                     $productData = $printifyApi->getProduct($shopId, $printifyId);
-                    $wooProductId = $productImporter->importProduct($productData);
-                    $imported[] = [
-                        'printify_id' => $printifyId,
-                        'woo_product_id' => $wooProductId,
-                        'woo_product_url' => get_permalink($wooProductId)
-                    ];
+                    $products[] = $productData;
                 } catch (\Exception $e) {
-                    $failed[] = [
-                        'printify_id' => $printifyId,
-                        'error' => $e->getMessage()
-                    ];
+                    error_log('Error fetching product for batch import: ' . $e->getMessage());
+                    // Continue with other products
                 }
             }
-
-            // Update sync count
-            $current_count = get_option('wpwps_products_synced', 0);
-            update_option('wpwps_products_synced', $current_count + count($imported));
-
+            
+            if (empty($products)) {
+                wp_send_json_error(['message' => 'Failed to fetch any products for import']);
+                return;
+            }
+            
+            // Schedule batch import using Action Scheduler
+            do_action('wpwps_start_product_import', $products, $shopId);
+            
             wp_send_json_success([
                 'message' => sprintf(
-                    'Imported %d products successfully. %d products failed.',
-                    count($imported),
-                    count($failed)
+                    'Scheduled import of %d products. The import will continue in the background.',
+                    count($products)
                 ),
-                'imported' => $imported,
-                'failed' => $failed
+                'status' => 'scheduled'
             ]);
-
+            
         } catch (\Exception $e) {
-            wp_send_json_error(['message' => 'Bulk import failed: ' . $e->getMessage()]);
+            wp_send_json_error(['message' => 'Failed to schedule product import: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Import all products from Printify
+     */
+    public function importAllProducts(): void
+    {
+        try {
+            $shopId = $this->getShopId();
+            
+            /** @var PrintifyAPIInterface $printifyApi */
+            $printifyApi = $this->container->get('printify_api');
+            
+            // Check if the shop is valid
+            try {
+                $printifyApi->getShop($shopId);
+            } catch (\Exception $e) {
+                wp_send_json_error(['message' => 'Invalid Printify shop: ' . $e->getMessage()]);
+                return;
+            }
+            
+            // Schedule the import of all products
+            do_action('wpwps_start_all_products_import', $shopId);
+            
+            wp_send_json_success([
+                'message' => 'Started importing all products from Printify. This will run in the background.',
+                'status' => 'scheduled'
+            ]);
+            
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => 'Failed to start importing all products: ' . $e->getMessage()]);
         }
     }
 }

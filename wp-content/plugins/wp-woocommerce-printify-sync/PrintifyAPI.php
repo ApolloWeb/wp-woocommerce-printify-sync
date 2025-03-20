@@ -63,11 +63,16 @@ class PrintifyAPI implements PrintifyAPIInterface
 
     public function getOrders(string $shopId, int $page = 1, int $perPage = 10): array
     {
+        // Ensure we don't exceed API maximum limit
+        $perPage = min($perPage, 50); // Maximum allowed by Printify API is 50
+        
         $queryParams = [
             'limit' => $perPage,
             'page' => $page
         ];
         
+        // Explicitly use 'GET' method to match Printify API documentation
+        error_log("Making GET request to Printify API: shops/{$shopId}/orders.json with params: " . json_encode($queryParams));
         $data = $this->client->request("shops/{$shopId}/orders.json", 'GET', $queryParams);
         return $this->formatPaginatedResponse($data, $page, $perPage);
     }
@@ -88,7 +93,7 @@ class PrintifyAPI implements PrintifyAPIInterface
 
         $allOrders = [];
         $page = 1;
-        $perPage = 50;
+        $perPage = 50; // Changed from 10 to 50 to maximize API efficiency
 
         do {
             $result = $this->getOrders($shopId, $page, $perPage);

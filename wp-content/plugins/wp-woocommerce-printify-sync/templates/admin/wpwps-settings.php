@@ -22,6 +22,31 @@
                         <div class="form-text">Default: https://api.printify.com/v1</div>
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="currency" class="form-label">Currency</label>
+                        <select class="form-select" id="currency" name="currency">
+                            <option value="GBP" <?php selected($currency, 'GBP'); ?>>GBP (£)</option>
+                            <option value="USD" <?php selected($currency, 'USD'); ?>>USD ($)</option>
+                            <option value="EUR" <?php selected($currency, 'EUR'); ?>>EUR (€)</option>
+                            
+                            <?php
+                            // Add additional currencies if WooCommerce is available
+                            if (function_exists('get_woocommerce_currency_symbols')) {
+                                $wc_symbols = get_woocommerce_currency_symbols();
+                                $additional_currencies = ['AUD', 'CAD', 'JPY', 'CHF', 'NZD'];
+                                
+                                foreach ($additional_currencies as $code) {
+                                    if (isset($wc_symbols[$code]) && !in_array($code, ['GBP', 'USD', 'EUR'])) {
+                                        echo '<option value="' . esc_attr($code) . '" ' . selected($currency, $code, false) . '>' . 
+                                             esc_html($code) . ' (' . esc_html($wc_symbols[$code]) . ')</option>';
+                                    }
+                                }
+                            }
+                            ?>
+                        </select>
+                        <div class="form-text">Select the currency used in your Printify shop.</div>
+                    </div>
+                    
                     <?php 
                     $shop_id = get_option('wpwps_printify_shop_id', '');
                     $shop_selected = !empty($shop_id);

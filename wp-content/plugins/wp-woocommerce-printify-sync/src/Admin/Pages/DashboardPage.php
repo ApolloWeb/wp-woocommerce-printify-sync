@@ -32,11 +32,17 @@ class DashboardPage extends AbstractAdminPage
         ]);
     }
 
-    public function getRequiredAssets(): array 
+    public function getRequiredAssets(): array
     {
+        $scripts = ['wpwps-dashboard', 'wpwps-common', 'wpwps-clear-data'];
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $scripts[] = 'wpwps-debug';
+        }
+        
         return [
             'styles' => ['wpwps-dashboard', 'wpwps-common'],
-            'scripts' => ['wpwps-dashboard', 'wpwps-charts']
+            'scripts' => $scripts
         ];
     }
 }
