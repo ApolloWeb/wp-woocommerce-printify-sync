@@ -19,6 +19,7 @@ input[type="radio"] {
     margin-bottom: 10px;
     z-index: 100;
     position: relative;
+    display: flex !important;
 }
 
 .pagination .page-item {
@@ -32,22 +33,64 @@ table {
     position: relative;
 }
 
-/* Fix any potential modal issues */
-.modal {
-    z-index: 1050 !important;
+/* Enhanced buttons appearance */
+.btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Ensure buttons are clearly visible as clickable */
-.btn, button {
-    transition: transform 0.1s ease;
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.btn:hover, button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Fix card overflow that might be hiding clickable elements */
+/* Fix checkbox issue */
+input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+/* Make buttons more visible with distinct visual treatments */
+.btn-primary {
+    box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+}
+
+.btn-success {
+    box-shadow: 0 2px 5px rgba(25, 135, 84, 0.3);
+}
+
+.btn-danger {
+    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+}
+
+/* Make sure Bootstrap's components don't interfere with our buttons */
 .card-body {
     overflow: visible !important;
+}
+
+/* Fix button positioning */
+.card-header .btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+/* Fix button animation */
+.btn .fas {
+    transition: all 0.2s ease;
+}
+
+.btn:hover .fas {
+    transform: scale(1.2);
+}
+
+/* Fix for any potential modal issues */
+.modal {
+    z-index: 1050 !important;
 }

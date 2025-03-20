@@ -1,6 +1,6 @@
 <?php
 
-namespace ApolloWeb\WPWooCommercePrintifySync;
+namespace ApolloWeb\WPWooCommercePrintifySync\API;
 
 use ApolloWeb\WPWooCommercePrintifySync\API\Interfaces\PrintifyAPIInterface;
 use ApolloWeb\WPWooCommercePrintifySync\Core\Cache;

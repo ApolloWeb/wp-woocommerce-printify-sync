@@ -3,65 +3,70 @@
 namespace ApolloWeb\WPWooCommercePrintifySync\Ajax;
 
 use ApolloWeb\WPWooCommercePrintifySync\Core\ServiceContainer;
-use ApolloWeb\WPWooCommercePrintifySync\API\Interfaces\PrintifyAPIInterface;
-use ApolloWeb\WPWooCommercePrintifySync\WooCommerce\Interfaces\ProductImporterInterface;
+use ApolloWeb\WPWooCommercePrintifySync\Ajax\Handlers\ProductHandler;
+use ApolloWeb\WPWooCommercePrintifySync\Core\Cache;
 
 class AjaxHandler
 {
     private $container;
+    private $productHandler;
     
     public function __construct(ServiceContainer $container)
     {
         $this->container = $container;
+        $this->productHandler = new ProductHandler($container);
     }
     
     public function handleAjax()
     {
-        if (!check_ajax_referer('wpwps_nonce', 'nonce', false)) {
-            wp_send_json_error(['message' => 'Invalid security token']);
-        }
-
-        $action = sanitize_text_field($_POST['action_type'] ?? '');
-
-        switch ($action) {
-            case 'sync_products':
-                $this->syncProducts();
-                break;
-            case 'sync_orders':
-                $this->syncOrders();
-                break;
-            case 'save_settings':
-                $this->saveSettings();
-                break;
-            case 'test_connection':
-                $this->testConnection();
-                break;
-            case 'fetch_shops':
-                $this->fetchShops();
-                break;
-            case 'select_shop':
-                $this->selectShop();
-                break;
-            case 'manual_sync':
-                $this->manualSync();
-                break;
-            case 'manual_sync_orders':
-                $this->manualSyncOrders();
-                break;
-            case 'fetch_printify_products':
-                $this->fetchPrintifyProducts();
-                break;
-            case 'import_product_to_woo':
-                $this->importProductToWoo();
-                break;
-            case 'fetch_printify_orders':
-                $this->fetchPrintifyOrders();
-                break;
-            case 'bulk_import_products':
-                $this->bulkImportProducts();
-                break;
-            default:
-                wp_send_json_error(['message' => 'Invalid action']);
+        $action_type = isset($_REQUEST['action_type']) ? sanitize_text_field($_REQUEST['action_type']) : '';
+        
+        try {
+            switch ($action_type) {
+                case 'fetch_printify_products':
+                    $this->productHandler->fetchProducts();
+                    break;
+                case 'sync_products':
+                    $this->syncProducts();
+                    break;
+                case 'sync_orders':
+                    $this->syncOrders();
+                    break;
+                case 'save_settings':
+                    $this->saveSettings();
+                    break;
+                case 'test_connection':
+                    $this->testConnection();
+                    break;
+                case 'fetch_shops':
+                    $this->fetchShops();
+                    break;
+                case 'select_shop':
+                    $this->selectShop();
+                    break;
+                case 'manual_sync':
+                    $this->manualSync();
+                    break;
+                case 'manual_sync_orders':
+                    $this->manualSyncOrders();
+                    break;
+                case 'import_product_to_woo':
+                    $this->importProductToWoo();
+                    break;
+                case 'fetch_printify_orders':
+                    $this->fetchPrintifyOrders();
+                    break;
+                case 'bulk_import_products':
+                    $this->bulkImportProducts();
+                    break;
+                default:
+                    wp_send_json_error(['message' => 'Invalid action']);
+            }
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => $e->getMessage(),
+                'error_type' => 'handler'
+            ]);
         }
     }
 
@@ -244,94 +249,6 @@ class AjaxHandler
         ]);
     }
 
-    private function fetchPrintifyProducts()
-    {
-        try {
-            // Verify request method
-            if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-                wp_send_json_error([
-                    'message' => 'This endpoint only accepts GET requests',
-                    'error_type' => 'method'
-                ]);
-                return;
-            }
-
-            /** @var PrintifyAPIInterface $printifyApi */
-            $printifyApi = $this->container->get('printify_api');
-            
-            // Get shop ID
-            $shopId = get_option('wpwps_printify_shop_id', '');
-            
-            if (empty($shopId)) {
-                wp_send_json_error([
-                    'message' => 'Shop ID not configured',
-                    'error_type' => 'config'
-                ]);
-                return;
-            }
-
-            // Get pagination params
-            $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-            $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
-
-            // Clear cache if requested
-            $refreshCache = isset($_GET['refresh_cache']) && $_GET['refresh_cache'] === 'true';
-            if ($refreshCache) {
-                Cache::deleteProducts($shopId);
-            }
-
-            // Get products
-            $result = $printifyApi->getProducts($shopId, $page, $perPage);
-            
-            if (!isset($result['data'])) {
-                throw new \Exception('Invalid API response format - missing data array');
-            }
-
-            // Process products
-            $processedProducts = [];
-            foreach ($result['data'] as $product) {
-                if (!isset($product['id'])) {
-                    continue; // Skip invalid products
-                }
-
-                $printifyId = $product['id'];
-                $wooProductId = $this->container->get('product_importer')
-                    ->getWooProductIdByPrintifyId($printifyId);
-                
-                $processedProducts[] = [
-                    'printify_id' => $printifyId,
-                    'title' => $product['title'] ?? 'Untitled Product',
-                    'thumbnail' => $product['images'][0]['src'] ?? '',
-                    'woo_product_id' => $wooProductId,
-                    'status' => !empty($product['visible']) ? 'active' : 'draft',
-                    'last_updated' => date('Y-m-d H:i:s', strtotime($product['updated_at'] ?? 'now')),
-                    'is_imported' => !empty($wooProductId)
-                ];
-            }
-
-            wp_send_json_success([
-                'products' => $processedProducts,
-                'total' => $result['total'] ?? 0,
-                'current_page' => $result['current_page'] ?? $page,
-                'last_page' => $result['last_page'] ?? 1,
-                'per_page' => $result['per_page'] ?? $perPage
-            ]);
-
-        } catch (\Exception $e) {
-            error_log('Printify products fetch error: ' . $e->getMessage());
-            wp_send_json_error([
-                'message' => 'Error fetching products: ' . $e->getMessage(),
-                'error_type' => 'api',
-                'debug' => [
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString()
-                ]
-            ]);
-        }
-    }
-    
     private function importProductToWoo()
     {
         try {

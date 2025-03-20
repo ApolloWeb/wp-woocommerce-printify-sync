@@ -1,10 +1,18 @@
 <?php
 /**
  * Plugin Name: WP WooCommerce Printify Sync
- * Description: Sync products from Printify to WooCommerce.
+ * Description: Sync products from Printify to WooCommerce
+ * Plugin URI: https://github.com/ApolloWeb/wp-woocommerce-printify-sync
  * Version: 1.0.0
  * Author: ApolloWeb
+ * Author URI: https://github.com/ApolloWeb
  * Text Domain: wp-woocommerce-printify-sync
+ * Domain Path: /languages
+ * Requires at least: 5.6
+ * Requires PHP: 7.3
+ * License: MIT
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync
  */
 
 namespace ApolloWeb\WPWooCommercePrintifySync;
@@ -55,7 +63,7 @@ function init() {
             );
         });
 
-        // Register API service - Fix: use the correct namespace
+        // Register API service
         $container->set('printify_api', function($container) {
             return new API\PrintifyAPI($container->get('printify_http_client'));
         });
@@ -64,9 +72,12 @@ function init() {
         $customOrderStatuses = new WooCommerce\CustomOrderStatuses();
         $container->set('custom_order_statuses', $customOrderStatuses);
         $container->set('product_importer', new WooCommerce\ProductImporter());
+        $container->set('order_importer', new WooCommerce\OrderImporter());
         
         // Register AJAX handler
-        $container->set('ajax_handler', new Ajax\AjaxHandler($container));
+        $container->set('ajax_handler', function($container) {
+            return new Ajax\AjaxHandler($container);
+        });
 
         // Register plugin instance
         $container->set('plugin', function($container) {
@@ -85,11 +96,9 @@ function init() {
         add_action('wp_ajax_printify_sync', function() use ($container) {
             try {
                 check_ajax_referer('wpwps_nonce', 'nonce');
-                error_log('AJAX printify_sync request received: ' . json_encode($_REQUEST));
                 $handler = $container->get('ajax_handler');
                 $handler->handleAjax();
             } catch (\Exception $e) {
-                error_log('AJAX Error: ' . $e->getMessage());
                 wp_send_json_error(['message' => 'Error processing request: ' . $e->getMessage()]);
             }
         });
@@ -109,7 +118,7 @@ function init() {
 // Initialize plugin on WordPress init
 add_action('plugins_loaded', __NAMESPACE__ . '\\init');
 
-// Add AJAX nonce to JavaScript
+// Make the nonce available earlier to ensure it's always set
 add_action('admin_enqueue_scripts', function() {
     wp_localize_script('wpwps-common', 'wpwps_data', [
         'nonce' => wp_create_nonce('wpwps_nonce'),
