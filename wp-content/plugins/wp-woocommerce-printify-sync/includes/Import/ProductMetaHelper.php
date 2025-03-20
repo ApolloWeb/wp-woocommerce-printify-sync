@@ -218,4 +218,37 @@ class ProductMetaHelper
         
         return array_map('wc_get_product', $productIds);
     }
+    
+    /**
+     * Update product sync status
+     *
+     * @param int|\WC_Product $product WooCommerce product ID or object
+     * @param string $status Sync status (success, pending, failed)
+     * @return void
+     */
+    public static function updateSyncStatus($product, string $status): void
+    {
+        $productId = is_a($product, 'WC_Product') ? $product->get_id() : $product;
+        update_post_meta($productId, '_printify_sync_status', $status);
+        update_post_meta($productId, '_printify_last_synced', current_time('mysql'));
+    }
+
+    /**
+     * Get product sync status
+     *
+     * @param int|\WC_Product $product WooCommerce product ID or object
+     * @return string Sync status
+     */
+    public static function getSyncStatus($product): string
+    {
+        $productId = is_a($product, 'WC_Product') ? $product->get_id() : $product;
+        $status = get_post_meta($productId, '_printify_sync_status', true);
+        
+        if (empty($status)) {
+            $lastSynced = self::getLastSyncedTimestamp($product);
+            return !empty($lastSynced) ? 'success' : 'pending';
+        }
+        
+        return $status;
+    }
 }

@@ -3,6 +3,8 @@
 namespace ApolloWeb\WPWooCommercePrintifySync\Admin;
 
 use ApolloWeb\WPWooCommercePrintifySync\API\PrintifyAPI;
+use ApolloWeb\WPWooCommercePrintifySync\Import\ActionSchedulerIntegration;
+use ApolloWeb\WPWooCommercePrintifySync\Import\ImporterFactory;
 use ApolloWeb\WPWooCommercePrintifySync\Import\ProductMetaHelper;
 
 class AjaxHandler
@@ -225,63 +227,196 @@ class AjaxHandler
             return;
         }
         
-        // In a real implementation, we would fetch actual stats here
-        // For now, we'll return dummy data
+        // Get linked products statistics
+        $linkedProducts = \ApolloWeb\WPWooCommercePrintifySync\Import\ProductMetaHelper::getLinkedProducts();
+        $totalProducts = count($linkedProducts);
+        
+        // Initialize counters
+        $syncedProducts = 0;
+        $pendingProducts = 0;
+        $failedProducts = 0;
+        $activityData = [];
+        
+        // Process each product to determine sync status and build activity data
+        foreach ($linkedProducts as $product) {
+            if (!$product) continue;
+            
+            $lastSynced = \ApolloWeb\WPWooCommercePrintifySync\Import\ProductMetaHelper::getLastSyncedTimestamp($product);
+            $printifyProductId = \ApolloWeb\WPWooCommercePrintifySync\Import\ProductMetaHelper::getPrintifyProductId($product);
+            $syncStatus = get_post_meta($product->get_id(), '_printify_sync_status', true);
+            
+            // Determine sync status if not explicitly set
+            if (empty($syncStatus)) {
+                if (!empty($lastSynced)) {
+                    $syncStatus = 'success';
+                    $syncedProducts++;
+                } else {
+                    $syncStatus = 'pending';
+                    $pendingProducts++;
+                }
+            } else if ($syncStatus == 'failed') {
+                $failedProducts++;
+            } else if ($syncStatus == 'success') {
+                $syncedProducts++;
+            } else {
+                $pendingProducts++;
+            }
+            
+            // Add to activity data (limit to 10 most recent)
+            if (count($activityData) < 10) {
+                $productType = wp_get_post_terms($product->get_id(), 'product_cat', ['fields' => 'names']);
+                $productType = !empty($productType) ? reset($productType) : __('Uncategorized', 'wp-woocommerce-printify-sync');
+                
+                $activityData[] = [
+                    'product' => $product->get_name(),
+                    'type' => $productType,
+                    'status' => $syncStatus,
+                    'last_updated' => $lastSynced ? date('Y-m-d H:i:s', strtotime($lastSynced)) : '',
+                    'action' => 'view',
+                    'product_id' => $product->get_id()
+                ];
+            }
+        }
+        
+        // Sort activity data by last updated time (most recent first)
+        usort($activityData, function($a, $b) {
+            if (empty($a['last_updated'])) return 1;
+            if (empty($b['last_updated'])) return -1;
+            return strtotime($b['last_updated']) - strtotime($a['last_updated']);
+        });
+        
+        // Get order data for charts
+        $orderStats = $this->getOrderStatisticsData();
+        
+        // Return real statistics
         $stats = [
-            'total_products' => 37,
-            'synced_products' => 30,
-            'pending_products' => 5,
-            'failed_products' => 2,
-            'activity_data' => [
-                [
-                    'product' => 'Classic T-Shirt',
-                    'type' => 'Apparel',
-                    'status' => 'success',
-                    'last_updated' => date('Y-m-d H:i:s', strtotime('-5 minutes')),
-                    'action' => 'view'
-                ],
-                [
-                    'product' => 'Premium Hoodie',
-                    'type' => 'Apparel',
-                    'status' => 'success',
-                    'last_updated' => date('Y-m-d H:i:s', strtotime('-10 minutes')),
-                    'action' => 'view'
-                ],
-                [
-                    'product' => 'Coffee Mug',
-                    'type' => 'Drinkware',
-                    'status' => 'pending',
-                    'last_updated' => date('Y-m-d H:i:s', strtotime('-15 minutes')),
-                    'action' => 'retry'
-                ],
-                [
-                    'product' => 'Phone Case',
-                    'type' => 'Accessories',
-                    'status' => 'failed',
-                    'last_updated' => date('Y-m-d H:i:s', strtotime('-20 minutes')),
-                    'action' => 'retry'
-                ],
-                [
-                    'product' => 'Canvas Print',
-                    'type' => 'Home Decor',
-                    'status' => 'success',
-                    'last_updated' => date('Y-m-d H:i:s', strtotime('-25 minutes')),
-                    'action' => 'view'
-                ]
-            ],
-            'chart_data' => [
-                'sync_activity' => [
-                    'labels' => ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
-                    'data' => [3, 7, 12, 15, 18, 22, 30]
-                ],
+            'total_products' => $totalProducts,
+            'synced_products' => $syncedProducts,
+            'pending_products' => $pendingProducts,
+            'failed_products' => $failedProducts,
+            'activity_data' => $activityData,
+            'charts' => [
+                'orders' => $orderStats['orders'],
+                'sales' => $orderStats['sales'],
                 'sync_status' => [
                     'labels' => ['Synced', 'Pending', 'Failed'],
-                    'data' => [30, 5, 2]
+                    'data' => [$syncedProducts, $pendingProducts, $failedProducts]
                 ]
             ]
         ];
         
         wp_send_json_success($stats);
+    }
+    
+    /**
+     * Get order statistics data for charts
+     * 
+     * @return array Order statistics data
+     */
+    private function getOrderStatisticsData(): array
+    {
+        $data = [
+            'orders' => [
+                'labels' => ['Processing', 'Completed', 'Failed'],
+                'data' => [0, 0, 0]
+            ],
+            'sales' => [
+                'labels' => [],
+                'data' => []
+            ]
+        ];
+        
+        // If WooCommerce is active, get real order data
+        if (class_exists('WooCommerce')) {
+            // Get order statuses
+            $processing = wc_orders_count('processing');
+            $completed = wc_orders_count('completed');
+            $failed = wc_orders_count('failed');
+            
+            $data['orders']['data'] = [$processing, $completed, $failed];
+            
+            // Get sales data for the last 7 days
+            $salesData = $this->getSalesDataForPeriod(7);
+            $data['sales'] = $salesData;
+        }
+        
+        return $data;
+    }
+    
+    /**
+     * Get sales data for a specified period
+     * 
+     * @param int $days Number of days to get data for
+     * @return array Sales data for the period
+     */
+    private function getSalesDataForPeriod(int $days): array
+    {
+        $labels = [];
+        $data = [];
+        
+        $end_date = time();
+        $start_date = strtotime("-{$days} days", $end_date);
+        
+        for ($i = 0; $i < $days; $i++) {
+            $date = strtotime("+{$i} days", $start_date);
+            $labels[] = date('M d', $date);
+            
+            // Get sales for this day
+            $args = [
+                'date_created' => date('Y-m-d', $date),
+                'return' => 'ids',
+                'limit' => -1,
+            ];
+            
+            $orders = wc_get_orders($args);
+            $day_total = 0;
+            
+            foreach ($orders as $order_id) {
+                $order = wc_get_order($order_id);
+                $day_total += $order->get_total();
+            }
+            
+            $data[] = $day_total;
+        }
+        
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+    
+    /**
+     * Get sales data for dashboard
+     *
+     * @return void
+     */
+    public function getSalesData(): void
+    {
+        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        $period = isset($_POST['period']) ? sanitize_text_field($_POST['period']) : '7days';
+        
+        // Convert period to days
+        $days = 7;
+        switch ($period) {
+            case '30days':
+                $days = 30;
+                break;
+            case '90days':
+                $days = 90;
+                break;
+            case '12months':
+                $days = 365;
+                break;
+        }
+        
+        $salesData = $this->getSalesDataForPeriod($days);
+        wp_send_json_success($salesData);
     }
     
     /**
@@ -332,13 +467,39 @@ class AjaxHandler
             return;
         }
         
-        // In a real implementation, we would check the API health
-        // For now, just simulate success
-        wp_send_json_success([
-            'status' => 'healthy',
-            'message' => __('API connection is healthy.', 'wp-woocommerce-printify-sync'),
-            'last_checked' => current_time('mysql')
-        ]);
+        $shopId = $this->settings->getShopId();
+        
+        if (empty($shopId)) {
+            wp_send_json_error(['message' => __('Shop ID is not set', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        try {
+            // Make a real API call to check health
+            $shop = $this->api->getShop($shopId);
+            
+            if (is_wp_error($shop)) {
+                throw new \Exception($shop->get_error_message());
+            }
+            
+            // Update shop name if needed
+            if (isset($shop['title']) && empty($this->settings->getShopName())) {
+                $this->settings->setShopName($shop['title']);
+            }
+            
+            // Update the last API check timestamp
+            update_option('wpwps_last_api_check', time());
+            
+            wp_send_json_success([
+                'message' => __('API connection is healthy', 'wp-woocommerce-printify-sync'),
+                'last_check' => human_time_diff(time(), time()) . ' ' . __('ago', 'wp-woocommerce-printify-sync'),
+                'shop_name' => $shop['title'] ?? $this->settings->getShopName()
+            ]);
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => sprintf(__('API Error: %s', 'wp-woocommerce-printify-sync'), $e->getMessage())
+            ]);
+        }
     }
     
     /**
@@ -371,64 +532,6 @@ class AjaxHandler
             'orders_synced' => 12,
             'last_synced' => current_time('mysql')
         ]);
-    }
-    
-    /**
-     * Get sales data for the chart
-     *
-     * @return void
-     */
-    public function getSalesData(): void
-    {
-        // Check nonce for security
-        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
-        
-        // Check user capability
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
-            return;
-        }
-        
-        $period = sanitize_text_field($_POST['period'] ?? 'month');
-        
-        // In a real implementation, we would fetch actual sales data
-        // For now, return dummy data based on the period
-        $data = [];
-        
-        switch ($period) {
-            case 'day':
-                $data = [
-                    'labels' => ['12am', '4am', '8am', '12pm', '4pm', '8pm'],
-                    'sales' => [50, 30, 80, 120, 160, 110],
-                    'profit' => [20, 10, 40, 70, 90, 60]
-                ];
-                break;
-                
-            case 'week':
-                $data = [
-                    'labels' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    'sales' => [700, 600, 800, 950, 1200, 1500, 800],
-                    'profit' => [300, 250, 350, 400, 600, 800, 400]
-                ];
-                break;
-                
-            case 'year':
-                $data = [
-                    'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    'sales' => [4200, 3800, 5100, 4900, 6200, 5800, 6500, 7200, 6800, 7500, 8200, 9500],
-                    'profit' => [2100, 1900, 2600, 2400, 3200, 2900, 3300, 3800, 3500, 3900, 4200, 5100]
-                ];
-                break;
-                
-            default: // month
-                $data = [
-                    'labels' => ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    'sales' => [3800, 4200, 5100, 4800],
-                    'profit' => [1800, 2200, 2700, 2400]
-                ];
-        }
-        
-        wp_send_json_success($data);
     }
     
     /**
@@ -730,17 +833,26 @@ class AjaxHandler
         
         try {
             // Get products from Printify
-            $products = $this->api->getProducts($shopId);
+            $products = $this->api->getAllProducts($shopId);
             
             if (is_wp_error($products)) {
                 throw new \Exception($products->get_error_message());
             }
             
+            // Make sure we have an array to work with
+            if (!is_array($products)) {
+                throw new \Exception(__('Invalid response from Printify API. Expected an array of products.', 'wp-woocommerce-printify-sync'));
+            }
+            
             // Filter products if needed
             if (!empty($productType)) {
-                $products = array_filter($products, function($product) use ($productType) {
-                    return isset($product['type']) && $product['type'] === $productType;
-                });
+                $filtered = [];
+                foreach ($products as $product) {
+                    if (isset($product['type']) && $product['type'] === $productType) {
+                        $filtered[] = $product;
+                    }
+                }
+                $products = $filtered;
             }
             
             // If no products found, return error
@@ -780,7 +892,11 @@ class AjaxHandler
                 'total' => count($products)
             ]);
         } catch (\Exception $e) {
-            wp_send_json_error(['message' => $e->getMessage()]);
+            error_log('WPWPS Product Retrieval Error: ' . $e->getMessage());
+            wp_send_json_error([
+                'message' => $e->getMessage(),
+                'error_details' => 'See server error log for more details'
+            ]);
         }
     }
     
@@ -863,5 +979,54 @@ class AjaxHandler
         }
         
         wp_send_json_success(['details' => $syncDetails]);
+    }
+    
+    /**
+     * Start product import
+     * 
+     * @return void
+     */
+    public function startProductImport(): void
+    {
+        // Check nonce for security
+        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
+        
+        // Check user capability
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Verify Action Scheduler is available
+        if (!ActionSchedulerIntegration::isActionSchedulerAvailable()) {
+            wp_send_json_error([
+                'message' => __('Action Scheduler is not available. Please ensure WooCommerce is activated.', 'wp-woocommerce-printify-sync'),
+                'action_scheduler_url' => admin_url('plugins.php')
+            ]);
+            return;
+        }
+        
+        // Get products from transient
+        $products = get_transient('wpwps_retrieved_products');
+        $syncMode = get_transient('wpwps_import_sync_mode');
+        
+        if (empty($products)) {
+            wp_send_json_error(['message' => __('No products found to import. Please retrieve products first.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Schedule the import using Action Scheduler
+        $scheduled = ActionSchedulerIntegration::scheduleImport($products, $syncMode);
+        
+        if (!$scheduled) {
+            wp_send_json_error(['message' => __('Failed to schedule import. Please check server logs.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        wp_send_json_success([
+            'message' => __('Import has been scheduled and will run in the background.', 'wp-woocommerce-printify-sync'),
+            'total' => count($products),
+            'action_scheduler_url' => ActionSchedulerIntegration::getActionSchedulerAdminUrl(),
+        ]);
     }
 }

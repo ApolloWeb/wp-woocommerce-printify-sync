@@ -2,6 +2,9 @@
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Import;
 
+/**
+ * Action Scheduler Integration
+ */
 class ActionSchedulerIntegration
 {
     /**
@@ -19,6 +22,8 @@ class ActionSchedulerIntegration
                 WP_PLUGIN_DIR . '/woocommerce/packages/action-scheduler/action-scheduler.php',
                 // Standalone Action Scheduler plugin
                 WP_PLUGIN_DIR . '/action-scheduler/action-scheduler.php',
+                // Look in the vendor directory as well
+                WP_PLUGIN_DIR . '/wp-woocommerce-printify-sync/vendor/woocommerce/action-scheduler/action-scheduler.php',
             ];
             
             $action_scheduler_loaded = false;
@@ -44,6 +49,14 @@ class ActionSchedulerIntegration
                             <strong>WP WooCommerce Printify Sync:</strong> 
                             <?php _e('Action Scheduler library not found. Please ensure WooCommerce is installed and activated. Product import functionality will be limited.', 'wp-woocommerce-printify-sync'); ?>
                         </p>
+                        <p>
+                            <a href="<?php echo esc_url(admin_url('plugins.php')); ?>" class="button button-primary">
+                                <?php _e('Check Plugins', 'wp-woocommerce-printify-sync'); ?>
+                            </a>
+                            <a href="https://actionscheduler.org/" target="_blank" class="button button-secondary">
+                                <?php _e('Learn More About Action Scheduler', 'wp-woocommerce-printify-sync'); ?>
+                            </a>
+                        </p>
                     </div>
                     <?php
                 });
@@ -54,9 +67,52 @@ class ActionSchedulerIntegration
         
         // Register actions if Action Scheduler is available
         if (class_exists('ActionScheduler') || function_exists('as_enqueue_async_action')) {
-            add_action('wpwps_start_product_import', [ProductImporter::class, 'startImport'], 10, 3);
-            add_action('wpwps_process_product_import_queue', [ProductImporter::class, 'processImportQueue'], 10, 1);
+            // Make sure we don't register the same hooks multiple times
+            if (!has_action('wpwps_start_product_import', [ProductImporter::class, 'startImport'])) {
+                add_action('wpwps_start_product_import', [ProductImporter::class, 'startImport'], 10, 3);
+            }
+            
+            if (!has_action('wpwps_process_product_import_queue', [ProductImporter::class, 'processImportQueue'])) {
+                add_action('wpwps_process_product_import_queue', [ProductImporter::class, 'processImportQueue'], 10, 1);
+            }
         }
+    }
+    
+    /**
+     * Schedule a product import
+     * 
+     * @param array $products The products to import
+     * @param string $syncMode The sync mode
+     * @return bool Whether the import was scheduled
+     */
+    public static function scheduleImport(array $products, string $syncMode = 'all'): bool
+    {
+        if (!self::isActionSchedulerAvailable()) {
+            return false;
+        }
+        
+        // Cancel any existing import jobs before starting a new one
+        self::cancelImport();
+        
+        // Reset import stats
+        update_option('wpwps_import_stats', [
+            'total' => count($products),
+            'processed' => 0,
+            'imported' => 0,
+            'updated' => 0,
+            'failed' => 0,
+        ]);
+        
+        // Start the import with a 5-second delay to ensure the UI has time to update
+        as_schedule_single_action(time() + 5, 'wpwps_start_product_import', [
+            'products' => $products,
+            'sync_mode' => $syncMode,
+            'batch_size' => 5, // Process 5 products at a time
+        ]);
+        
+        update_option('wpwps_last_import_timestamp', time());
+        
+        return true;
     }
     
     /**
@@ -110,12 +166,65 @@ class ActionSchedulerIntegration
     }
     
     /**
-     * Check if Action Scheduler is available
+     * Check if Action Scheduler is available and properly initialized
      * 
      * @return bool
      */
     public static function isActionSchedulerAvailable(): bool
     {
-        return class_exists('ActionScheduler') || function_exists('as_enqueue_async_action');
+        $available = class_exists('ActionScheduler') || function_exists('as_enqueue_async_action');
+        
+        if ($available) {
+            // Verify that Action Scheduler is properly set up
+            if (!function_exists('as_next_scheduled_action') || !function_exists('as_schedule_single_action')) {
+                error_log('WP WooCommerce Printify Sync: Action Scheduler functions not available');
+                return false;
+            }
+        }
+        
+        return $available;
+    }
+    
+    /**
+     * Get the Action Scheduler admin URL
+     * 
+     * @return string
+     */
+    public static function getActionSchedulerAdminUrl(): string
+    {
+        return admin_url('admin.php?page=wc-status&tab=action-scheduler&status=pending&s=wpwps');
+    }
+
+    /**
+     * Mark a product as failed in the sync process
+     * 
+     * @param string $printifyProductId Printify product ID
+     * @param string $errorMessage Error message
+     * @return void 
+     */
+    public static function markProductSyncFailed(string $printifyProductId, string $errorMessage): void
+    {
+        $wcProductId = ProductMetaHelper::findProductByPrintifyId($printifyProductId);
+        if ($wcProductId) {
+            ProductMetaHelper::updateSyncStatus($wcProductId, 'failed');
+            update_post_meta($wcProductId, '_printify_sync_error', $errorMessage);
+        }
+        
+        // Log the error
+        error_log("Printify Sync Error for product {$printifyProductId}: {$errorMessage}");
+        
+        // Update the import stats
+        $importStats = get_option('wpwps_import_stats', [
+            'total' => 0,
+            'processed' => 0,
+            'imported' => 0,
+            'updated' => 0,
+            'failed' => 0,
+        ]);
+        
+        $importStats['failed']++;
+        $importStats['processed']++;
+        
+        update_option('wpwps_import_stats', $importStats);
     }
 }

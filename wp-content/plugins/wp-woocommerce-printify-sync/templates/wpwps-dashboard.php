@@ -26,6 +26,9 @@ if (!defined('WPINC')) {
     ]); 
     ?>
     
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
+    
     <?php 
     // System health widgets
     $this->section('system-health-widgets', [

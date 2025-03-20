@@ -65,9 +65,23 @@ jQuery(document).ready(function($) {
         $('#product-retrieval-status').removeClass('d-none');
         $('#product-preview').addClass('d-none');
         
+        // Reset progress bar
+        $('#retrieval-progress-bar').css('width', '0%').attr('aria-valuenow', 0).text('0%');
+        $('#retrieval-status-message').text('Retrieving products from Printify...');
+        
         // Disable form controls while retrieving
         btn.prop('disabled', true);
         $('#product_type, #sync_mode').prop('disabled', true);
+        
+        // Animate progress bar (simulated progress while API call is in process)
+        let progress = 0;
+        const interval = setInterval(function() {
+            progress += 5;
+            if (progress > 90) {
+                clearInterval(interval);
+            }
+            $('#retrieval-progress-bar').css('width', progress + '%').attr('aria-valuenow', progress).text(progress + '%');
+        }, 300);
         
         $.ajax({
             url: wpwps.ajax_url,
@@ -79,50 +93,61 @@ jQuery(document).ready(function($) {
                 sync_mode: syncMode
             },
             success: function(response) {
+                // Clear the progress interval
+                clearInterval(interval);
+                
+                // Complete the progress bar
+                $('#retrieval-progress-bar').css('width', '100%').attr('aria-valuenow', 100).text('100%');
+                
                 // Re-enable form controls
                 btn.prop('disabled', false);
                 $('#product_type, #sync_mode').prop('disabled', false);
                 
                 if (response.success) {
-                    // Hide the retrieval status
-                    $('#product-retrieval-status').addClass('d-none');
-                    
-                    // Update the preview area
-                    $('#products-count-message').text(response.data.total + ' products retrieved successfully and ready for import.');
-                    
-                    // Populate the products table
-                    const products = response.data.products;
-                    let tableHtml = '';
-                    
-                    products.forEach(function(product) {
-                        const statusBadge = product.exists ? 
-                            '<span class="badge bg-warning">Update</span>' : 
-                            '<span class="badge bg-success">New</span>';
+                    // Hide the retrieval status after a brief delay to show completion
+                    setTimeout(function() {
+                        $('#product-retrieval-status').addClass('d-none');
                         
-                        tableHtml += '<tr>' +
-                            '<td>' + product.title + '</td>' +
-                            '<td>' + product.type + '</td>' +
-                            '<td>' + product.variants + '</td>' +
-                            '<td>' + statusBadge + '</td>' +
-                            '</tr>';
-                    });
-                    
-                    $('#products-preview-table').html(tableHtml);
-                    
-                    // Show the preview
-                    $('#product-preview').removeClass('d-none');
-                    
-                    // Enable the import button
-                    $('#start-import').prop('disabled', false);
+                        // Update the preview area
+                        $('#products-count-message').text(response.data.total + ' products retrieved successfully and ready for import.');
+                        
+                        // Populate the products table
+                        const products = response.data.products;
+                        let tableHtml = '';
+                        
+                        products.forEach(function(product) {
+                            const statusBadge = product.exists ? 
+                                '<span class="badge bg-warning">Update</span>' : 
+                                '<span class="badge bg-success">New</span>';
+                            
+                            tableHtml += '<tr>' +
+                                '<td>' + product.title + '</td>' +
+                                '<td>' + product.type + '</td>' +
+                                '<td>' + product.variants + '</td>' +
+                                '<td>' + statusBadge + '</td>' +
+                                '</tr>';
+                        });
+                        
+                        $('#products-preview-table').html(tableHtml);
+                        
+                        // Show the preview
+                        $('#product-preview').removeClass('d-none');
+                        
+                        // Enable the import button
+                        $('#start-import').prop('disabled', false);
+                    }, 1000);
                 } else {
                     // Hide the retrieval status
                     $('#product-retrieval-status').addClass('d-none');
                     
-                    // Show error
+                    // Show error message
                     alert('Error: ' + response.data.message);
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                // Clear the progress interval
+                clearInterval(interval);
+                
                 // Re-enable form controls
                 btn.prop('disabled', false);
                 $('#product_type, #sync_mode').prop('disabled', false);
@@ -130,8 +155,26 @@ jQuery(document).ready(function($) {
                 // Hide the retrieval status
                 $('#product-retrieval-status').addClass('d-none');
                 
-                // Show error
-                alert('An unexpected error occurred while retrieving products. Please try again.');
+                // Show detailed error message
+                let errorMessage = 'An error occurred while retrieving products from Printify.';
+                
+                if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                    errorMessage += '\n\nDetails: ' + xhr.responseJSON.data.message;
+                } else if (xhr.responseText) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.data && response.data.message) {
+                            errorMessage += '\n\nDetails: ' + response.data.message;
+                        }
+                    } catch (e) {
+                        errorMessage += '\n\nServer Response: ' + xhr.responseText;
+                    }
+                } else {
+                    errorMessage += '\n\nError: ' + error;
+                }
+                
+                console.error('Printify API Error:', error, xhr);
+                alert(errorMessage);
             }
         });
     });

@@ -638,6 +638,267 @@ jQuery(document).ready(function($) {
         $container.addClass('alert-' + type);
         $container.html(message);
     }
+    
+    /**
+     * Update dashboard with real data
+     */
+    function fetchDashboardStats() {
+        // Show loading state
+        $('.refresh-btn').addClass('disabled').html('<i class="fas fa-sync fa-spin"></i> ' + wpwps_i18n.refreshing);
+        
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_get_dashboard_stats',
+                nonce: wpwps.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    updateDashboardWithData(response.data);
+                    
+                    // Show success message
+                    showToast('success', wpwps_i18n.data_refreshed);
+                } else {
+                    showToast('error', response.data.message || 'Error fetching dashboard data');
+                }
+                
+                // Reset button state
+                $('.refresh-btn').removeClass('disabled').html('<i class="fas fa-sync-alt"></i> ' + wpwps_i18n.refresh);
+            },
+            error: function() {
+                showToast('error', 'Server error while fetching dashboard data');
+                $('.refresh-btn').removeClass('disabled').html('<i class="fas fa-sync-alt"></i> ' + wpwps_i18n.refresh);
+            }
+        });
+    }
+    
+    /**
+     * Update dashboard UI with the fetched data
+     */
+    function updateDashboardWithData(data) {
+        // Update counters with animation
+        animateCounter('total-products', data.total_products);
+        animateCounter('synced-products', data.synced_products);
+        animateCounter('pending-products', data.pending_products);
+        animateCounter('failed-products', data.failed_products);
+        
+        // Populate activity table with real data
+        updateActivityTable(data.activity_data);
+        
+        // Update charts
+        updateOrderStatusChart(data.charts.orders.labels, data.charts.orders.data);
+        updateSyncStatusChart(data.charts.sync_status.labels, data.charts.sync_status.data);
+    }
+    
+    /**
+     * Update the activity table with real data
+     */
+    function updateActivityTable(activityData) {
+        if (!activityData || activityData.length === 0) {
+            $('#activity-table-body').html('<tr><td colspan="5" class="text-center">' + 
+                'No recent activity found</td></tr>');
+            return;
+        }
+        
+        let tableHtml = '';
+        
+        activityData.forEach(function(item) {
+            const statusClass = getStatusClass(item.status);
+            const formattedDate = item.last_updated ? formatDateTime(item.last_updated) : 'N/A';
+            
+            tableHtml += '<tr>' +
+                '<td>' + item.product + '</td>' +
+                '<td>' + item.type + '</td>' +
+                '<td><span class="badge ' + statusClass + '">' + capitalizeFirstLetter(item.status) + '</span></td>' +
+                '<td>' + formattedDate + '</td>' +
+                '<td>' +
+                '<a href="post.php?post=' + item.product_id + '&action=edit" class="btn btn-sm btn-outline-primary">' +
+                '<i class="fas fa-eye"></i> View</a>' +
+                '</td>' +
+                '</tr>';
+        });
+        
+        $('#activity-table-body').html(tableHtml);
+    }
+    
+    /**
+     * Get status class for badges
+     */
+    function getStatusClass(status) {
+        switch (status) {
+            case 'success':
+                return 'bg-success';
+            case 'pending':
+                return 'bg-warning text-dark';
+            case 'failed':
+                return 'bg-danger';
+            default:
+                return 'bg-secondary';
+        }
+    }
+    
+    /**
+     * Format date string
+     */
+    function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    }
+    
+    /**
+     * Capitalize first letter
+     */
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    
+    /**
+     * Update order status chart
+     */
+    function updateOrderStatusChart(labels, data) {
+        if (typeof orderStatusChart !== 'undefined') {
+            orderStatusChart.data.labels = labels;
+            orderStatusChart.data.datasets[0].data = data;
+            orderStatusChart.update();
+        }
+    }
+    
+    /**
+     * Update sync status chart
+     */
+    function updateSyncStatusChart(labels, data) {
+        if (typeof syncStatusChart !== 'undefined') {
+            syncStatusChart.data.labels = labels;
+            syncStatusChart.data.datasets[0].data = data;
+            syncStatusChart.update();
+        }
+    }
+    
+    /**
+     * Show toast notification
+     */
+    function showToast(type, message) {
+        const toastId = 'wpwps-toast-' + Date.now();
+        const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+        
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center ${bgClass} text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        
+        $('#toast-container').append(toastHtml);
+        const toast = new bootstrap.Toast(document.getElementById(toastId), {
+            delay: 3000
+        });
+        toast.show();
+        
+        // Remove toast from DOM after it's hidden
+        $(`#${toastId}`).on('hidden.bs.toast', function() {
+            $(this).remove();
+        });
+    }
+    
+    // Fetch dashboard data on page load
+    fetchDashboardStats();
+    
+    // Refresh dashboard button
+    $('.refresh-btn').on('click', function(e) {
+        e.preventDefault();
+        fetchDashboardStats();
+    });
+    
+    // API health check button handler
+    $('#check-api-health').on('click', function() {
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        btn.addClass('disabled').html('<i class="fas fa-spinner fa-spin"></i> ' + wpwps_i18n.checking);
+        
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_check_api_health',
+                nonce: wpwps.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#api-status').html('<i class="fas fa-check-circle me-1 text-success"></i> ' + wpwps_i18n.api_ok);
+                    $('#api-last-checked').html(wpwps_i18n.last_checked_now);
+                    $('#shop-name-display').text(response.data.shop_name || 'Unknown Shop');
+                    
+                    showToast('success', wpwps_i18n.api_check_completed);
+                } else {
+                    $('#api-status').html('<i class="fas fa-times-circle me-1 text-danger"></i> Error');
+                    showToast('error', response.data.message);
+                }
+                
+                btn.removeClass('disabled').html(originalText);
+            },
+            error: function() {
+                $('#api-status').html('<i class="fas fa-times-circle me-1 text-danger"></i> Connection Error');
+                showToast('error', 'Server error while checking API health');
+                btn.removeClass('disabled').html(originalText);
+            }
+        });
+    });
+    
+    // Time filter for sales & profit chart
+    $('.time-filter button').on('click', function() {
+        const btn = $(this);
+        
+        // Avoid re-fetching if already active
+        if (btn.hasClass('active')) {
+            return;
+        }
+        
+        $('.time-filter button').removeClass('active');
+        btn.addClass('active');
+        
+        const period = btn.data('period');
+        fetchSalesData(period);
+    });
+    
+    /**
+     * Fetch sales data by period
+     */
+    function fetchSalesData(period) {
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_get_sales_data',
+                nonce: wpwps.nonce,
+                period: period
+            },
+            success: function(response) {
+                if (response.success) {
+                    updateSalesChart(response.data.labels, response.data.data);
+                }
+            }
+        });
+    }
+    
+    /**
+     * Update sales chart with new data
+     */
+    function updateSalesChart(labels, data) {
+        if (typeof salesChart !== 'undefined') {
+            salesChart.data.labels = labels;
+            salesChart.data.datasets[0].data = data;
+            salesChart.update();
+        }
+    }
+    
+    // Initialize fetching data
+    fetchDashboardStats();
 });
 
 // Expanded translations object

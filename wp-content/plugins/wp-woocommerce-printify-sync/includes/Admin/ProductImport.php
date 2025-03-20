@@ -120,8 +120,6 @@ class ProductImport
             'actionSchedulerAvailable' => $actionSchedulerAvailable,
         ];
         
-        // Change from 'product-import' to just 'product-import'
-        // The template engine will automatically add the 'wpwps-' prefix
         $this->templateEngine->render('product-import', $data);
     }
     
@@ -167,6 +165,10 @@ class ProductImport
                 
             case 'cancel_import':
                 $this->cancelProductImport();
+                break;
+                
+            case 'clear_logs':
+                $this->clearImportLogs();
                 break;
         }
     }
@@ -257,6 +259,30 @@ class ProductImport
         
         // Redirect back to the import page
         wp_redirect(admin_url('admin.php?page=printify-sync-import&import_cancelled=1'));
+        exit;
+    }
+    
+    /**
+     * Clear import logs
+     */
+    private function clearImportLogs(): void
+    {
+        // Verify clear logs nonce
+        if (!isset($_POST['wpwps_logs_nonce']) || !wp_verify_nonce($_POST['wpwps_logs_nonce'], 'wpwps_clear_logs_nonce')) {
+            wp_die('Security check failed. Please try again.');
+        }
+        
+        \ApolloWeb\WPWooCommercePrintifySync\Import\ImportProgressLogger::clearLogs();
+        
+        add_settings_error(
+            'wpwps_import',
+            'wpwps_logs_cleared',
+            __('Import logs have been cleared.', 'wp-woocommerce-printify-sync'),
+            'info'
+        );
+        
+        // Redirect back to the import page
+        wp_redirect(admin_url('admin.php?page=printify-sync-import&logs_cleared=1'));
         exit;
     }
 }

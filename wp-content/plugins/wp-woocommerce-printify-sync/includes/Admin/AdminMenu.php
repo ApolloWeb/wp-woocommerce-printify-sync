@@ -119,8 +119,8 @@ class AdminMenu
      */
     public function enqueueAssets(string $hook): void
     {
-        // Only load on our plugin pages
-        if (strpos($hook, 'printify-sync') === false) {
+        $screen = get_current_screen();
+        if (!$screen) {
             return;
         }
         

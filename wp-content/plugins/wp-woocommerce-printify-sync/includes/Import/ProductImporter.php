@@ -30,15 +30,22 @@ class ProductImporter
     private int $batchSize = 5;
     
     /**
+     * @var PriceConverter
+     */
+    private PriceConverter $priceConverter;
+    
+    /**
      * Constructor
      * 
      * @param PrintifyAPI $api
      * @param Settings $settings
+     * @param PriceConverter|null $priceConverter
      */
-    public function __construct(PrintifyAPI $api, Settings $settings)
+    public function __construct(PrintifyAPI $api, Settings $settings, ?PriceConverter $priceConverter = null)
     {
         $this->api = $api;
         $this->settings = $settings;
+        $this->priceConverter = $priceConverter ?? new PriceConverter();
         
         // Register Action Scheduler hooks
         add_action('wpwps_start_product_import', [$this, 'startImport'], 10, 3);
@@ -165,9 +172,11 @@ class ProductImporter
                 // Create or update the WooCommerce product
                 if ($wcProductId) {
                     $this->updateWooCommerceProduct($wcProductId, $printifyProduct);
+                    ProductMetaHelper::updateSyncStatus($wcProductId, 'success');
                     $importStats['updated']++;
                 } else {
-                    $this->createWooCommerceProduct($printifyProduct);
+                    $newProductId = $this->createWooCommerceProduct($printifyProduct);
+                    ProductMetaHelper::updateSyncStatus($newProductId, 'success');
                     $importStats['imported']++;
                 }
                 
@@ -176,6 +185,13 @@ class ProductImporter
             } catch (\Exception $e) {
                 // Log the error
                 error_log('Error importing Printify product ' . $printifyProductId . ': ' . $e->getMessage());
+                
+                // If the product exists, mark it as failed
+                $wcProductId = $this->getWooCommerceProductId($printifyProductId);
+                if ($wcProductId) {
+                    ProductMetaHelper::updateSyncStatus($wcProductId, 'failed');
+                }
+                
                 $importStats['failed']++;
                 $importStats['processed']++;
             }
@@ -487,7 +503,7 @@ class ProductImporter
     }
     
     /**
-     * Create or update a product variation
+     * Create or update a WooCommerce product variation
      * 
      * @param int $productId
      * @param array $variant
@@ -496,22 +512,28 @@ class ProductImporter
      */
     private function createOrUpdateVariation(int $productId, array $variant, array $attributes): int
     {
-        // Check if variation already exists
+        // Check if variation exists
         $variationId = $this->getVariationIdByPrintifyVariantId($productId, $variant['id']);
         
         if ($variationId) {
-            // Update existing variation
-            $variation = new \WC_Product_Variation($variationId);
+            $variation = wc_get_product($variationId);
+            if (!$variation) {
+                // Variation exists in meta but product not found
+                $variation = new \WC_Product_Variation();
+                $variation->set_parent_id($productId);
+            }
         } else {
-            // Create new variation
             $variation = new \WC_Product_Variation();
             $variation->set_parent_id($productId);
         }
         
         // Set basic variation data
         $variation->set_status('publish');
-        $variation->set_price($variant['price']);
-        $variation->set_regular_price($variant['price']);
+        
+        // Convert price from cents to decimal for WooCommerce (using price, not cost)
+        $price = $this->priceConverter->convertFromMinorUnits($variant['price']);
+        $variation->set_price($price);
+        $variation->set_regular_price($price);
         
         if (!empty($variant['sku'])) {
             $variation->set_sku($variant['sku']);
@@ -523,7 +545,7 @@ class ProductImporter
         
         // Set variation meta data
         $variation->update_meta_data('_printify_variant_id', $variant['id']);
-        $variation->update_meta_data('_printify_cost_price', $variant['cost'] ?? 0);
+        $variation->update_meta_data('_printify_cost_price', $this->priceConverter->convertFromMinorUnits($variant['cost'] ?? 0));
         
         // Set variation attributes
         $variationAttributes = [];
@@ -542,8 +564,19 @@ class ProductImporter
     }
     
     /**
-     * Get variation ID by Printify variant ID
+     * Convert Printify price from cents to decimal
      * 
+     * @param int $priceInCents
+     * @return float
+     */
+    private function convertPrintifyPriceToDecimal(int $priceInCents): float
+    {
+        return floatval($priceInCents) / 100;
+    }
+    
+    /**
+     * Get variation ID by Printify variant ID
+     *
      * @param int $productId
      * @param string $variantId
      * @return int|false
@@ -623,12 +656,11 @@ class ProductImporter
             }
             
             $parentId = is_array($term) ? $term['term_id'] : $term;
-            $finalTermId = $parentId;
         }
         
-        // Set product category
-        if ($finalTermId) {
-            wp_set_object_terms($product->get_id(), [$finalTermId], 'product_cat');
+        // Set the final term ID as the product category
+        if ($parentId) {
+            wp_set_object_terms($product->get_id(), [$parentId], 'product_cat');
         }
     }
 }

@@ -13,7 +13,7 @@ class Activator
     {
         // Check if WooCommerce is active
         if (!class_exists('WooCommerce')) {
-            deactivate_plugins(plugin_basename(WPWPS_PLUGIN_BASENAME));
+            deactivate_plugins(plugin_basename(WPWPS_PLUGIN_FILE));
             wp_die(
                 __('WP WooCommerce Printify Sync requires WooCommerce to be installed and activated.', 'wp-woocommerce-printify-sync'),
                 'Plugin Activation Error',
@@ -44,7 +44,7 @@ class Activator
         
         $charsetCollate = $wpdb->get_charset_collate();
         
-        // Example: Add a table for product sync status if needed
+        // Example: Add a table for product sync status
         $tableName = $wpdb->prefix . 'wpwps_product_sync';
         
         $sql = "CREATE TABLE IF NOT EXISTS $tableName (

@@ -274,4 +274,69 @@ if ($importStats['total'] > 0) {
             </ul>
         </div>
     </div>
+
+    <!-- Import Logs Section -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-list-alt"></i> <?php echo esc_html__('Import Logs', 'wp-woocommerce-printify-sync'); ?></h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th><?php echo esc_html__('Time', 'wp-woocommerce-printify-sync'); ?></th>
+                            <th><?php echo esc_html__('Product ID', 'wp-woocommerce-printify-sync'); ?></th>
+                            <th><?php echo esc_html__('Status', 'wp-woocommerce-printify-sync'); ?></th>
+                            <th><?php echo esc_html__('Message', 'wp-woocommerce-printify-sync'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $logs = \ApolloWeb\WPWooCommercePrintifySync\Import\ImportProgressLogger::getLogs(20);
+                        if (empty($logs)): 
+                        ?>
+                            <tr>
+                                <td colspan="4" class="text-center"><?php echo esc_html__('No import logs available.', 'wp-woocommerce-printify-sync'); ?></td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($logs as $log): ?>
+                                <?php 
+                                $statusClass = '';
+                                switch ($log['status']) {
+                                    case 'success':
+                                        $statusClass = 'bg-success';
+                                        break;
+                                    case 'pending':
+                                        $statusClass = 'bg-warning text-dark';
+                                        break;
+                                    case 'failed':
+                                        $statusClass = 'bg-danger';
+                                        break;
+                                    default:
+                                        $statusClass = 'bg-secondary';
+                                }
+                                ?>
+                                <tr>
+                                    <td><?php echo esc_html(human_time_diff(strtotime($log['timestamp']), current_time('timestamp')) . ' ' . __('ago', 'wp-woocommerce-printify-sync')); ?></td>
+                                    <td><?php echo esc_html($log['product_id']); ?></td>
+                                    <td><span class="badge <?php echo esc_attr($statusClass); ?>"><?php echo esc_html(ucfirst($log['status'])); ?></span></td>
+                                    <td><?php echo esc_html($log['message']); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php if (!empty($logs)): ?>
+                <form method="post" class="mt-3">
+                    <?php wp_nonce_field('wpwps_clear_logs_nonce', 'wpwps_logs_nonce'); ?>
+                    <input type="hidden" name="wpwps_product_import_action" value="clear_logs" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-trash-alt me-1"></i> <?php echo esc_html__('Clear Logs', 'wp-woocommerce-printify-sync'); ?>
+                    </button>
+                </form>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
