@@ -7,8 +7,11 @@
                     <button type="button" class="btn btn-danger btn-sm me-2" id="clear-cache">
                         <i class="fas fa-trash"></i> Clear Cache
                     </button>
-                    <button type="button" class="btn btn-primary btn-sm" id="fetch-orders">
+                    <button type="button" class="btn btn-primary btn-sm me-2" id="fetch-orders">
                         <i class="fas fa-sync"></i> Fetch Orders
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm" id="import-all-orders" disabled>
+                        <i class="fas fa-download"></i> Import All Orders
                     </button>
                 </div>
             </div>
@@ -22,6 +25,13 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     <?php endif; ?>
+                    
+                    <!-- Initial info alert -->
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Click "Fetch Orders" to load orders from Printify. Then you can import them individually or all at once.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 </div>
 
                 <!-- Orders table -->

@@ -7,14 +7,28 @@
     padding: 0.5rem 1rem;
 }
 
+/* Improved card styling with consistent shadows and radius */
 .wpwps-card {
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
     background: white;
     width: 100%;
     overflow: hidden; /* Contain child content */
     max-width: 100%; /* Prevent cards from extending beyond their container */
+    border: none;
+}
+
+/* Card header styling */
+.wpwps-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eaecef;
+    padding: 1rem;
+}
+
+/* Card body padding */
+.wpwps-card .card-body {
+    padding: 1.25rem;
 }
 
 /* Ensure cards in container rows take full width */
@@ -48,6 +62,7 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     min-height: 150px; /* Give some minimum height for tables with loading states */
+    margin-bottom: 1.25rem;
 }
 
 /* Fix flex containers that might cause overflow */
@@ -67,20 +82,180 @@ pre, code {
     word-break: break-word;
 }
 
-/* Fix alert overflow issues */
+/* Improved Alert Styling */
 .alert {
-    word-break: break-word;
+    position: relative;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    width: 100%;
+    max-width: 100%;
+    word-break: normal;
     overflow-wrap: break-word;
 }
 
-.alert-message {
-    display: inline-block;
-    max-width: calc(100% - 50px); /* Allow space for icon and close button */
+.alert-dismissible .btn-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    padding: 1.25rem 1rem;
 }
 
-/* Improve button display in general */
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+/* Improved Button Styling */
 .btn {
-    white-space: normal; /* Allow buttons to wrap text */
+    display: inline-block;
+    font-weight: 500;
+    line-height: 1.5;
     text-align: center;
-    margin-bottom: 3px;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.9rem;
+    border-radius: 0.25rem;
+    transition: all 0.15s ease-in-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    margin-bottom: 0.25rem;
+    margin-right: 0.25rem;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.12);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-info {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+    color: white;
+}
+
+.btn .fas {
+    margin-right: 0.25rem;
+}
+
+/* Improved Badge Styling */
+.badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.375rem;
+}
+
+.bg-success {
+    background-color: #198754 !important;
+    color: white !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.bg-info {
+    background-color: #0dcaf0 !important;
+    color: white !important;
+}
+
+.bg-primary {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+.bg-secondary {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .card-header .btn {
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .d-flex.justify-content-between.align-items-center > div:first-child {
+        margin-bottom: 1rem;
+    }
 }

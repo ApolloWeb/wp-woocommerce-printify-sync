@@ -55,6 +55,13 @@ try {
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     <?php endif; ?>
+                    
+                    <!-- Add initial info alert -->
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Click "Fetch Products" button to load products from Printify.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 </div>
                 
                 <div class="table-responsive">
@@ -78,31 +85,13 @@ try {
                     </table>
                 </div>
 
-                <!-- Product counter and pagination -->
-                <div class="d-flex justify-content-between align-items-center mt-3">
+                <!-- Product counter (simplified, no pagination) -->
+                <div class="mt-3">
                     <div class="text-muted" id="products-count">
                         Showing <span id="showing-start">0</span> to <span id="showing-end">0</span> of <span id="total-products">0</span> products
                     </div>
-                    <nav aria-label="Products navigation">
-                        <ul class="pagination mb-0" id="products-pagination"></ul>
-                    </nav>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Debug info for button issues -->
-<script>
-jQuery(document).ready(function($) {
-    // Add some debug info
-    console.log('Products page loaded');
-    
-    // Check if buttons are clickable
-    setTimeout(function() {
-        console.log('Fetch products button exists:', $('#fetch-products').length > 0);
-        console.log('Import selected button exists:', $('#import-selected').length > 0);
-        console.log('Clear cache button exists:', $('#clear-cache').length > 0);
-    }, 1000);
-});
-</script>

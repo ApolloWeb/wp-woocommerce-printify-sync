@@ -1,6 +1,6 @@
 jQuery(document).ready(function($) {
-    let currentPage = 1;
-    const perPage = 10;
+    // Set per page to 50 (max from API)
+    const perPage = 50;
 
     // Initialize with better error handling
     function initButtonHandlers() {
@@ -10,7 +10,7 @@ jQuery(document).ready(function($) {
         $(document).on('click', '#fetch-products', function(e) {
             e.preventDefault();
             console.log('Fetch products button clicked');
-            fetchProducts(1, true);
+            fetchProducts(true);
             return false;
         });
         
@@ -18,7 +18,7 @@ jQuery(document).ready(function($) {
         $(document).on('click', '#clear-cache', function(e) {
             e.preventDefault();
             console.log('Clear cache button clicked');
-            fetchProducts(1, true);
+            fetchProducts(true);
             return false;
         });
         
@@ -36,32 +36,35 @@ jQuery(document).ready(function($) {
             return false;
         });
         
+        // Individual product checkbox
+        $(document).on('change', '.product-select', function() {
+            updateImportSelectedButton();
+        });
+        
         console.log('Button handlers initialized');
     }
     
     // Call initialization after document is fully loaded
     initButtonHandlers();
     
-    // Function to fetch products with improved error handling
-    function fetchProducts(page = 1, refreshCache = false) {
-        currentPage = page;
+    // Function to fetch products with improved error handling (simplified to single page)
+    function fetchProducts(refreshCache = false) {
         const button = $('#fetch-products');
         const originalHtml = button.html();
         button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
 
         $('#products-table tbody').html('<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading products from Printify...</td></tr>');
         
-        console.log('Fetching products page:', page, 'refresh cache:', refreshCache);
+        console.log('Fetching up to 50 products, refresh cache:', refreshCache);
         
-        // Use GET method for fetching products
         $.ajax({
-            url: ajaxurl || wpwps_data.ajax_url,
-            type: 'GET',
+            url: wpwps_data.ajax_url,
+            type: 'POST',
             data: {
                 action: 'printify_sync',
                 action_type: 'fetch_printify_products',
                 nonce: wpwps_data.nonce,
-                page: page,
+                page: 1,
                 per_page: perPage,
                 refresh_cache: refreshCache ? 'true' : 'false'
             },
@@ -113,7 +116,6 @@ jQuery(document).ready(function($) {
                 success: function(response) {
                     if (response.success) {
                         button.html('<i class="fas fa-check"></i> Imported').addClass('btn-success').removeClass('btn-primary');
-                        // Add a visual indicator that the product was imported
                         button.closest('tr').addClass('bg-light');
                     } else {
                         button.html('<i class="fas fa-times"></i> Failed').addClass('btn-danger').removeClass('btn-primary');
@@ -193,10 +195,23 @@ jQuery(document).ready(function($) {
         const tbody = $('#products-table tbody');
         tbody.empty();
         
+        // Update totals immediately regardless of products returned
+        const totalProducts = parseInt(data.total) || 0;
+        $('#total-products').text(totalProducts);
+        
         if (products.length === 0) {
-            tbody.html('<tr><td colspan="7" class="text-center">No products found</td></tr>');
+            tbody.html('<tr><td colspan="7" class="text-center">No products found. Try refreshing or checking your Printify settings.</td></tr>');
+            
+            // Reset product count
+            $('#showing-start').text('0');
+            $('#showing-end').text('0');
             return;
         }
+        
+        // Update showing count with proper values - now showing all products at once
+        const actualCount = products.length;
+        $('#showing-start').text('1');
+        $('#showing-end').text(actualCount);
         
         products.forEach(function(product) {
             const isImported = product.is_imported;
@@ -217,63 +232,6 @@ jQuery(document).ready(function($) {
             `;
             tbody.append(row);
         });
-        
-        // Update pagination info
-        $('#showing-start').text((data.current_page - 1) * data.per_page + 1);
-        $('#showing-end').text(Math.min(data.current_page * data.per_page, data.total));
-        $('#total-products').text(data.total);
-        
-        // Setup pagination
-        setupPagination(data.current_page, data.last_page);
-    }
-
-    // Setup pagination
-    function setupPagination(currentPage, lastPage) {
-        const pagination = $('#products-pagination');
-        pagination.empty();
-        
-        if (lastPage <= 1) {
-            return;
-        }
-        
-        // Previous button
-        pagination.append(`
-            <li class="page-item${currentPage === 1 ? ' disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-        `);
-        
-        // Page numbers
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(lastPage, startPage + 4);
-        
-        for (let i = startPage; i <= endPage; i++) {
-            pagination.append(`
-                <li class="page-item${i === currentPage ? ' active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i}</a>
-                </li>
-            `);
-        }
-        
-        // Next button
-        pagination.append(`
-            <li class="page-item${currentPage === lastPage ? ' disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-        `);
-        
-        // Add click handler to pagination links
-        $('.page-link').on('click', function(e) {
-            e.preventDefault();
-            const page = $(this).data('page');
-            if (page && page !== currentPage) {
-                fetchProducts(page, false);
-            }
-        });
     }
     
     // Handle errors
@@ -293,6 +251,11 @@ jQuery(document).ready(function($) {
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         `);
+        
+        // Reset product counts
+        $('#showing-start').text('0');
+        $('#showing-end').text('0');
+        $('#total-products').text('0');
     }
     
     // Update import selected button
@@ -302,4 +265,6 @@ jQuery(document).ready(function($) {
         button.prop('disabled', !selectedCount);
         button.html(`<i class="fas fa-download"></i> Import Selected (${selectedCount})`);
     }
+    
+    // Note: Auto-loading is intentionally removed to prevent products from loading on page load
 });

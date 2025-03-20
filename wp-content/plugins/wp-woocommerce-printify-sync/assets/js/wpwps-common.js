@@ -10,6 +10,14 @@ jQuery(document).ready(function($) {
         $(this).closest('.alert').fadeOut();
     });
 
-    // Common functionality
-    console.log('WPWPS Common JS loaded');
+    // Ensure wpwps_data is always available
+    if (typeof wpwps_data === 'undefined') {
+        window.wpwps_data = {
+            ajax_url: ajaxurl || '/wp-admin/admin-ajax.php',
+            nonce: ''
+        };
+        console.warn('wpwps_data not found, created default object');
+    }
+
+    console.log('WPWPS Common JS loaded, ajax_url:', wpwps_data.ajax_url);
 });
