@@ -29,8 +29,11 @@ class Plugin
         // Initialize product import
         $this->initProductImport();
         
-        // Initialize Action Scheduler
+        // Initialize Action Scheduler (this won't fail fatally anymore with our improved code)
         ActionSchedulerIntegration::init();
+        
+        // Add admin notice if WooCommerce is not active
+        add_action('admin_notices', [$this, 'checkWooCommerceDependency']);
         
         // Load translations
         add_action('plugins_loaded', [$this, 'loadTextDomain']);
@@ -81,5 +84,28 @@ class Plugin
             false,
             dirname(WPWPS_PLUGIN_BASENAME) . '/languages/'
         );
+    }
+    
+    /**
+     * Check if WooCommerce is active and show admin notice if not
+     *
+     * @return void
+     */
+    public function checkWooCommerceDependency(): void
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        if (!class_exists('WooCommerce')) {
+            ?>
+            <div class="notice notice-warning">
+                <p>
+                    <strong>WP WooCommerce Printify Sync:</strong> 
+                    <?php _e('WooCommerce is required for this plugin to work properly. Please install and activate WooCommerce.', 'wp-woocommerce-printify-sync'); ?>
+                </p>
+            </div>
+            <?php
+        }
     }
 }

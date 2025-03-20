@@ -4,6 +4,7 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Import;
 
 use ApolloWeb\WPWooCommercePrintifySync\API\PrintifyAPI;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\Settings;
+use ApolloWeb\WPWooCommercePrintifySync\Import\ProductMetaHelper;
 
 class ProductImporter
 {
@@ -54,18 +55,27 @@ class ProductImporter
     public function startImport(string $shopId, string $productType = '', string $syncMode = 'all'): void
     {
         try {
-            // Get products from Printify
-            $products = $this->api->getProducts($shopId);
+            // Check if we have products in transient
+            $products = get_transient('wpwps_retrieved_products');
             
-            if (is_wp_error($products)) {
-                throw new \Exception($products->get_error_message());
-            }
-            
-            // Filter products if needed
-            if (!empty($productType)) {
-                $products = array_filter($products, function($product) use ($productType) {
-                    return isset($product['type']) && $product['type'] === $productType;
-                });
+            if (false === $products) {
+                // No products in transient, fetch them from API
+                $products = $this->api->getProducts($shopId);
+                
+                if (is_wp_error($products)) {
+                    throw new \Exception($products->get_error_message());
+                }
+                
+                // Filter products if needed
+                if (!empty($productType)) {
+                    $products = array_filter($products, function($product) use ($productType) {
+                        return isset($product['type']) && $product['type'] === $productType;
+                    });
+                }
+            } else {
+                // Products found in transient, clean up the transient
+                delete_transient('wpwps_retrieved_products');
+                delete_transient('wpwps_import_sync_mode');
             }
             
             // Update import stats
@@ -189,19 +199,7 @@ class ProductImporter
      */
     private function getWooCommerceProductId(string $printifyProductId)
     {
-        global $wpdb;
-        
-        $query = $wpdb->prepare(
-            "SELECT post_id FROM {$wpdb->postmeta} 
-            WHERE meta_key = '_printify_product_id' 
-            AND meta_value = %s 
-            LIMIT 1",
-            $printifyProductId
-        );
-        
-        $result = $wpdb->get_var($query);
-        
-        return $result ? (int) $result : false;
+        return ProductMetaHelper::findProductByPrintifyId($printifyProductId);
     }
     
     /**
@@ -220,17 +218,15 @@ class ProductImporter
         $product->set_description($printifyProduct['description']);
         $product->set_status('publish');
         
-        // Set product meta to track Printify relationship
-        $product->update_meta_data('_printify_product_id', $printifyProduct['id']);
-        $product->update_meta_data('_printify_provider_id', $printifyProduct['print_provider']['id'] ?? '');
-        $product->update_meta_data('_printify_last_synced', current_time('mysql'));
+        // Set product meta to track Printify relationship using the helper
+        ProductMetaHelper::updatePrintifyMeta($product, $printifyProduct);
         
-        // Set product categories based on product_type
+        // Set product tags if any
         if (!empty($printifyProduct['tags'])) {
             $this->setProductTags($product, $printifyProduct['tags']);
         }
         
-        // Set product categories based on product_type
+        // Set product categories based on blueprint_id
         if (!empty($printifyProduct['blueprint_id'])) {
             $this->setProductCategories($product, $printifyProduct['blueprint_id']);
         }
@@ -554,22 +550,7 @@ class ProductImporter
      */
     private function getVariationIdByPrintifyVariantId(int $productId, string $variantId)
     {
-        global $wpdb;
-        
-        $query = $wpdb->prepare(
-            "SELECT post_id FROM {$wpdb->postmeta} pm
-            JOIN {$wpdb->posts} p ON pm.post_id = p.ID
-            WHERE pm.meta_key = '_printify_variant_id'
-            AND pm.meta_value = %s
-            AND p.post_parent = %d
-            LIMIT 1",
-            $variantId,
-            $productId
-        );
-        
-        $result = $wpdb->get_var($query);
-        
-        return $result ? (int) $result : false;
+        return ProductMetaHelper::findVariationByPrintifyVariantId($variantId, $productId);
     }
     
     /**

@@ -55,6 +55,87 @@ jQuery(document).ready(function($) {
         }
     }
     
+    // Retrieve Products button
+    $('#retrieve-products').on('click', function() {
+        const btn = $(this);
+        const productType = $('#product_type').val();
+        const syncMode = $('#sync_mode').val();
+        
+        // Show the retrieval status
+        $('#product-retrieval-status').removeClass('d-none');
+        $('#product-preview').addClass('d-none');
+        
+        // Disable form controls while retrieving
+        btn.prop('disabled', true);
+        $('#product_type, #sync_mode').prop('disabled', true);
+        
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_retrieve_products',
+                nonce: wpwps.nonce,
+                product_type: productType,
+                sync_mode: syncMode
+            },
+            success: function(response) {
+                // Re-enable form controls
+                btn.prop('disabled', false);
+                $('#product_type, #sync_mode').prop('disabled', false);
+                
+                if (response.success) {
+                    // Hide the retrieval status
+                    $('#product-retrieval-status').addClass('d-none');
+                    
+                    // Update the preview area
+                    $('#products-count-message').text(response.data.total + ' products retrieved successfully and ready for import.');
+                    
+                    // Populate the products table
+                    const products = response.data.products;
+                    let tableHtml = '';
+                    
+                    products.forEach(function(product) {
+                        const statusBadge = product.exists ? 
+                            '<span class="badge bg-warning">Update</span>' : 
+                            '<span class="badge bg-success">New</span>';
+                        
+                        tableHtml += '<tr>' +
+                            '<td>' + product.title + '</td>' +
+                            '<td>' + product.type + '</td>' +
+                            '<td>' + product.variants + '</td>' +
+                            '<td>' + statusBadge + '</td>' +
+                            '</tr>';
+                    });
+                    
+                    $('#products-preview-table').html(tableHtml);
+                    
+                    // Show the preview
+                    $('#product-preview').removeClass('d-none');
+                    
+                    // Enable the import button
+                    $('#start-import').prop('disabled', false);
+                } else {
+                    // Hide the retrieval status
+                    $('#product-retrieval-status').addClass('d-none');
+                    
+                    // Show error
+                    alert('Error: ' + response.data.message);
+                }
+            },
+            error: function() {
+                // Re-enable form controls
+                btn.prop('disabled', false);
+                $('#product_type, #sync_mode').prop('disabled', false);
+                
+                // Hide the retrieval status
+                $('#product-retrieval-status').addClass('d-none');
+                
+                // Show error
+                alert('An unexpected error occurred while retrieving products. Please try again.');
+            }
+        });
+    });
+    
     // Confirm import start
     $('.import-form').on('submit', function(e) {
         if (!confirm('Are you sure you want to start importing products? This may take some time depending on how many products you have.')) {

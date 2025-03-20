@@ -69,16 +69,25 @@ class ProductImport
         $shopName = $this->settings->getShopName();
         $apiConfigured = !empty($this->settings->getApiKey()) && !empty($shopId);
         
+        // Check if Action Scheduler is available
+        $actionSchedulerAvailable = \ApolloWeb\WPWooCommercePrintifySync\Import\ActionSchedulerIntegration::isActionSchedulerAvailable();
+        
         // Get import status information
         $lastImport = get_option('wpwps_last_import_timestamp', 0);
-        $importRunning = as_has_scheduled_action('wpwps_process_product_import_queue');
-        $importStats = get_option('wpwps_import_stats', [
+        $importRunning = false;
+        $importStats = [
             'total' => 0,
             'processed' => 0,
             'imported' => 0,
             'updated' => 0,
             'failed' => 0,
-        ]);
+        ];
+        
+        if ($actionSchedulerAvailable) {
+            $importStatus = \ApolloWeb\WPWooCommercePrintifySync\Import\ActionSchedulerIntegration::getImportStatus();
+            $importRunning = $importStatus['is_running'];
+            $importStats = $importStatus['stats'];
+        }
         
         // Get list of product blueprints/catalog for filtering options
         $productTypes = [];
@@ -108,8 +117,11 @@ class ProductImport
             'dashboardUrl' => admin_url('admin.php?page=printify-sync'),
             'importNonce' => wp_create_nonce('wpwps_product_import_nonce'),
             'cancelNonce' => wp_create_nonce('wpwps_cancel_import_nonce'),
+            'actionSchedulerAvailable' => $actionSchedulerAvailable,
         ];
         
+        // Change from 'product-import' to just 'product-import'
+        // The template engine will automatically add the 'wpwps-' prefix
         $this->templateEngine->render('product-import', $data);
     }
     
@@ -134,6 +146,19 @@ class ProductImport
         }
         
         $action = sanitize_text_field($_POST['wpwps_product_import_action']);
+        
+        // Check if Action Scheduler is available before processing import actions
+        $actionSchedulerAvailable = \ApolloWeb\WPWooCommercePrintifySync\Import\ActionSchedulerIntegration::isActionSchedulerAvailable();
+        
+        if (!$actionSchedulerAvailable && $action === 'start_import') {
+            add_settings_error(
+                'wpwps_import',
+                'wpwps_action_scheduler_missing',
+                __('Action Scheduler library not found. Please ensure WooCommerce is installed and activated.', 'wp-woocommerce-printify-sync'),
+                'error'
+            );
+            return;
+        }
         
         switch ($action) {
             case 'start_import':
@@ -176,7 +201,12 @@ class ProductImport
         
         // Get filters
         $productType = isset($_POST['product_type']) ? sanitize_text_field($_POST['product_type']) : '';
-        $syncMode = isset($_POST['sync_mode']) ? sanitize_text_field($_POST['sync_mode']) : 'all';
+        
+        // Try to get sync mode from transient first, then fallback to POST data
+        $syncMode = get_transient('wpwps_import_sync_mode');
+        if (false === $syncMode) {
+            $syncMode = isset($_POST['sync_mode']) ? sanitize_text_field($_POST['sync_mode']) : 'all';
+        }
         
         // Initialize import stats
         update_option('wpwps_import_stats', [

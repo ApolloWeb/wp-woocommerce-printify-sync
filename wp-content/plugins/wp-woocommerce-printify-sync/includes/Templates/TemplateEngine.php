@@ -57,7 +57,10 @@ class TemplateEngine
      */
     public function section(string $section, array $data = []): void
     {
-        $templatePath = $this->templateDir . 'wpwps-partials/' . $section . '.php';
+        // Strip any 'wpwps-partials/' prefix if already included in the section name
+        $sectionName = str_replace('wpwps-partials/', '', $section);
+        
+        $templatePath = $this->templateDir . 'wpwps-partials/' . $sectionName . '.php';
         
         if (!file_exists($templatePath)) {
             wp_die(sprintf('Partial template "%s" not found.', $section));

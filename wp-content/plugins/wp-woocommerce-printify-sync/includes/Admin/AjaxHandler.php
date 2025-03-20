@@ -3,6 +3,7 @@
 namespace ApolloWeb\WPWooCommercePrintifySync\Admin;
 
 use ApolloWeb\WPWooCommercePrintifySync\API\PrintifyAPI;
+use ApolloWeb\WPWooCommercePrintifySync\Import\ProductMetaHelper;
 
 class AjaxHandler
 {
@@ -61,6 +62,45 @@ class AjaxHandler
         
         // Product import handlers
         add_action('wp_ajax_wpwps_check_import_progress', [$this, 'checkImportProgress']);
+        
+        // Retrieve products from Printify
+        add_action('wp_ajax_wpwps_retrieve_products', [$this, 'retrieveProducts']);
+    }
+    
+    /**
+     * Register AJAX actions
+     */
+    public function registerAjaxActions(): void
+    {
+        // Test API connection
+        add_action('wp_ajax_wpwps_test_connection', [$this, 'testConnection']);
+        
+        // Save API settings
+        add_action('wp_ajax_wpwps_save_api_settings', [$this, 'saveApiSettings']);
+        
+        // Save shop ID
+        add_action('wp_ajax_wpwps_save_shop_id', [$this, 'saveShopId']);
+        
+        // Dashboard actions
+        add_action('wp_ajax_wpwps_get_dashboard_stats', [$this, 'getDashboardStats']);
+        add_action('wp_ajax_wpwps_sync_products', [$this, 'syncProducts']);
+        add_action('wp_ajax_wpwps_check_api_health', [$this, 'checkApiHealth']);
+        add_action('wp_ajax_wpwps_sync_orders', [$this, 'syncOrders']);
+        add_action('wp_ajax_wpwps_get_sales_data', [$this, 'getSalesData']);
+        
+        // ChatGPT handlers
+        add_action('wp_ajax_wpwps_save_chatgpt_settings', [$this, 'saveChatGptSettings']);
+        add_action('wp_ajax_wpwps_test_chatgpt', [$this, 'testChatGpt']);
+        
+        // Get shop name by ID
+        add_action('wp_ajax_wpwps_fetch_shop_name', [$this, 'fetchShopName']);
+        
+        // Product import AJAX actions
+        add_action('wp_ajax_wpwps_check_import_progress', [$this, 'checkImportProgress']);
+        add_action('wp_ajax_wpwps_retrieve_products', [$this, 'retrieveProducts']);
+        
+        // Add new AJAX action
+        add_action('wp_ajax_wpwps_get_product_sync_details', [$this, 'getProductSyncDetails']);
     }
     
     /**
@@ -659,5 +699,169 @@ class AjaxHandler
         $importStatus = \ApolloWeb\WPWooCommercePrintifySync\Import\ActionSchedulerIntegration::getImportStatus();
         
         wp_send_json_success($importStatus);
+    }
+    
+    /**
+     * Retrieve products from Printify and store in transients
+     *
+     * @return void
+     */
+    public function retrieveProducts(): void
+    {
+        // Check nonce for security
+        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
+        
+        // Check user capability
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Get filter parameters
+        $productType = isset($_POST['product_type']) ? sanitize_text_field($_POST['product_type']) : '';
+        $syncMode = isset($_POST['sync_mode']) ? sanitize_text_field($_POST['sync_mode']) : 'all';
+        
+        $shopId = $this->settings->getShopId();
+        
+        if (empty($shopId)) {
+            wp_send_json_error(['message' => __('Shop ID is not set. Please configure the Printify API settings first.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        try {
+            // Get products from Printify
+            $products = $this->api->getProducts($shopId);
+            
+            if (is_wp_error($products)) {
+                throw new \Exception($products->get_error_message());
+            }
+            
+            // Filter products if needed
+            if (!empty($productType)) {
+                $products = array_filter($products, function($product) use ($productType) {
+                    return isset($product['type']) && $product['type'] === $productType;
+                });
+            }
+            
+            // If no products found, return error
+            if (empty($products)) {
+                wp_send_json_error(['message' => __('No products found matching your criteria.', 'wp-woocommerce-printify-sync')]);
+                return;
+            }
+            
+            // Store products in transient
+            set_transient('wpwps_retrieved_products', $products, HOUR_IN_SECONDS);
+            set_transient('wpwps_import_sync_mode', $syncMode, HOUR_IN_SECONDS);
+            
+            // Prepare products data for preview
+            $previewData = [];
+            foreach ($products as $product) {
+                $variantCount = isset($product['variants']) ? count($product['variants']) : 0;
+                
+                // Check if product already exists in WooCommerce
+                $exists = false;
+                $wcProductId = $this->getWooCommerceProductId($product['id']);
+                if ($wcProductId) {
+                    $exists = true;
+                }
+                
+                $previewData[] = [
+                    'id' => $product['id'],
+                    'title' => $product['title'],
+                    'type' => $product['type'] ?? __('Unknown', 'wp-woocommerce-printify-sync'),
+                    'variants' => $variantCount,
+                    'exists' => $exists,
+                ];
+            }
+            
+            wp_send_json_success([
+                'message' => sprintf(__('%d products retrieved successfully.', 'wp-woocommerce-printify-sync'), count($products)),
+                'products' => $previewData,
+                'total' => count($products)
+            ]);
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+    
+    /**
+     * Get WooCommerce product ID by Printify product ID
+     * 
+     * @param string $printifyProductId
+     * @return int|false
+     */
+    private function getWooCommerceProductId(string $printifyProductId)
+    {
+        return ProductMetaHelper::findProductByPrintifyId($printifyProductId);
+    }
+    
+    /**
+     * Get product synchronization details
+     *
+     * @return void
+     */
+    public function getProductSyncDetails(): void
+    {
+        // Check nonce for security
+        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
+        
+        // Check user capability
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        $productId = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+        
+        if (empty($productId)) {
+            wp_send_json_error(['message' => __('Product ID is required.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        $product = wc_get_product($productId);
+        
+        if (!$product) {
+            wp_send_json_error(['message' => __('Product not found.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Check if product is linked to Printify
+        if (!ProductMetaHelper::isLinkedToPrintify($product)) {
+            wp_send_json_error(['message' => __('This product is not linked to Printify.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Get product meta information
+        $syncDetails = [
+            'printify_product_id' => ProductMetaHelper::getPrintifyProductId($product),
+            'printify_provider_id' => ProductMetaHelper::getPrintifyProviderId($product),
+            'last_synced' => ProductMetaHelper::getLastSyncedTimestamp($product),
+            'is_variable' => $product->is_type('variable'),
+            'variations' => [],
+        ];
+        
+        // Get variation details if it's a variable product
+        if ($product->is_type('variable')) {
+            $variations = $product->get_children();
+            
+            foreach ($variations as $variationId) {
+                $variation = wc_get_product($variationId);
+                
+                if ($variation) {
+                    $variantId = get_post_meta($variationId, ProductMetaHelper::META_PRINTIFY_VARIANT_ID, true);
+                    $costPrice = get_post_meta($variationId, ProductMetaHelper::META_PRINTIFY_COST_PRICE, true);
+                    
+                    $syncDetails['variations'][] = [
+                        'id' => $variationId,
+                        'sku' => $variation->get_sku(),
+                        'printify_variant_id' => $variantId,
+                        'printify_cost_price' => $costPrice,
+                        'attributes' => $variation->get_attributes(),
+                    ];
+                }
+            }
+        }
+        
+        wp_send_json_success(['details' => $syncDetails]);
     }
 }

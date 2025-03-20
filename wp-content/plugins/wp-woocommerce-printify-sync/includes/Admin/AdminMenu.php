@@ -182,6 +182,12 @@ class AdminMenu
                 WPWPS_VERSION,
                 true
             );
+            
+            // Add localization specifically for import script - this is crucial
+            wp_localize_script('wpwps-import', 'wpwps', [
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('wpwps-ajax-nonce'),
+            ]);
         } else {
             // Dashboard scripts
             wp_enqueue_script(
@@ -194,6 +200,82 @@ class AdminMenu
         }
         
         // Localize script for AJAX
+        wp_localize_script('wpwps-settings', 'wpwps', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('wpwps-ajax-nonce'),
+        ]);
+        
+        wp_localize_script('wpwps-dashboard', 'wpwps', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('wpwps-ajax-nonce'),
+        ]);
+    }
+
+    /**
+     * Enqueue admin scripts and styles
+     */
+    public function enqueueScripts(): void
+    {
+        $screen = get_current_screen();
+        
+        // Only load on our custom pages
+        if (!$screen || !strpos($screen->id, 'printify-sync')) {
+            // Add this condition to also load on product edit screen
+            if ($screen && $screen->id === 'product' && $screen->base === 'post') {
+                wp_enqueue_script(
+                    'wpwps-product-meta',
+                    WPWPS_PLUGIN_URL . 'assets/js/wpwps-product-meta.js',
+                    ['jquery'],
+                    WPWPS_VERSION,
+                    true
+                );
+                
+                wp_localize_script('wpwps-product-meta', 'wpwps', [
+                    'ajax_url' => admin_url('admin-ajax.php'),
+                    'nonce' => wp_create_nonce('wpwps-ajax-nonce'),
+                ]);
+                
+                return;
+            }
+            
+            return;
+        }
+
+        // Enqueue CSS
+        wp_enqueue_style(
+            'wpwps-bootstrap',
+            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
+            [],
+            '5.3.0'
+        );
+        
+        // Enqueue JS
+        wp_enqueue_script(
+            'wpwps-bootstrap',
+            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+            ['jquery'],
+            '5.3.0',
+            true
+        );
+        
+        // If on import page, enqueue the import script
+        if (strpos($screen->id, 'printify-sync-import') !== false) {
+            wp_enqueue_script(
+                'wpwps-import',
+                WPWPS_PLUGIN_URL . 'assets/js/wpwps-import.js',
+                ['jquery', 'wpwps-bootstrap'],
+                WPWPS_VERSION,
+                true
+            );
+            
+            // Add localization for the import script
+            wp_localize_script('wpwps-import', 'wpwps', [
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('wpwps-ajax-nonce'),
+            ]);
+        }
+
+        // Localize script for other pages
         wp_localize_script('wpwps-settings', 'wpwps', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wpwps-ajax-nonce'),

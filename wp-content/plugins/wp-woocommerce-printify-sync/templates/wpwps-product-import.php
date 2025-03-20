@@ -142,6 +142,45 @@ if ($importStats['total'] > 0) {
                             </div>
                         </div>
                         
+                        <!-- Product Retrieval Status Section -->
+                        <div id="product-retrieval-status" class="mb-4 d-none">
+                            <div class="alert alert-info">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden"><?php echo esc_html__('Loading...', 'wp-woocommerce-printify-sync'); ?></span>
+                                    </div>
+                                    <strong id="retrieval-status-message"><?php echo esc_html__('Retrieving products from Printify...', 'wp-woocommerce-printify-sync'); ?></strong>
+                                </div>
+                                <div class="progress">
+                                    <div id="retrieval-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Product Preview Area -->
+                        <div id="product-preview" class="mb-4 d-none">
+                            <h5><?php echo esc_html__('Products Ready for Import', 'wp-woocommerce-printify-sync'); ?></h5>
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span id="products-count-message"><?php echo esc_html__('0 products retrieved successfully and ready for import.', 'wp-woocommerce-printify-sync'); ?></span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th><?php echo esc_html__('Product', 'wp-woocommerce-printify-sync'); ?></th>
+                                            <th><?php echo esc_html__('Type', 'wp-woocommerce-printify-sync'); ?></th>
+                                            <th><?php echo esc_html__('Variants', 'wp-woocommerce-printify-sync'); ?></th>
+                                            <th><?php echo esc_html__('Status', 'wp-woocommerce-printify-sync'); ?></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="products-preview-table">
+                                        <!-- Preview content will be injected here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
                         <div class="mb-4 border-top pt-4">
                             <h5><?php echo esc_html__('Field Mapping Information', 'wp-woocommerce-printify-sync'); ?></h5>
                             <div class="table-responsive mt-3">
@@ -191,7 +230,10 @@ if ($importStats['total'] > 0) {
                         </div>
                         
                         <div class="d-flex">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="button" id="retrieve-products" class="btn btn-info me-2">
+                                <i class="fas fa-download me-1"></i> <?php echo esc_html__('Retrieve Products', 'wp-woocommerce-printify-sync'); ?>
+                            </button>
+                            <button type="submit" id="start-import" class="btn btn-primary" disabled>
                                 <i class="fas fa-cloud-download-alt me-1"></i> <?php echo esc_html__('Start Import', 'wp-woocommerce-printify-sync'); ?>
                             </button>
                             
