@@ -26,6 +26,27 @@ class Settings
     private const SHOP_ID_OPTION = 'wpwps_printify_shop_id';
     
     /**
+     * The option name for the shop name
+     *
+     * @var string
+     */
+    private const SHOP_NAME_OPTION = 'wpwps_printify_shop_name';
+    
+    /**
+     * The option name for the ChatGPT API key
+     *
+     * @var string
+     */
+    private const CHATGPT_API_KEY_OPTION = 'wpwps_chatgpt_api_key';
+    
+    /**
+     * The option name for the ChatGPT API model
+     *
+     * @var string
+     */
+    private const CHATGPT_API_MODEL_OPTION = 'wpwps_chatgpt_api_model';
+    
+    /**
      * Get the API key
      *
      * @return string
@@ -93,6 +114,76 @@ class Settings
     public function setShopId(string $shopId): bool
     {
         return update_option(self::SHOP_ID_OPTION, $shopId);
+    }
+    
+    /**
+     * Get the shop name
+     *
+     * @return string
+     */
+    public function getShopName(): string
+    {
+        return get_option(self::SHOP_NAME_OPTION, '');
+    }
+    
+    /**
+     * Set the shop name
+     *
+     * @param string $shopName The shop name
+     * @return bool
+     */
+    public function setShopName(string $shopName): bool
+    {
+        return update_option(self::SHOP_NAME_OPTION, $shopName);
+    }
+    
+    /**
+     * Get the ChatGPT API key
+     *
+     * @return string
+     */
+    public function getChatGptApiKey(): string
+    {
+        $encryptedKey = get_option(self::CHATGPT_API_KEY_OPTION, '');
+        
+        if (empty($encryptedKey)) {
+            return '';
+        }
+        
+        return $this->decrypt($encryptedKey);
+    }
+    
+    /**
+     * Set the ChatGPT API key
+     *
+     * @param string $apiKey The API key
+     * @return bool
+     */
+    public function setChatGptApiKey(string $apiKey): bool
+    {
+        $encryptedKey = $this->encrypt($apiKey);
+        return update_option(self::CHATGPT_API_KEY_OPTION, $encryptedKey);
+    }
+    
+    /**
+     * Get the ChatGPT API model
+     *
+     * @return string
+     */
+    public function getChatGptApiModel(): string
+    {
+        return get_option(self::CHATGPT_API_MODEL_OPTION, 'gpt-3.5-turbo');
+    }
+    
+    /**
+     * Set the ChatGPT API model
+     *
+     * @param string $model The model name
+     * @return bool
+     */
+    public function setChatGptApiModel(string $model): bool
+    {
+        return update_option(self::CHATGPT_API_MODEL_OPTION, $model);
     }
     
     /**

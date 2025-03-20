@@ -51,6 +51,10 @@ class AjaxHandler
         add_action('wp_ajax_wpwps_check_api_health', [$this, 'checkApiHealth']);
         add_action('wp_ajax_wpwps_sync_orders', [$this, 'syncOrders']);
         add_action('wp_ajax_wpwps_get_sales_data', [$this, 'getSalesData']);
+        
+        // ChatGPT handlers
+        add_action('wp_ajax_wpwps_save_chatgpt_settings', [$this, 'saveChatGptSettings']);
+        add_action('wp_ajax_wpwps_test_chatgpt', [$this, 'testChatGpt']);
     }
     
     /**
@@ -121,7 +125,7 @@ class AjaxHandler
     }
     
     /**
-     * Save shop ID
+     * Save shop ID and fetch shop name
      *
      * @return void
      */
@@ -138,6 +142,7 @@ class AjaxHandler
         
         // Sanitize inputs
         $shopId = sanitize_text_field($_POST['shop_id'] ?? '');
+        $shopName = sanitize_text_field($_POST['shop_name'] ?? '');
         
         // Validate inputs
         if (empty($shopId)) {
@@ -147,6 +152,11 @@ class AjaxHandler
         
         // Save shop ID
         $this->settings->setShopId($shopId);
+        
+        // Save shop name if provided
+        if (!empty($shopName)) {
+            $this->settings->setShopName($shopName);
+        }
         
         wp_send_json_success([
             'message' => __('Shop ID saved successfully!', 'wp-woocommerce-printify-sync'),
@@ -373,5 +383,123 @@ class AjaxHandler
         }
         
         wp_send_json_success($data);
+    }
+    
+    /**
+     * Save ChatGPT API settings
+     *
+     * @return void
+     */
+    public function saveChatGptSettings(): void
+    {
+        // Check nonce for security
+        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
+        
+        // Check user capability
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Sanitize inputs
+        $apiKey = sanitize_text_field($_POST['api_key'] ?? '');
+        $model = sanitize_text_field($_POST['model'] ?? 'gpt-3.5-turbo');
+        
+        // Validate inputs
+        if (empty($apiKey)) {
+            wp_send_json_error(['message' => __('API key is required.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Save settings
+        $this->settings->setChatGptApiKey($apiKey);
+        $this->settings->setChatGptApiModel($model);
+        
+        wp_send_json_success([
+            'message' => __('ChatGPT API settings saved successfully!', 'wp-woocommerce-printify-sync'),
+        ]);
+    }
+    
+    /**
+     * Test ChatGPT API connection
+     *
+     * @return void
+     */
+    public function testChatGpt(): void
+    {
+        // Check nonce for security
+        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
+        
+        // Check user capability
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        $apiKey = $this->settings->getChatGptApiKey();
+        $model = $this->settings->getChatGptApiModel();
+        
+        if (empty($apiKey)) {
+            wp_send_json_error(['message' => __('API key is required.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Prepare request to OpenAI API
+        $url = 'https://api.openai.com/v1/chat/completions';
+        
+        $args = [
+            'method' => 'POST',
+            'headers' => [
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+            ],
+            'timeout' => 30,
+            'body' => json_encode([
+                'model' => $model,
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a helpful assistant for WooCommerce and Printify.'
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => 'Respond with a brief greeting to confirm the API connection is working.'
+                    ]
+                ],
+                'max_tokens' => 50
+            ])
+        ];
+        
+        $response = wp_remote_request($url, $args);
+        
+        if (is_wp_error($response)) {
+            wp_send_json_error([
+                'message' => $response->get_error_message(),
+            ]);
+            return;
+        }
+        
+        $responseCode = wp_remote_retrieve_response_code($response);
+        $responseBody = wp_remote_retrieve_body($response);
+        $data = json_decode($responseBody, true);
+        
+        if ($responseCode !== 200) {
+            $errorMessage = isset($data['error']['message']) ? $data['error']['message'] : __('Unknown error', 'wp-woocommerce-printify-sync');
+            wp_send_json_error([
+                'message' => sprintf(__('API Error (Code: %s): %s', 'wp-woocommerce-printify-sync'), $responseCode, $errorMessage),
+            ]);
+            return;
+        }
+        
+        if (isset($data['choices'][0]['message']['content'])) {
+            wp_send_json_success([
+                'message' => __('ChatGPT API connection successful!', 'wp-woocommerce-printify-sync'),
+                'response' => $data['choices'][0]['message']['content']
+            ]);
+        } else {
+            wp_send_json_error([
+                'message' => __('Could not parse API response.', 'wp-woocommerce-printify-sync'),
+            ]);
+        }
     }
 }

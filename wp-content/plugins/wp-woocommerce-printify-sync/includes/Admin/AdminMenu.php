@@ -66,15 +66,18 @@ class AdminMenu
     {
         $settings = new Settings();
         $shopId = $settings->getShopId();
+        $shopName = $settings->getShopName();
         $apiConfigured = !empty($settings->getApiKey()) && !empty($shopId);
         
         $data = [
             'shopId' => $shopId,
+            'shopName' => $shopName,
             'apiConfigured' => $apiConfigured,
             'settingsUrl' => admin_url('admin.php?page=printify-sync-settings'),
+            'chatGptApiKey' => $settings->getChatGptApiKey(),
+            'chatGptApiModel' => $settings->getChatGptApiModel(),
         ];
         
-        // Pass the template engine instance so that partials can be rendered
         $this->templateEngine->render('dashboard', $data);
     }
     

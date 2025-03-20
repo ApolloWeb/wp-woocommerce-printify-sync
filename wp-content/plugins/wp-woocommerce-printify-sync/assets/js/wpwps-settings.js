@@ -123,6 +123,7 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         
         const shopId = $('#shop-select').val();
+        const shopName = $('#shop-select option:selected').text();
         
         if (!shopId) {
             showMessage('#shop-message', 'Please select a shop.', 'danger');
@@ -135,7 +136,8 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'wpwps_save_shop_id',
                 nonce: wpwps.nonce,
-                shop_id: shopId
+                shop_id: shopId,
+                shop_name: shopName
             },
             beforeSend: function() {
                 showMessage('#shop-message', 'Saving shop ID...', 'info');

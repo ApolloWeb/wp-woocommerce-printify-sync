@@ -5,6 +5,7 @@
  * @package ApolloWeb\WPWooCommercePrintifySync
  * @var bool $apiConfigured
  * @var string $shopId
+ * @var string $shopName
  * @var string $settingsUrl
  */
 
@@ -15,9 +16,18 @@ if (!defined('WPINC')) {
 ?>
 
 <div class="wpwps-header mb-4">
-    <div class="d-flex align-items-center">
-        <i class="fas fa-tshirt fa-2x me-3"></i>
-        <h1 class="mb-0"><?php echo esc_html__('Printify Sync Dashboard', 'wp-woocommerce-printify-sync'); ?></h1>
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-tshirt fa-2x me-3"></i>
+            <h1 class="mb-0"><?php echo esc_html__('Printify Sync Dashboard', 'wp-woocommerce-printify-sync'); ?></h1>
+        </div>
+        <?php if ($apiConfigured && !empty($shopName)): ?>
+        <div class="shop-info-badge">
+            <span class="badge bg-light text-dark border">
+                <i class="fas fa-store me-1"></i> <?php echo esc_html($shopName); ?>
+            </span>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

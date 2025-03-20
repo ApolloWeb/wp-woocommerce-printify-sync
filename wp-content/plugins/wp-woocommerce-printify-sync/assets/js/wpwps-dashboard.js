@@ -97,6 +97,107 @@ jQuery(document).ready(function($) {
         }, 1800);
     });
     
+    // ChatGPT API Settings Handlers
+    
+    // Toggle API key visibility
+    $('#toggle-api-key').on('click', function() {
+        const apiKeyField = $('#chatgpt-api-key');
+        const eyeIcon = $(this).find('i');
+        
+        if (apiKeyField.attr('type') === 'password') {
+            apiKeyField.attr('type', 'text');
+            eyeIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            apiKeyField.attr('type', 'password');
+            eyeIcon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+    
+    // Save ChatGPT API settings
+    $('#chatgpt-settings-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const apiKey = $('#chatgpt-api-key').val();
+        const model = $('#chatgpt-model').val();
+        
+        if (!apiKey) {
+            showChatGptMessage('API key is required.', 'danger');
+            return;
+        }
+        
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_save_chatgpt_settings',
+                nonce: wpwps.nonce,
+                api_key: apiKey,
+                model: model
+            },
+            beforeSend: function() {
+                showChatGptMessage('Saving settings...', 'info');
+            },
+            success: function(response) {
+                if (response.success) {
+                    showChatGptMessage(response.data.message, 'success');
+                } else {
+                    showChatGptMessage(response.data.message, 'danger');
+                }
+            },
+            error: function() {
+                showChatGptMessage('An error occurred while saving settings.', 'danger');
+            }
+        });
+    });
+    
+    // Test ChatGPT API connection
+    $('#test-chatgpt-api').on('click', function() {
+        const apiKey = $('#chatgpt-api-key').val();
+        const model = $('#chatgpt-model').val();
+        
+        if (!apiKey) {
+            showChatGptMessage('API key is required to test connection.', 'danger');
+            return;
+        }
+        
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_test_chatgpt',
+                nonce: wpwps.nonce
+            },
+            beforeSend: function() {
+                showChatGptMessage('Testing ChatGPT API connection...', 'info');
+                btn.html('<i class="fas fa-spinner fa-spin me-1"></i> Testing...');
+                btn.prop('disabled', true);
+                $('#chatgpt-response-container').addClass('d-none');
+            },
+            success: function(response) {
+                btn.html(originalText);
+                btn.prop('disabled', false);
+                
+                if (response.success) {
+                    showChatGptMessage(response.data.message, 'success');
+                    
+                    // Show response
+                    $('#chatgpt-response').text(response.data.response);
+                    $('#chatgpt-response-container').removeClass('d-none');
+                } else {
+                    showChatGptMessage(response.data.message, 'danger');
+                }
+            },
+            error: function() {
+                btn.html(originalText);
+                btn.prop('disabled', false);
+                showChatGptMessage('An error occurred while testing connection.', 'danger');
+            }
+        });
+    });
+    
     /**
      * Initialize charts
      */
@@ -524,6 +625,19 @@ jQuery(document).ready(function($) {
             });
         }, 5000);
     }
+    
+    /**
+     * Show a message in the ChatGPT settings card
+     * 
+     * @param {string} message The message to show
+     * @param {string} type The message type (success, info, warning, danger)
+     */
+    function showChatGptMessage(message, type) {
+        const $container = $('#chatgpt-message');
+        $container.removeClass('d-none alert-success alert-info alert-warning alert-danger');
+        $container.addClass('alert-' + type);
+        $container.html(message);
+    }
 });
 
 // Expanded translations object
@@ -555,5 +669,9 @@ const wpwps_i18n = {
     fetching_products: 'Fetching products from Printify...',
     processing_products: 'Processing product data...',
     updating_products: 'Updating WooCommerce products...',
-    finalizing: 'Finalizing synchronization...'
+    finalizing: 'Finalizing synchronization...',
+    saving_chatgpt: 'Saving ChatGPT settings...',
+    testing_chatgpt: 'Testing ChatGPT connection...',
+    chatgpt_settings_saved: 'ChatGPT API settings saved successfully!',
+    chatgpt_test_complete: 'ChatGPT API test completed successfully!'
 };

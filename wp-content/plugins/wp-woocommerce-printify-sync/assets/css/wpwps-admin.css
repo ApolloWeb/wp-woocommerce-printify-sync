@@ -130,6 +130,20 @@ button i {
     padding: 0.5em 0.75em;
 }
 
+/* Shop info badge styling */
+.shop-info-badge .badge {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    background-color: #f8f9fa;
+    color: #212529;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.shop-info-badge .badge i {
+    color: #6f42c1;
+}
+
 /* Progress bar styling */
 .progress {
     height: 1rem;
@@ -206,4 +220,18 @@ canvas {
 /* Make order status chart a little more compact */
 #order-status-chart {
     max-height: 300px;
+}
+
+/* ChatGPT card styling */
+#chatgpt-response-container {
+    transition: all 0.3s ease;
+}
+
+#chatgpt-response-container .card {
+    border-left: 4px solid #6f42c1;
+}
+
+#chatgpt-response {
+    font-family: monospace;
+    white-space: pre-wrap;
 }
