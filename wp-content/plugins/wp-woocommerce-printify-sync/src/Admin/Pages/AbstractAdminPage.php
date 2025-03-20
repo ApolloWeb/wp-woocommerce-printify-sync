@@ -13,7 +13,7 @@ abstract class AbstractAdminPage
     public $pageTitle;
     public $menuTitle;
 
-    public function __construct(TemplateEngineInterface $templateEngine, ServiceContainer $container)
+    public function __construct(TemplateEngineInterface $templateEngine, ServiceContainer $container = null)
     {
         $this->templateEngine = $templateEngine;
         $this->container = $container;

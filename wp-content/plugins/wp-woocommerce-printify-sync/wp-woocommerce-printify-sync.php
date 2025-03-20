@@ -22,11 +22,11 @@ if (!defined('WPINC')) {
     die;
 }
 
-// Register autoloader - Update path to be relative to this file
+// Register autoloader - Update path to plugin directory
 require_once __DIR__ . '/src/Core/Autoloader.php';
 $autoloader = new Core\Autoloader(
-    'ApolloWeb\\WPWooCommercePrintifySync\\',
-    __DIR__ . '/'
+    'ApolloWeb\\WPWooCommercePrintifySync',
+    __DIR__ // This will now point to the plugin root directory
 );
 $autoloader->register();
 
@@ -68,6 +68,14 @@ function init()
     $container->set('loader', new Core\Loader());
     $container->set('template_engine', new Core\TemplateEngine());
     
+    // Register custom order statuses
+    $customOrderStatuses = new WooCommerce\CustomOrderStatuses();
+    $container->set('custom_order_statuses', $customOrderStatuses);
+    
+    // Register hooks for custom order statuses
+    add_action('init', [$customOrderStatuses, 'registerOrderStatuses']);
+    add_filter('wc_order_statuses', [$customOrderStatuses, 'addOrderStatusesToWooCommerce']);
+    
     // Register API services
     $container->set('printify_api', function() {
         return new API\PrintifyAPI(
@@ -79,6 +87,14 @@ function init()
     // Register WooCommerce services
     $container->set('product_importer', new WooCommerce\ProductImporter());
     
+    // Register Order Manager
+    $container->set('order_manager', function($container) {
+        return new WooCommerce\OrderManager(
+            $container->get('printify_api'),
+            $container->get('custom_order_statuses')
+        );
+    });
+    
     // Register plugin
     $container->set('plugin', function($container) {
         return new Plugin(
@@ -86,6 +102,12 @@ function init()
             $container->get('template_engine'),
             $container
         );
+    });
+    
+    // Explicitly register AJAX handlers to ensure they're available
+    add_action('wp_ajax_printify_sync', function() use ($container) {
+        $ajaxHandler = $container->get('ajax_handler');
+        $ajaxHandler->handleAjax();
     });
     
     // Run the plugin

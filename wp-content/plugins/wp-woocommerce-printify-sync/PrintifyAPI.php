@@ -117,12 +117,12 @@ class PrintifyAPI implements PrintifyAPIInterface
         return $allProducts;
     }
 
-    public function getOrders(string $shopId, int $page = 1, int $perPage = 10, array $filters = []): array
+    public function getOrders(string $shopId, int $page = 1, int $perPage = 10): array
     {
-        $queryParams = array_merge([
+        $queryParams = [
             'limit' => $perPage,
             'page' => $page
-        ], $filters);
+        ];
         
         $data = $this->makeRequest(
             "shops/{$shopId}/orders.json",

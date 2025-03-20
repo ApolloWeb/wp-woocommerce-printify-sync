@@ -12,111 +12,62 @@ jQuery(document).ready(function($) {
               .html(originalHtml);
     }
 
-    function updatePagination(data) {
-        const totalPages = Math.ceil(data.total / data.per_page);
-        let paginationHtml = '';
-        
-        // Previous button
-        paginationHtml += `
-            <li class="page-item ${data.current_page === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${data.current_page - 1}">Previous</a>
-            </li>
-        `;
-        
-        // First page
-        paginationHtml += `
-            <li class="page-item ${data.current_page === 1 ? 'active' : ''}">
-                <a class="page-link" href="#" data-page="1">1</a>
-            </li>
-        `;
-        
-        // Second page
-        if (totalPages > 1) {
-            paginationHtml += `
-                <li class="page-item ${data.current_page === 2 ? 'active' : ''}">
-                    <a class="page-link" href="#" data-page="2">2</a>
-                </li>
-            `;
-        }
-        
-        // Next button
-        paginationHtml += `
-            <li class="page-item ${data.current_page === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${data.current_page + 1}">Next</a>
-            </li>
-        `;
-        
-        $('#orders-pagination').html(paginationHtml);
-        
-        // Update count text
-        const start = ((data.current_page - 1) * data.per_page) + 1;
-        const end = Math.min(data.current_page * data.per_page, data.total);
-        $('#showing-start').text(start);
-        $('#showing-end').text(end);
-        $('#total-orders').text(data.total);
+    // Show alert messages
+    function showAlert(message, type = 'info') {
+        return `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
     }
 
-    function renderOrders(orders) {
-        const tbody = $('#orders-table tbody');
-        tbody.empty();
-        
-        if (orders.length === 0) {
-            tbody.html('<tr><td colspan="8" class="text-center">No orders found</td></tr>');
-            return;
+    // Clear cache on page load
+    $.ajax({
+        url: wpwps_data.ajax_url,
+        type: 'POST',
+        data: {
+            action: 'printify_sync',
+            action_type: 'clear_cache',
+            nonce: wpwps_data.nonce
+        },
+        success: function(response) {
+            if (response.success) {
+                $('#orders-alerts').html(showAlert('Cache cleared. Click "Fetch Orders" to load fresh data.', 'info'));
+            }
         }
-        
-        orders.forEach(order => {
-            const row = `
-                <tr>
-                    <td>${order.wc_order_id}</td>
-                    <td>${order.printify_order_id}</td>
-                    <td>${order.date}</td>
-                    <td>${order.customer}</td>
-                    <td>
-                        <span class="badge bg-${order.status === 'completed' ? 'success' : 'secondary'}">
-                            ${order.status}
-                        </span>
-                    </td>
-                    <td>${order.total}</td>
-                    <td>${order.shipping_status}</td>
-                    <td>
-                        <a href="/wp-admin/post.php?post=${order.wc_order_id}&action=edit" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                    </td>
-                </tr>
-            `;
-            tbody.append(row);
-        });
-    }
+    });
 
-    function fetchOrders(page = 1) {
+    // Show initial message in the table
+    $('#orders-table tbody').html('<tr><td colspan="8" class="text-center">Click "Fetch Orders" to load orders from Printify</td></tr>');
+
+    function fetchOrders(page = 1, refreshCache = false) {
         currentPage = page;
-        const button = $('#sync-orders');
+        const button = $('#fetch-orders');
         const originalHtml = button.html();
         showLoading(button);
+
+        $('#orders-table tbody').html('<tr><td colspan="8" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading orders from Printify...</td></tr>');
         
         $.ajax({
             url: wpwps_data.ajax_url,
-            type: 'POST',
+            type: 'GET',
             data: {
                 action: 'printify_sync',
                 action_type: 'fetch_printify_orders',
                 nonce: wpwps_data.nonce,
                 page: page,
-                per_page: perPage
+                per_page: perPage,
+                refresh_cache: refreshCache
             },
             success: function(response) {
                 if (response.success) {
                     renderOrders(response.data.orders);
                     updatePagination(response.data);
                 } else {
-                    alert(response.data.message || 'Failed to fetch orders');
+                    $('#orders-alerts').html(showAlert(response.data.message || 'Failed to fetch orders', 'danger'));
                 }
             },
             error: function() {
-                alert('An error occurred while fetching orders');
+                $('#orders-alerts').html(showAlert('Network error while fetching orders', 'danger'));
             },
             complete: function() {
                 hideLoading(button, originalHtml);
@@ -125,10 +76,11 @@ jQuery(document).ready(function($) {
     }
 
     // Event Handlers
-    $('#sync-orders').on('click', function() {
-        fetchOrders(1);
+    $('#fetch-orders').on('click', function() {
+        fetchOrders(1, true);
     });
 
+    // Add pagination handler
     $(document).on('click', '.page-link', function(e) {
         e.preventDefault();
         const page = $(this).data('page');
@@ -136,7 +88,4 @@ jQuery(document).ready(function($) {
             fetchOrders(parseInt(page));
         }
     });
-
-    // Initial load
-    fetchOrders(1);
 });

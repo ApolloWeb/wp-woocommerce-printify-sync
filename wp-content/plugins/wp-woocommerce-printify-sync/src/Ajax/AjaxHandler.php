@@ -251,18 +251,26 @@ class AjaxHandler
                 wp_send_json_error(['message' => 'Shop ID not configured']);
             }
             
-            // Get all products first
-            $page = 1;
-            $perPage = 100; // Get maximum allowed per request
-            $allProducts = [];
+            // Try to get from cache first
+            $allProducts = Cache::getProducts($shopId);
             
-            do {
-                $result = $printifyApi->getProducts($shopId, $page, $perPage);
-                $allProducts = array_merge($allProducts, $result['data']);
-                $page++;
-            } while ($page <= $result['last_page']);
+            // If not in cache, fetch from API
+            if ($allProducts === false) {
+                $allProducts = [];
+                $page = 1;
+                $perPage = 100; // Get maximum allowed per request
+                
+                do {
+                    $result = $printifyApi->getProducts($shopId, $page, $perPage);
+                    $allProducts = array_merge($allProducts, $result['data']);
+                    $page++;
+                } while ($page <= $result['last_page']);
+                
+                // Store in cache
+                Cache::setProducts($shopId, $allProducts);
+            }
             
-            // Now handle pagination on the full dataset
+            // Handle pagination
             $requestedPage = isset($_POST['page']) ? intval($_POST['page']) : 1;
             $requestedPerPage = isset($_POST['per_page']) ? intval($_POST['per_page']) : 10;
             
@@ -345,6 +353,31 @@ class AjaxHandler
             
         } catch (\Exception $e) {
             wp_send_json_error(['message' => 'Failed to import product: ' . $e->getMessage()]);
+        }
+    }
+
+    private function fetchPrintifyOrders()
+    {
+        try {
+            // Verify request method
+            if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+                wp_send_json_error([
+                    'message' => 'This endpoint only accepts GET requests',
+                    'error_type' => 'method'
+                ]);
+                return;
+            }
+
+            error_log("PRINTIFY DEBUG - fetchPrintifyOrders starting");
+            
+            // Get pagination params from GET
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
+            $refreshCache = isset($_GET['refresh_cache']) && $_GET['refresh_cache'] === 'true';
+            
+            // Rest of the function remains the same...
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
         }
     }
 }

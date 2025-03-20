@@ -40,6 +40,7 @@ jQuery(document).ready(function($) {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false, // This is crucial for responsive chart
                 plugins: {
                     legend: {
                         display: false

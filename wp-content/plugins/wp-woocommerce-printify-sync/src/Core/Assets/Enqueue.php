@@ -9,10 +9,8 @@ class Enqueue
 
     public function __construct()
     {
-        // Properly get the URL to the plugin root directory
+        // Update to use plugin_dir_url() with __FILE__
         $this->baseUrl = plugin_dir_url(dirname(dirname(dirname(__FILE__))));
-        
-        // Set up the assets array structure but don't register yet
         $this->setupAssets();
     }
 

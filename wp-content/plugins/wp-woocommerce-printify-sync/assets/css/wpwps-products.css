@@ -1,0 +1,25 @@
+/* Product alerts styling */
+#products-alerts .alert {
+    margin-bottom: 1rem;
+}
+
+/* Make sure alert text is readable on all alert types */
+.alert {
+    text-shadow: none;
+}
+
+.alert-danger .btn-outline-light:hover {
+    color: #721c24;
+}
+
+.alert-warning .btn-outline-light:hover {
+    color: #856404;
+}
+
+.alert-success .btn-outline-light:hover {
+    color: #155724;
+}
+
+.alert-info .btn-outline-light:hover {
+    color: #0c5460;
+}

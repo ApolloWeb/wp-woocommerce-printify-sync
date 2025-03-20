@@ -1,11 +1,13 @@
 <?php
 namespace ApolloWeb\WPWooCommercePrintifySync\Admin\Pages;
 
+use ApolloWeb\WPWooCommercePrintifySync\Core\ServiceContainer;
+
 class SettingsPage extends AbstractAdminPage
 {
-    public function __construct($templateEngine)
+    public function __construct($templateEngine, ServiceContainer $container = null)
     {
-        parent::__construct($templateEngine);
+        parent::__construct($templateEngine, $container);
         $this->slug = 'wpwps-settings';
         $this->pageTitle = 'Printify Settings';
         $this->menuTitle = 'Settings';
@@ -14,7 +16,8 @@ class SettingsPage extends AbstractAdminPage
     public function render()
     {
         return $this->templateEngine->render('admin/wpwps-settings.php', [
-            'partials' => ['wpwps-header', 'wpwps-alerts']
+            'partials' => ['wpwps-header', 'wpwps-alerts'],
+            'container' => $this->container
         ]);
     }
 
