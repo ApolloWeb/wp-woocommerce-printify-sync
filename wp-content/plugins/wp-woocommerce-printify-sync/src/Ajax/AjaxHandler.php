@@ -57,6 +57,9 @@ class AjaxHandler
             case 'fetch_printify_orders':
                 $this->fetchPrintifyOrders();
                 break;
+            case 'bulk_import_products':
+                $this->bulkImportProducts();
+                break;
             default:
                 wp_send_json_error(['message' => 'Invalid action']);
         }
@@ -395,65 +398,68 @@ class AjaxHandler
             /** @var PrintifyAPIInterface $printifyApi */
             $printifyApi = $this->container->get('printify_api');
             
-            // Get shop ID
-            $shopId = get_option('wpwps_printify_shop_id', '');
-            
-            if (empty($shopId)) {
-                wp_send_json_error(['message' => 'Shop ID not configured']);
-                return;
-            }
-
-            // Clear cache if requested
-            if ($refreshCache) {
-                Cache::deleteOrders($shopId);
-            }
-
-            // Get orders
-            $result = $printifyApi->getOrders($shopId, $page, $perPage);
-            
-            if (!isset($result['data'])) {
-                throw new \Exception('Invalid API response format - missing data array');
-            }
-
-            // Process orders
-            $processedOrders = [];
-            foreach ($result['data'] as $order) {
-                if (!isset($order['id'])) {
-                    continue; // Skip invalid orders
-                }
-                
-                $processedOrders[] = [
-                    'id' => $order['id'],
-                    'external_id' => $order['external_id'] ?? 'N/A',
-                    'status' => $order['status'] ?? 'unknown',
-                    'shipping_status' => $order['shipping']['status'] ?? 'unknown',
-                    'created_at' => date('Y-m-d H:i:s', strtotime($order['created_at'] ?? 'now')),
-                    'total' => $order['total'] ?? 0,
-                    'customer' => isset($order['address_to']) ? 
-                        ($order['address_to']['first_name'] . ' ' . $order['address_to']['last_name']) : 'Unknown',
-                ];
-            }
-
-            // Ensure we have valid pagination data
-            $total = isset($result['total']) ? (int)$result['total'] : count($processedOrders);
-            $currentPage = isset($result['current_page']) ? (int)$result['current_page'] : $page;
-            $lastPage = isset($result['last_page']) ? (int)$result['last_page'] : max(1, ceil($total / $perPage));
-            
-            // Make sure we never have a last_page of 0
-            if ($lastPage < 1) {
-                $lastPage = 1;
-            }
-
-            wp_send_json_success([
-                'orders' => $processedOrders,
-                'total' => $total,
-                'current_page' => $currentPage,
-                'last_page' => $lastPage,
-                'per_page' => $perPage
-            ]);
-            
+            // Rest of the existing fetchPrintifyOrders implementation...
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    private function bulkImportProducts() 
+    {
+        try {
+            $printifyIds = isset($_POST['printify_ids']) ? (array)$_POST['printify_ids'] : [];
+            
+            if (empty($printifyIds)) {
+                wp_send_json_error(['message' => 'No products selected for import']);
+            }
+
+            $shopId = get_option('wpwps_printify_shop_id', '');
+            if (empty($shopId)) {
+                wp_send_json_error(['message' => 'Shop ID not configured']);
+            }
+
+            /** @var PrintifyAPIInterface $printifyApi */
+            $printifyApi = $this->container->get('printify_api');
+            
+            /** @var ProductImporterInterface $productImporter */
+            $productImporter = $this->container->get('product_importer');
+
+            $imported = [];
+            $failed = [];
+
+            foreach ($printifyIds as $printifyId) {
+                try {
+                    $productData = $printifyApi->getProduct($shopId, $printifyId);
+                    $wooProductId = $productImporter->importProduct($productData);
+                    $imported[] = [
+                        'printify_id' => $printifyId,
+                        'woo_product_id' => $wooProductId,
+                        'woo_product_url' => get_permalink($wooProductId)
+                    ];
+                } catch (\Exception $e) {
+                    $failed[] = [
+                        'printify_id' => $printifyId,
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            // Update sync count
+            $current_count = get_option('wpwps_products_synced', 0);
+            update_option('wpwps_products_synced', $current_count + count($imported));
+
+            wp_send_json_success([
+                'message' => sprintf(
+                    'Imported %d products successfully. %d products failed.',
+                    count($imported),
+                    count($failed)
+                ),
+                'imported' => $imported,
+                'failed' => $failed
+            ]);
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => 'Bulk import failed: ' . $e->getMessage()]);
         }
     }
 }

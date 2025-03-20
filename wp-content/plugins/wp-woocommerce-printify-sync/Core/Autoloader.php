@@ -29,20 +29,12 @@ class Autoloader
         // Get the relative class name
         $relative_class = substr($class, $len);
 
-        // First check if the file exists in src directory
-        $src_file = $this->baseDir . 'src' . str_replace('\\', DIRECTORY_SEPARATOR, $relative_class) . '.php';
-        
-        if (file_exists($src_file)) {
-            require_once $src_file;
-            return;
-        }
-        
-        // If not in src, check in the plugin root directory (for PrintifyAPI and PrintifyHttpClient)
-        $root_file = $this->baseDir . basename(str_replace('\\', DIRECTORY_SEPARATOR, $relative_class)) . '.php';
-        
-        if (file_exists($root_file)) {
-            require_once $root_file;
-            return;
+        // Convert namespace separators to directory separators (remove src/ prefix)
+        $file = $this->baseDir . str_replace('\\', '/', $relative_class) . '.php';
+
+        // If the file exists, require it
+        if (file_exists($file)) {
+            require $file;
         }
     }
 }

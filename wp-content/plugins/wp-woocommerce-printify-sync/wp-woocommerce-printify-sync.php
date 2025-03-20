@@ -20,15 +20,15 @@ define('WPWPS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WP_WOOCOMMERCE_PRINTIFY_SYNC_VERSION', '1.0.0');
 
 // Load the autoloader
-require_once WPWPS_PLUGIN_DIR . '/src/Core/Autoloader.php';
+require_once WPWPS_PLUGIN_DIR . 'src/Core/Autoloader.php';
 
 // Load debug tools when in debug mode
 if (defined('WP_DEBUG') && WP_DEBUG) {
     require_once WPWPS_PLUGIN_DIR . 'includes/debug-tools.php';
 }
 
-// Initialize autoloader with correct base directory
-$autoloader = new Core\Autoloader(
+// Initialize autoloader with correct base directory and namespace
+$autoloader = new \ApolloWeb\WPWooCommercePrintifySync\Core\Autoloader(
     'ApolloWeb\\WPWooCommercePrintifySync',
     WPWPS_PLUGIN_DIR
 );
@@ -47,12 +47,17 @@ function init() {
         $container->set('loader', new Core\Loader());
         $container->set('template_engine', new Core\TemplateEngine());
         
-        // Register API service
-        $container->set('printify_api', function() {
-            return new API\PrintifyAPI(
+        // Register Printify HTTP client service
+        $container->set('printify_http_client', function($container) {
+            return new API\PrintifyHttpClient(
                 get_option('wpwps_printify_api_key', ''),
                 get_option('wpwps_printify_endpoint', 'https://api.printify.com/v1')
             );
+        });
+
+        // Register API service - Fix: use the correct namespace
+        $container->set('printify_api', function($container) {
+            return new API\PrintifyAPI($container->get('printify_http_client'));
         });
 
         // Register WooCommerce services
