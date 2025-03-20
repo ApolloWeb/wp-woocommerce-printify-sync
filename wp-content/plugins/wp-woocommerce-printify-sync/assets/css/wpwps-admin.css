@@ -138,10 +138,72 @@ button i {
     background-color: #f8f9fa;
     color: #212529;
     border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.shop-info-badge .badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .shop-info-badge .badge i {
     color: #6f42c1;
+}
+
+.shop-badge-link {
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.shop-badge-link:hover {
+    background-color: #fff3cd !important;
+}
+
+.shop-badge-link .fa-external-link-alt,
+.shop-badge-link .fa-sync-alt {
+    font-size: 0.7em;
+    opacity: 0.7;
+}
+
+.shop-info-badge .badge.bg-secondary {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.shop-info-badge .badge.bg-secondary:hover {
+    opacity: 1;
+}
+
+/* Enhanced Shop info badge styling */
+.shop-info-badge .badge {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    background-color: #f8f9fa;
+    color: #212529;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.shop-info-badge .badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shop-info-badge .badge i {
+    color: #6f42c1;
+}
+
+.shop-info-badge .badge.bg-secondary {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.shop-info-badge .badge.bg-secondary:hover {
+    opacity: 1;
 }
 
 /* Progress bar styling */

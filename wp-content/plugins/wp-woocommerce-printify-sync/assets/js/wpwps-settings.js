@@ -192,4 +192,214 @@ jQuery(document).ready(function($) {
         $select.prop('disabled', false);
         $('#save-shop').prop('disabled', false);
     }
+    
+    // ChatGPT API Settings Handlers
+    
+    // Toggle API key visibility
+    $('#toggle-api-key').on('click', function() {
+        const apiKeyField = $('#chatgpt-api-key');
+        const eyeIcon = $(this).find('i');
+        
+        if (apiKeyField.attr('type') === 'password') {
+            apiKeyField.attr('type', 'text');
+            eyeIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            apiKeyField.attr('type', 'password');
+            eyeIcon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+    
+    // Update temperature display value
+    $('#chatgpt-temperature').on('input', function() {
+        $('#temperature-value').text($(this).val());
+    });
+    
+    // Toggle usage limit inputs
+    $('#chatgpt-enable-usage-limit').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#usage-limit-container').show();
+        } else {
+            $('#usage-limit-container').hide();
+        }
+    });
+    
+    // Save ChatGPT API settings
+    $('#chatgpt-settings-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const apiKey = $('#chatgpt-api-key').val();
+        const model = $('#chatgpt-model').val();
+        const maxTokens = $('#chatgpt-max-tokens').val();
+        const temperature = $('#chatgpt-temperature').val();
+        const enableUsageLimit = $('#chatgpt-enable-usage-limit').is(':checked');
+        const monthlyLimit = $('#chatgpt-monthly-limit').val();
+        
+        if (!apiKey) {
+            showChatGptMessage('API key is required.', 'danger');
+            return;
+        }
+        
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_save_chatgpt_settings',
+                nonce: wpwps.nonce,
+                api_key: apiKey,
+                model: model,
+                max_tokens: maxTokens,
+                temperature: temperature,
+                enable_usage_limit: enableUsageLimit,
+                monthly_limit: monthlyLimit
+            },
+            beforeSend: function() {
+                showChatGptMessage('Saving settings...', 'info');
+            },
+            success: function(response) {
+                if (response.success) {
+                    showChatGptMessage(response.data.message, 'success');
+                } else {
+                    showChatGptMessage(response.data.message, 'danger');
+                }
+            },
+            error: function() {
+                showChatGptMessage('An error occurred while saving settings.', 'danger');
+            }
+        });
+    });
+    
+    // Test ChatGPT API connection
+    $('#test-chatgpt-api').on('click', function() {
+        const apiKey = $('#chatgpt-api-key').val();
+        
+        if (!apiKey) {
+            showChatGptMessage('API key is required to test connection.', 'danger');
+            return;
+        }
+        
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_test_chatgpt',
+                nonce: wpwps.nonce
+            },
+            beforeSend: function() {
+                showChatGptMessage('Testing ChatGPT API connection...', 'info');
+                btn.html('<i class="fas fa-spinner fa-spin me-1"></i> Testing...');
+                btn.prop('disabled', true);
+                $('#chatgpt-response-container').addClass('d-none');
+            },
+            success: function(response) {
+                btn.html(originalText);
+                btn.prop('disabled', false);
+                
+                if (response.success) {
+                    showChatGptMessage(response.data.message, 'success');
+                    
+                    // Show response and usage info
+                    $('#chatgpt-response').text(response.data.response);
+                    
+                    if (response.data.usage) {
+                        const usage = response.data.usage;
+                        const tokenInfo = `Tokens: ${usage.total_tokens} (${usage.prompt_tokens} prompt, ${usage.completion_tokens} completion)`;
+                        const costInfo = `Cost: $${usage.cost.toFixed(6)}`;
+                        
+                        if (usage.monthly_limit !== null) {
+                            const usagePercent = (usage.current_usage / usage.monthly_limit) * 100;
+                            const usageInfo = `Monthly usage: $${usage.current_usage.toFixed(4)} / $${usage.monthly_limit.toFixed(2)} (${usagePercent.toFixed(1)}%)`;
+                            $('#token-usage').html(`${tokenInfo} | ${costInfo} | ${usageInfo}`);
+                        } else {
+                            $('#token-usage').html(`${tokenInfo} | ${costInfo}`);
+                        }
+                    }
+                    
+                    $('#chatgpt-response-container').removeClass('d-none');
+                } else {
+                    showChatGptMessage(response.data.message, 'danger');
+                }
+            },
+            error: function() {
+                btn.html(originalText);
+                btn.prop('disabled', false);
+                showChatGptMessage('An error occurred while testing connection.', 'danger');
+            }
+        });
+    });
+    
+    /**
+     * Show a message in the ChatGPT settings card
+     * 
+     * @param {string} message The message to show
+     * @param {string} type The message type (success, info, warning, danger)
+     */
+    function showChatGptMessage(message, type) {
+        const $container = $('#chatgpt-message');
+        $container.removeClass('d-none alert-success alert-info alert-warning alert-danger');
+        $container.addClass('alert-' + type);
+        $container.html(message);
+    }
+    
+    // Fetch shop name button handler
+    $('#fetch-shop-name').on('click', function() {
+        const btn = $(this);
+        const originalHtml = btn.html();
+        
+        $.ajax({
+            url: wpwps.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wpwps_fetch_shop_name',
+                nonce: wpwps.nonce
+            },
+            beforeSend: function() {
+                btn.prop('disabled', true)
+                   .html('<i class="fas fa-spinner fa-spin me-1"></i> ' + 'Fetching...');
+                
+                showNameFetchMessage('Fetching shop name from Printify...', 'info');
+            },
+            success: function(response) {
+                btn.prop('disabled', false)
+                   .html(originalHtml);
+                
+                if (response.success) {
+                    showNameFetchMessage(response.data.message, 'success');
+                    
+                    // Reload the page after a short delay
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showNameFetchMessage(response.data.message, 'danger');
+                }
+            },
+            error: function() {
+                btn.prop('disabled', false)
+                   .html(originalHtml);
+                
+                showNameFetchMessage('An error occurred while fetching shop name.', 'danger');
+            }
+        });
+    });
+
+    // Second fetch shop name button (in shop info card)
+    $('#shop-info-fetch').on('click', function() {
+        $('#fetch-shop-name').trigger('click');
+    });
+
+    /**
+     * Show a message in the name fetch alert
+     * 
+
+
+
+
+
+        const $container = $('#name-fetch-alert');    function showNameFetchMessage(message, type) {     */     * @param {string} type The message type (success, info, warning, danger)     * @param {string} message The message to show        $container.removeClass('d-none alert-success alert-info alert-warning alert-danger');
+        $container.addClass('alert-' + type);
+        $container.html(message);
+    }
 });

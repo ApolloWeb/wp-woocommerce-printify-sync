@@ -55,6 +55,9 @@ class AjaxHandler
         // ChatGPT handlers
         add_action('wp_ajax_wpwps_save_chatgpt_settings', [$this, 'saveChatGptSettings']);
         add_action('wp_ajax_wpwps_test_chatgpt', [$this, 'testChatGpt']);
+        
+        // Get shop name by ID
+        add_action('wp_ajax_wpwps_fetch_shop_name', [$this, 'fetchShopName']);
     }
     
     /**
@@ -404,6 +407,10 @@ class AjaxHandler
         // Sanitize inputs
         $apiKey = sanitize_text_field($_POST['api_key'] ?? '');
         $model = sanitize_text_field($_POST['model'] ?? 'gpt-3.5-turbo');
+        $maxTokens = absint($_POST['max_tokens'] ?? 250);
+        $temperature = (float) $_POST['temperature'] ?? 0.7;
+        $enableUsageLimit = (bool) ($_POST['enable_usage_limit'] ?? false);
+        $monthlyLimit = (float) $_POST['monthly_limit'] ?? 5.0;
         
         // Validate inputs
         if (empty($apiKey)) {
@@ -411,9 +418,32 @@ class AjaxHandler
             return;
         }
         
+        // Ensure max tokens is within reasonable limits
+        if ($maxTokens < 50) {
+            $maxTokens = 50;
+        } elseif ($maxTokens > 4000) {
+            $maxTokens = 4000;
+        }
+        
+        // Ensure temperature is between 0 and 1
+        if ($temperature < 0) {
+            $temperature = 0;
+        } elseif ($temperature > 1) {
+            $temperature = 1;
+        }
+        
+        // Ensure monthly limit is positive
+        if ($monthlyLimit < 0) {
+            $monthlyLimit = 0;
+        }
+        
         // Save settings
         $this->settings->setChatGptApiKey($apiKey);
         $this->settings->setChatGptApiModel($model);
+        $this->settings->setChatGptMaxTokens($maxTokens);
+        $this->settings->setChatGptTemperature($temperature);
+        $this->settings->setChatGptUsageLimitEnabled($enableUsageLimit);
+        $this->settings->setChatGptMonthlyLimit($monthlyLimit);
         
         wp_send_json_success([
             'message' => __('ChatGPT API settings saved successfully!', 'wp-woocommerce-printify-sync'),
@@ -436,8 +466,18 @@ class AjaxHandler
             return;
         }
         
+        // Check if usage limit is exceeded
+        if ($this->settings->isChatGptUsageLimitExceeded()) {
+            wp_send_json_error([
+                'message' => __('Monthly usage limit exceeded. Please increase your limit or wait until next month.', 'wp-woocommerce-printify-sync'),
+            ]);
+            return;
+        }
+        
         $apiKey = $this->settings->getChatGptApiKey();
         $model = $this->settings->getChatGptApiModel();
+        $maxTokens = $this->settings->getChatGptMaxTokens();
+        $temperature = $this->settings->getChatGptTemperature();
         
         if (empty($apiKey)) {
             wp_send_json_error(['message' => __('API key is required.', 'wp-woocommerce-printify-sync')]);
@@ -466,7 +506,8 @@ class AjaxHandler
                         'content' => 'Respond with a brief greeting to confirm the API connection is working.'
                     ]
                 ],
-                'max_tokens' => 50
+                'max_tokens' => $maxTokens,
+                'temperature' => $temperature
             ])
         ];
         
@@ -492,14 +533,106 @@ class AjaxHandler
         }
         
         if (isset($data['choices'][0]['message']['content'])) {
+            // Calculate and record token usage cost
+            $promptTokens = $data['usage']['prompt_tokens'] ?? 0;
+            $completionTokens = $data['usage']['completion_tokens'] ?? 0;
+            
+            // Calculate cost based on the model (approximate rates)
+            $cost = 0;
+            if ($model === 'gpt-4') {
+                $promptCost = $promptTokens * 0.03 / 1000; // $0.03 per 1K tokens
+                $completionCost = $completionTokens * 0.06 / 1000; // $0.06 per 1K tokens
+            } else {
+                // Default to gpt-3.5-turbo rates
+                $promptCost = $promptTokens * 0.0015 / 1000; // $0.0015 per 1K tokens
+                $completionCost = $completionTokens * 0.002 / 1000; // $0.002 per 1K tokens
+            }
+            
+            $cost = $promptCost + $completionCost;
+            
+            // Record token usage for cost tracking
+            $this->settings->recordChatGptUsage($cost);
+            
+            // Get current usage stats
+            $currentUsage = $this->settings->getChatGptCurrentUsage();
+            $monthlyLimit = $this->settings->getChatGptMonthlyLimit();
+            $limitEnabled = $this->settings->isChatGptUsageLimitEnabled();
+            
             wp_send_json_success([
                 'message' => __('ChatGPT API connection successful!', 'wp-woocommerce-printify-sync'),
-                'response' => $data['choices'][0]['message']['content']
+                'response' => $data['choices'][0]['message']['content'],
+                'usage' => [
+                    'prompt_tokens' => $promptTokens,
+                    'completion_tokens' => $completionTokens,
+                    'total_tokens' => $data['usage']['total_tokens'] ?? 0,
+                    'cost' => round($cost, 6),
+                    'current_usage' => round($currentUsage, 4),
+                    'monthly_limit' => $limitEnabled ? round($monthlyLimit, 2) : null,
+                ]
             ]);
         } else {
             wp_send_json_error([
                 'message' => __('Could not parse API response.', 'wp-woocommerce-printify-sync'),
             ]);
         }
+    }
+    
+    /**
+     * Fetch shop name for an existing shop ID
+     *
+     * @return void
+     */
+    public function fetchShopName(): void
+    {
+        // Check nonce for security
+        check_ajax_referer('wpwps-ajax-nonce', 'nonce');
+        
+        // Check user capability
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Get shop ID
+        $shopId = $this->settings->getShopId();
+        
+        if (empty($shopId)) {
+            wp_send_json_error(['message' => __('No shop ID is set. Please select a shop first.', 'wp-woocommerce-printify-sync')]);
+            return;
+        }
+        
+        // Get shops from API
+        $shops = $this->api->getShops();
+        
+        if (is_wp_error($shops)) {
+            wp_send_json_error([
+                'message' => $shops->get_error_message(),
+            ]);
+            return;
+        }
+        
+        // Find shop with matching ID
+        $shopName = '';
+        foreach ($shops as $shop) {
+            if (isset($shop['id']) && $shop['id'] == $shopId) {
+                $shopName = sanitize_text_field($shop['title'] ?? '');
+                break;
+            }
+        }
+        
+        if (empty($shopName)) {
+            wp_send_json_error([
+                'message' => __('Could not find shop name for the current shop ID. The shop may no longer exist.', 'wp-woocommerce-printify-sync'),
+            ]);
+            return;
+        }
+        
+        // Save shop name
+        $this->settings->setShopName($shopName);
+        
+        wp_send_json_success([
+            'message' => __('Shop name retrieved and saved successfully!', 'wp-woocommerce-printify-sync'),
+            'shop_name' => $shopName
+        ]);
     }
 }

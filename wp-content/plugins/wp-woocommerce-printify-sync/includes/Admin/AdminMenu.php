@@ -89,13 +89,26 @@ class AdminMenu
     public function renderSettingsPage(): void
     {
         $settings = new Settings();
+        $shopId = $settings->getShopId();
+        $shopName = $settings->getShopName();
+        $apiConfigured = !empty($settings->getApiKey()) && !empty($shopId);
+        
         $data = [
             'apiKey' => $settings->getApiKey(),
             'apiEndpoint' => $settings->getApiEndpoint(),
-            'shopId' => $settings->getShopId(),
+            'shopId' => $shopId,
+            'shopName' => $shopName,
+            'apiConfigured' => $apiConfigured,
+            'chatGptApiKey' => $settings->getChatGptApiKey(),
+            'chatGptApiModel' => $settings->getChatGptApiModel(),
+            'chatGptMaxTokens' => $settings->getChatGptMaxTokens(),
+            'chatGptTemperature' => $settings->getChatGptTemperature(),
+            'chatGptEnableUsageLimit' => $settings->isChatGptUsageLimitEnabled(),
+            'chatGptMonthlyLimit' => $settings->getChatGptMonthlyLimit(),
+            'chatGptCurrentUsage' => $settings->getChatGptCurrentUsage(),
         ];
         
-        $this->templateEngine->render('settings/api-settings', $data);
+        $this->templateEngine->render('settings/wpwps-api-settings', $data);
     }
     
     /**

@@ -6,8 +6,6 @@
  * @var bool $apiConfigured
  * @var string $shopId
  * @var string $shopName
- * @var string $chatGptApiKey
- * @var string $chatGptApiModel
  * @var string $settingsUrl
  */
 
@@ -34,20 +32,6 @@ if (!defined('WPINC')) {
         'apiConfigured' => $apiConfigured
     ]); 
     ?>
-    
-    <!-- AI Integration Row -->
-    <div class="row">
-        <div class="col-lg-6">
-            <?php 
-            // ChatGPT API card
-            $this->section('chatgpt-api-card', [
-                'apiConfigured' => $apiConfigured,
-                'chatGptApiKey' => $chatGptApiKey,
-                'chatGptApiModel' => $chatGptApiModel
-            ]); 
-            ?>
-        </div>
-    </div>
     
     <?php 
     // Product stats cards

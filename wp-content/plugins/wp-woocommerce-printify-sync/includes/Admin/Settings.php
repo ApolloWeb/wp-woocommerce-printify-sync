@@ -47,6 +47,48 @@ class Settings
     private const CHATGPT_API_MODEL_OPTION = 'wpwps_chatgpt_api_model';
     
     /**
+     * The option name for the ChatGPT max tokens
+     *
+     * @var string
+     */
+    private const CHATGPT_MAX_TOKENS_OPTION = 'wpwps_chatgpt_max_tokens';
+    
+    /**
+     * The option name for the ChatGPT temperature
+     *
+     * @var string
+     */
+    private const CHATGPT_TEMPERATURE_OPTION = 'wpwps_chatgpt_temperature';
+    
+    /**
+     * The option name for enabling usage limits
+     *
+     * @var string
+     */
+    private const CHATGPT_ENABLE_USAGE_LIMIT_OPTION = 'wpwps_chatgpt_enable_usage_limit';
+    
+    /**
+     * The option name for the monthly usage limit
+     *
+     * @var string
+     */
+    private const CHATGPT_MONTHLY_LIMIT_OPTION = 'wpwps_chatgpt_monthly_limit';
+    
+    /**
+     * The option name for tracking current month's usage
+     *
+     * @var string
+     */
+    private const CHATGPT_CURRENT_USAGE_OPTION = 'wpwps_chatgpt_current_usage';
+    
+    /**
+     * The option name for tracking the current usage month
+     *
+     * @var string
+     */
+    private const CHATGPT_USAGE_MONTH_OPTION = 'wpwps_chatgpt_usage_month';
+    
+    /**
      * Get the API key
      *
      * @return string
@@ -184,6 +226,140 @@ class Settings
     public function setChatGptApiModel(string $model): bool
     {
         return update_option(self::CHATGPT_API_MODEL_OPTION, $model);
+    }
+    
+    /**
+     * Get the ChatGPT max tokens
+     *
+     * @return int
+     */
+    public function getChatGptMaxTokens(): int
+    {
+        return (int) get_option(self::CHATGPT_MAX_TOKENS_OPTION, 250);
+    }
+    
+    /**
+     * Set the ChatGPT max tokens
+     *
+     * @param int $maxTokens The max tokens
+     * @return bool
+     */
+    public function setChatGptMaxTokens(int $maxTokens): bool
+    {
+        return update_option(self::CHATGPT_MAX_TOKENS_OPTION, $maxTokens);
+    }
+    
+    /**
+     * Get the ChatGPT temperature
+     *
+     * @return float
+     */
+    public function getChatGptTemperature(): float
+    {
+        return (float) get_option(self::CHATGPT_TEMPERATURE_OPTION, 0.7);
+    }
+    
+    /**
+     * Set the ChatGPT temperature
+     *
+     * @param float $temperature The temperature
+     * @return bool
+     */
+    public function setChatGptTemperature(float $temperature): bool
+    {
+        return update_option(self::CHATGPT_TEMPERATURE_OPTION, $temperature);
+    }
+    
+    /**
+     * Check if ChatGPT usage limit is enabled
+     *
+     * @return bool
+     */
+    public function isChatGptUsageLimitEnabled(): bool
+    {
+        return (bool) get_option(self::CHATGPT_ENABLE_USAGE_LIMIT_OPTION, false);
+    }
+    
+    /**
+     * Enable or disable ChatGPT usage limit
+     *
+     * @param bool $enabled Whether to enable usage limit
+     * @return bool
+     */
+    public function setChatGptUsageLimitEnabled(bool $enabled): bool
+    {
+        return update_option(self::CHATGPT_ENABLE_USAGE_LIMIT_OPTION, $enabled);
+    }
+    
+    /**
+     * Get the monthly ChatGPT usage limit
+     *
+     * @return float
+     */
+    public function getChatGptMonthlyLimit(): float
+    {
+        return (float) get_option(self::CHATGPT_MONTHLY_LIMIT_OPTION, 5.0);
+    }
+    
+    /**
+     * Set the monthly ChatGPT usage limit
+     *
+     * @param float $limit The monthly limit
+     * @return bool
+     */
+    public function setChatGptMonthlyLimit(float $limit): bool
+    {
+        return update_option(self::CHATGPT_MONTHLY_LIMIT_OPTION, $limit);
+    }
+    
+    /**
+     * Get the current month's ChatGPT usage
+     *
+     * @return float
+     */
+    public function getChatGptCurrentUsage(): float
+    {
+        $currentMonth = date('Y-m');
+        $usageMonth = get_option(self::CHATGPT_USAGE_MONTH_OPTION, '');
+        
+        // If it's a new month, reset the usage
+        if ($currentMonth !== $usageMonth) {
+            update_option(self::CHATGPT_USAGE_MONTH_OPTION, $currentMonth);
+            update_option(self::CHATGPT_CURRENT_USAGE_OPTION, 0);
+            return 0;
+        }
+        
+        return (float) get_option(self::CHATGPT_CURRENT_USAGE_OPTION, 0);
+    }
+    
+    /**
+     * Record ChatGPT usage cost
+     *
+     * @param float $cost The cost to add
+     * @return bool
+     */
+    public function recordChatGptUsage(float $cost): bool
+    {
+        $currentUsage = $this->getChatGptCurrentUsage();
+        $newUsage = $currentUsage + $cost;
+        return update_option(self::CHATGPT_CURRENT_USAGE_OPTION, $newUsage);
+    }
+    
+    /**
+     * Check if the usage limit is exceeded
+     *
+     * @return bool
+     */
+    public function isChatGptUsageLimitExceeded(): bool
+    {
+        if (!$this->isChatGptUsageLimitEnabled()) {
+            return false;
+        }
+        
+        $currentUsage = $this->getChatGptCurrentUsage();
+        $monthlyLimit = $this->getChatGptMonthlyLimit();
+        
+        return $currentUsage >= $monthlyLimit;
     }
     
     /**
