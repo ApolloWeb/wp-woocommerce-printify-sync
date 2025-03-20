@@ -24,6 +24,9 @@ class Plugin
         $this->hookManager = new Core\HookManager($this->loader);
         
         $this->defineHooks();
+        
+        // Initialize the order item display hooks
+        new WooCommerce\OrderItemDisplay();
     }
 
     private function defineHooks()

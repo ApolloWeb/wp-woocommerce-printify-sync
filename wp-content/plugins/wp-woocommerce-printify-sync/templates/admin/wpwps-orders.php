@@ -43,22 +43,22 @@
 
                 <!-- Orders table -->
                 <div class="table-responsive">
-                    <table class="table table-striped" id="orders-table">
+                    <table class="table table-striped table-hover" id="orders-table">
                         <thead>
                             <tr>
-                                <th>Printify ID</th>
-                                <th>WooCommerce Order</th>
+                                <th>ID</th>
+                                <th>WooCommerce ID</th>
                                 <th>Date</th>
                                 <th>Customer</th>
                                 <th>Status</th>
                                 <th>Total</th>
-                                <th>Shipping Status</th>
+                                <th>Tracking</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="8" class="text-center">Click "Fetch Orders" to load orders from Printify</td>
+                                <td colspan="8" class="text-center">Loading orders...</td>
                             </tr>
                         </tbody>
                     </table>

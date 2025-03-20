@@ -6,6 +6,7 @@ interface OrderImporterInterface
 {
     /**
      * Import an order from Printify to WooCommerce with HPOS compatibility
+     * Will store total price, shipping, tax, and profit margins
      *
      * @param array $printifyOrder
      * @return int The WooCommerce order ID

@@ -410,34 +410,20 @@ jQuery(document).ready(function($) {
 
     // Local formatCurrency function as fallback
     function formatCurrencyLocal(amount) {
-        // Ensure amount is treated as a number
-        const numAmount = parseFloat(amount);
-        if (isNaN(numAmount)) return 'N/A';
+        const num = parseFloat(amount);
+        if (isNaN(num)) return '£0.00';
         
-        // Default to GBP if wpwps_data is not available
-        const currency = (typeof wpwps_data !== 'undefined' && wpwps_data.currency) ? wpwps_data.currency : 'GBP';
-        // Use WooCommerce's currency symbols or fall back to defaults
-        const symbols = (typeof wpwps_data !== 'undefined' && wpwps_data.currency_symbols) ? 
-            wpwps_data.currency_symbols : 
-            {
-                'GBP': '£',
-                'USD': '$',
-                'EUR': '€'
-            };
-        
-        // Check if the amount needs to be divided by 100
-        const valueToFormat = numAmount.toString().includes('.') ? 
-            numAmount : 
-            (numAmount / 100);
-        
-        // Format the amount
-        return `${symbols[currency] || symbols['GBP']}${valueToFormat.toFixed(2)}`;
+        const symbol = window.wpwps_data?.currency_symbols?.[window.wpwps_data?.currency] || '£';
+        return symbol + num.toFixed(2);
     }
 
     function updateOrdersTable(data) {
         const orders = data.orders || [];
         const tbody = $('#orders-table tbody');
         tbody.empty();
+
+        // Log all data for debugging
+        console.log('Orders data received:', orders);
 
         if (orders.length === 0) {
             tbody.html('<tr><td colspan="8" class="text-center">No orders found</td></tr>');
@@ -452,13 +438,13 @@ jQuery(document).ready(function($) {
         orders.forEach(function(order) {
             const isImported = order.is_imported;
             const importButtonHtml = isImported ? 
-                `<button class="btn btn-sm btn-success import-order" disabled data-id="${order.id}"><i class="fas fa-check"></i> Imported</button>` : 
-                `<button class="btn btn-sm btn-primary import-order" data-id="${order.id}"><i class="fas fa-download"></i> Import</button>`;
+                `<button class="btn btn-sm btn-success import-order" disabled data-id="${order.id || order.printify_id}"><i class="fas fa-check"></i> Imported</button>` : 
+                `<button class="btn btn-sm btn-primary import-order" data-id="${order.id || order.printify_id}"><i class="fas fa-download"></i> Import</button>`;
                 
             // Format customer name from address_to
             const firstName = order.address_to?.first_name || '';
             const lastName = order.address_to?.last_name || '';
-            const customerName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : 'N/A';
+            const customerName = order.customer_name || ((firstName || lastName) ? `${firstName} ${lastName}`.trim() : 'N/A');
 
             // Format status badge with appropriate color
             const statusBadgeClass = {
@@ -473,13 +459,56 @@ jQuery(document).ready(function($) {
             // Format created date
             const orderDate = order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A';
 
-            // Format price - use global function if available, otherwise use local function
-            const price = order.total_price ? 
-                (typeof window.formatCurrency === 'function' ? 
-                    window.formatCurrency(order.total_price) : 
-                    formatCurrencyLocal(order.total_price)) : 
-                'N/A';
+            // Debug log the price values for this specific order
+            console.log('Order ' + order.printify_id + ' prices:', {
+                total_price: order.total_price,
+                total_shipping: order.total_shipping,
+                total_amount: order.total_amount, 
+                merchant_cost: order.merchant_cost,
+                profit: order.profit,
+                raw_total_price: order.raw_total_price,
+                raw_total_shipping: order.raw_total_shipping,
+                item_count: order.item_count,
+                line_items: order.line_items
+            });
+
+            // Use simple formatting function that doesn't try any automatic division
+            const formatPrice = function(value) {
+                // Ensure we have a number
+                const num = parseFloat(value);
+                if (isNaN(num)) {
+                    console.error('Invalid price value:', value);
+                    return '£0.00';
+                }
+                
+                // Get currency symbol from config or default to £
+                const symbol = window.wpwps_data?.currency_symbols?.[window.wpwps_data?.currency] || '£';
+                
+                // Format with 2 decimal places
+                return symbol + num.toFixed(2);
+            };
             
+            // Format the prices - using values that should already be divided by 100 from the server
+            const productPrice = formatPrice(order.total_price);
+            const shippingPrice = formatPrice(order.total_shipping);
+            const totalPrice = formatPrice(order.total_amount);
+            const merchantCost = formatPrice(order.merchant_cost);
+            const profit = formatPrice(order.profit);
+
+            // Create a more detailed shipping breakdown for multiple items
+            let shippingBreakdown = shippingPrice;
+            if (order.item_count > 1 && order.line_items && order.line_items.length > 0) {
+                // Show a more detailed tooltip for multiple items
+                shippingBreakdown = `
+                    <span class="shipping-info" data-bs-toggle="tooltip" title="Order contains ${order.item_count} items">
+                        ${shippingPrice}
+                        <small class="text-muted d-block">
+                            <i class="fas fa-info-circle"></i> ${order.item_count} items
+                        </small>
+                    </span>
+                `;
+            }
+
             // Format shipping status
             let shippingStatus = 'Pending';
             if (order.shipments && order.shipments.length > 0) {
@@ -488,20 +517,24 @@ jQuery(document).ready(function($) {
                 shippingStatus = trackingNumber ? `${carrier} - ${trackingNumber}` : carrier;
             }
 
+            // Simplified price display - show only total price
             const row = `
                 <tr${isImported ? ' class="bg-light"' : ''}>
-                    <td>${order.id || 'N/A'}</td>
+                    <td>${order.id || order.printify_id || 'N/A'}</td>
                     <td>${order.woo_order_id || 'N/A'}</td>
                     <td>${orderDate}</td>
                     <td>${customerName}</td>
                     <td><span class="badge bg-${statusBadgeClass}">${order.status || 'Unknown'}</span></td>
-                    <td>${price}</td>
+                    <td>${totalPrice}</td>
                     <td>${shippingStatus}</td>
                     <td>${importButtonHtml}</td>
                 </tr>
             `;
             tbody.append(row);
         });
+
+        // Init tooltips
+        $('[data-bs-toggle="tooltip"]').tooltip();
 
         // Update counters
         $('#showing-start').text('1');

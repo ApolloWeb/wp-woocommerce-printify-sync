@@ -454,16 +454,84 @@ class OrderHandler extends AbstractAjaxHandler
                     : get_edit_post_link($wooOrderId, 'raw');
             }
             
+            // IMPORTANT: API values are in cents and need to be divided by 100
+            // Raw values directly from API
+            $rawTotalPrice = $order['total_price'] ?? 0;
+            $rawTotalShipping = $order['total_shipping'] ?? 0;
+            
+            // Normalize by dividing by 100 (convert cents to dollars/pounds)
+            $totalPrice = (float)$rawTotalPrice / 100;
+            $totalShipping = (float)$rawTotalShipping / 100;
+            
+            // The total is ALWAYS the sum of product price + shipping
+            $totalAmount = $totalPrice + $totalShipping;
+            
+            // Calculate merchant cost (cost price) - ALWAYS divide API values by 100
+            $merchantCost = 0;
+            $rawMerchantCost = 0;
+            
+            // Line item counts for shipping breakdown
+            $itemCount = 0;
+            $lineItemDetails = [];
+            
+            if (!empty($order['line_items'])) {
+                foreach ($order['line_items'] as $item) {
+                    $rawItemCost = $item['cost'] ?? 0;
+                    $rawItemShippingCost = $item['shipping_cost'] ?? 0;
+                    $quantity = (int)($item['quantity'] ?? 1);
+                    $itemCount += $quantity;
+                    
+                    // Store line item details for shipping calculations
+                    $lineItemDetails[] = [
+                        'title' => $item['metadata']['title'] ?? 'Product',
+                        'variant' => $item['metadata']['variant_label'] ?? '',
+                        'quantity' => $quantity,
+                        'cost' => (float)$rawItemCost / 100,
+                        'shipping_cost' => (float)$rawItemShippingCost / 100,
+                        'price' => (float)($item['metadata']['price'] ?? 0) / 100
+                    ];
+                    
+                    // Calculate raw merchant cost for debugging
+                    $rawMerchantCost += ($rawItemCost * $quantity) + $rawItemShippingCost;
+                    
+                    // Normalize costs by dividing by 100
+                    $itemCost = (float)$rawItemCost / 100;
+                    $shippingCost = (float)$rawItemShippingCost / 100;
+                    
+                    // Add to merchant cost: (cost × quantity) + shipping cost
+                    $merchantCost += ($itemCost * $quantity) + $shippingCost;
+                }
+            }
+            
+            // Calculate profit: total amount - merchant cost
+            $profit = $totalAmount - $merchantCost;
+            
+            // Debug log exact values
+            error_log(sprintf(
+                "Order %s: raw_price=%d, raw_shipping=%d, total_price=%.2f, total_shipping=%.2f, total_amount=%.2f, merchant_cost=%.2f, profit=%.2f",
+                $printifyId, $rawTotalPrice, $rawTotalShipping, $totalPrice, $totalShipping, $totalAmount, $merchantCost, $profit
+            ));
+            
             $processed[] = [
                 'printify_id' => $printifyId,
                 'title' => sprintf('Order #%s', $printifyId),
                 'customer_name' => $this->formatCustomerName($order),
                 'woo_order_id' => $wooOrderId,
-                'total' => $order['total_price'] ?? 0,
+                'woo_order_url' => $adminUrl,
+                'raw_total_price' => $rawTotalPrice,
+                'raw_total_shipping' => $rawTotalShipping,
+                'raw_merchant_cost' => $rawMerchantCost,
+                'total_price' => $totalPrice,
+                'total_shipping' => $totalShipping,
+                'total_amount' => $totalAmount,
+                'merchant_cost' => $merchantCost,
+                'profit' => $profit,
+                'item_count' => $itemCount,
+                'line_items' => $lineItemDetails,
                 'created_at' => $order['created_at'] ?? '',
                 'status' => $order['status'] ?? 'unknown',
-                'woo_order_url' => $adminUrl,
-                'is_imported' => !empty($wooOrderId)
+                'is_imported' => !empty($wooOrderId),
+                'shipments' => $order['shipments'] ?? []
             ];
         }
         

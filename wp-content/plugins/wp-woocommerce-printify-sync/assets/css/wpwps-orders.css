@@ -122,3 +122,30 @@
         min-width: 650px; /* Ensure horizontal scrolling works properly */
     }
 }
+
+/* Order table styles */
+.price-breakdown, .cost-breakdown {
+    font-size: 14px;
+}
+
+.price-breakdown .total-price, .cost-breakdown .cost-price {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.price-breakdown small, .cost-breakdown small {
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.text-success {
+    font-weight: 500;
+}
+
+.cost-breakdown {
+    color: #dc3545; /* Red color for costs */
+}
+
+.cost-breakdown .cost-price {
+    color: #dc3545;
+}

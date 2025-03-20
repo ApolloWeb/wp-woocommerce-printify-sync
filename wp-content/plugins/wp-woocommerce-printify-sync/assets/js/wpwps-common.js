@@ -15,27 +15,29 @@
         console.warn('wpwps_data not found, created default object');
     }
 
-    // Define formatCurrency globally
+    // Define global formatCurrency function - COMPLETE REWRITE
     window.formatCurrency = function(amount) {
-        // Ensure amount is a number
-        const numAmount = parseFloat(amount);
-        if (isNaN(numAmount)) return 'N/A';
+        // Log for debugging
+        console.log('formatCurrency input:', amount, typeof amount);
         
-        const currency = window.wpwps_data.currency || 'GBP';
-        // Use WooCommerce's currency symbols or fall back to defaults
-        const symbols = window.wpwps_data.currency_symbols || {
+        // Ensure we have a number
+        const numAmount = parseFloat(amount);
+        if (isNaN(numAmount)) {
+            console.warn('Invalid amount for formatCurrency:', amount);
+            return '£0.00';
+        }
+        
+        // Get currency symbol
+        const currency = window.wpwps_data?.currency || 'GBP';
+        const symbols = window.wpwps_data?.currency_symbols || {
             'GBP': '£',
             'USD': '$',
             'EUR': '€'
         };
         
-        // Check if the amount needs to be divided by 100
-        const valueToFormat = numAmount.toString().includes('.') ? 
-            numAmount : 
-            (numAmount / 100);
-        
-        // Format the amount with proper decimal places
-        return `${symbols[currency] || symbols['GBP']}${valueToFormat.toFixed(2)}`;
+        // Format to 2 decimal places - NO dividing by 100 here
+        // The server already handled that conversion
+        return symbols[currency] + numAmount.toFixed(2);
     };
 
     console.log('WPWPS Currency formatter loaded');
