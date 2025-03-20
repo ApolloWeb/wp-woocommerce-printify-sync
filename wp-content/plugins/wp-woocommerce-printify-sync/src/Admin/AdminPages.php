@@ -141,6 +141,13 @@ class AdminPages
         wp_enqueue_style('wpwps-common');
         wp_enqueue_script('wpwps-common');
         
+        // Add fixed buttons CSS and debug helper
+        wp_enqueue_style('wpwps-fix-buttons', plugin_dir_url(WPWPS_PLUGIN_FILE) . 'assets/css/wpwps-fix-buttons.css', [], '1.0.1');
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            wp_enqueue_script('wpwps-debug-helper', plugin_dir_url(WPWPS_PLUGIN_FILE) . 'assets/js/wpwps-debug-helper.js', ['jquery'], '1.0.0', true);
+        }
+        
         // Page specific assets
         foreach ($this->pages as $key => $page) {
             if ($page->slug === $pageSlug) {

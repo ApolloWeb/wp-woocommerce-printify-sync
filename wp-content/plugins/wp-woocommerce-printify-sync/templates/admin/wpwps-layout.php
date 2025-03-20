@@ -30,7 +30,7 @@
             </div>
         </div>
     </nav>
-    <div class="container-fluid">
+    <div class="container-fluid px-3">
         <?php 
             if (isset($partials) && is_array($partials)) {
                 foreach ($partials as $partial) {

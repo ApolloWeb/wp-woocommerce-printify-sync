@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row wpwps-settings">
     <div class="col-md-8">
         <div class="card wpwps-card">
             <div class="card-header">
@@ -33,11 +33,13 @@
                             value="<?php echo esc_attr($shop_id); ?>" 
                             placeholder="Shop ID will be populated after selection"
                             <?php echo $shop_selected ? 'readonly' : ''; ?>>
-                        <?php if (!$shop_selected): ?>
-                            <div class="form-text">Use the "Fetch Shops" button below to select a shop</div>
-                        <?php else: ?>
-                            <div class="form-text">Shop ID is locked after selection</div>
-                        <?php endif; ?>
+                        <div class="form-text">
+                            <?php if (!$shop_selected): ?>
+                                Use the "Fetch Shops" button below to select a shop
+                            <?php else: ?>
+                                Shop ID is locked after selection
+                            <?php endif; ?>
+                        </div>
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">

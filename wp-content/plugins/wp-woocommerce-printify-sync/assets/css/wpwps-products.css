@@ -23,3 +23,120 @@
 .alert-info .btn-outline-light:hover {
     color: #0c5460;
 }
+
+/* Fix overflow issues */
+.wpwps-card {
+    overflow: hidden;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    min-height: 200px;
+    margin-bottom: 1rem; /* Space before pagination */
+}
+
+/* Enhanced pagination styling */
+.pagination {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 100%;
+    margin-bottom: 0;
+}
+
+.pagination .page-item {
+    margin-bottom: 5px;
+    margin-right: 3px;
+}
+
+.pagination .page-link {
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    position: relative;
+    display: block;
+    color: #0d6efd;
+    text-decoration: none;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    z-index: 5; /* Ensure links are clickable */
+}
+
+.pagination .page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+/* Make sure products table container doesn't hide pagination */
+.wpwps-card .card-body {
+    overflow: visible !important;
+}
+
+.pagination-container {
+    position: relative;
+    z-index: 2;
+    display: block !important;
+    margin-top: 1rem;
+}
+
+/* Fix for counter display */
+#products-count {
+    white-space: nowrap;
+}
+
+/* Make entire layout more responsive */
+@media (max-width: 992px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .card-header > div {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .card-header .btn {
+        margin-bottom: 5px;
+    }
+}
+
+/* Fix layout on smaller screens */
+@media (max-width: 768px) {
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    #products-count {
+        margin-bottom: 10px;
+    }
+    
+    .pagination {
+        justify-content: flex-start;
+    }
+    
+    /* Fix button groups on mobile */
+    .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    /* Make table scroll horizontally on mobile */
+    .table {
+        min-width: 650px; /* Ensure horizontal scrolling works properly */
+    }
+}

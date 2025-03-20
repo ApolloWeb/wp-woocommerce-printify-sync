@@ -17,18 +17,19 @@ class OrdersPage extends AbstractAdminPage
 
     public function render()
     {
-        // Clear orders cache to ensure fresh data on page load
-        $this->clearOrdersCache();
+        // Do not automatically clear cache on page load
+        // Check if cache was manually cleared via action
+        $cache_cleared = isset($_GET['cache_cleared']) && $_GET['cache_cleared'] === '1';
         
         return $this->templateEngine->render('admin/wpwps-orders.php', [
-            'partials' => ['wpwps-header', 'wpwps-alerts'],
+            'partials' => ['wpwps-header', 'wpwps-alerts', 'wpwps-filters'],
             'container' => $this->container,
-            'cache_cleared' => true // Pass flag to template
+            'cache_cleared' => $cache_cleared
         ]);
     }
-    
+
     /**
-     * Clear the orders cache on page load
+     * Clear the orders cache when explicitly called, not automatically
      */
     private function clearOrdersCache()
     {

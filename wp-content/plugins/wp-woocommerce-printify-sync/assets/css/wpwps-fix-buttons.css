@@ -1,0 +1,53 @@
+/**
+ * CSS fixes for button and pagination issues
+ */
+
+/* Ensure all interactive elements are clickable */
+.btn, 
+.page-link, 
+button, 
+input[type="checkbox"], 
+input[type="radio"] {
+    position: relative;
+    z-index: 100 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+/* Fix pagination specifically */
+.pagination {
+    margin-bottom: 10px;
+    z-index: 100;
+    position: relative;
+}
+
+.pagination .page-item {
+    position: relative;
+    z-index: 101;
+}
+
+/* Fix the table layering issue */
+table {
+    z-index: 1;
+    position: relative;
+}
+
+/* Fix any potential modal issues */
+.modal {
+    z-index: 1050 !important;
+}
+
+/* Ensure buttons are clearly visible as clickable */
+.btn, button {
+    transition: transform 0.1s ease;
+}
+
+.btn:hover, button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Fix card overflow that might be hiding clickable elements */
+.card-body {
+    overflow: visible !important;
+}

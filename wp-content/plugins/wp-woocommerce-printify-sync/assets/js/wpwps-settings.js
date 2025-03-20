@@ -1,21 +1,42 @@
 jQuery(document).ready(function($) {
-    // Utility function to show alerts
+    // Utility function to show alerts with improved overflow handling
     function showAlert(message, type = 'info') {
+        // Sanitize the message to prevent XSS
+        const sanitizedMessage = $('<div>').text(message).html();
+        
         const alertHtml = `
             <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${type === 'success' ? '<i class="fas fa-check-circle"></i> ' : ''}
-                ${type === 'danger' ? '<i class="fas fa-exclamation-circle"></i> ' : ''}
-                ${type === 'warning' ? '<i class="fas fa-exclamation-triangle"></i> ' : ''}
-                ${type === 'info' ? '<i class="fas fa-info-circle"></i> ' : ''}
-                ${message}
+                ${type === 'success' ? '<i class="fas fa-check-circle me-2"></i>' : ''}
+                ${type === 'danger' ? '<i class="fas fa-exclamation-circle me-2"></i>' : ''}
+                ${type === 'warning' ? '<i class="fas fa-exclamation-triangle me-2"></i>' : ''}
+                ${type === 'info' ? '<i class="fas fa-info-circle me-2"></i>' : ''}
+                <span class="alert-message">${sanitizedMessage}</span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         `;
+        
         $('#alerts-container').append(alertHtml);
+        
+        // Make sure the alerts container is visible
+        $('#alerts-container').show();
+        
+        // Only scroll if the alert is not in the viewport
+        const $newAlert = $('#alerts-container .alert:last-child');
+        const alertTop = $newAlert.offset().top;
+        const viewportTop = $(window).scrollTop();
+        const viewportBottom = viewportTop + $(window).height();
+        
+        if (alertTop < viewportTop || alertTop > viewportBottom) {
+            $('html, body').animate({
+                scrollTop: Math.max(0, alertTop - 100)
+            }, 200);
+        }
         
         // Auto dismiss after 5 seconds
         setTimeout(function() {
-            $('#alerts-container .alert').first().alert('close');
+            if ($('#alerts-container .alert').length > 0) {
+                $('#alerts-container .alert').first().alert('close');
+            }
         }, 5000);
     }
     
@@ -184,13 +205,18 @@ jQuery(document).ready(function($) {
         });
     });
     
-    // Select shop (delegated event for dynamically created elements)
+    // Improve shop selection handler
     $(document).on('click', '.select-shop', function() {
         const shopId = $(this).data('shop-id');
         const shopTitle = $(this).data('shop-title');
         
+        // Truncate shop title if too long for the dialog
+        const truncatedTitle = shopTitle.length > 30 ? 
+            shopTitle.substring(0, 27) + '...' : 
+            shopTitle;
+        
         // Confirm selection
-        if (confirm(`Are you sure you want to set "${shopTitle}" as your default shop? This cannot be changed later.`)) {
+        if (confirm(`Are you sure you want to set "${truncatedTitle}" as your default shop? This cannot be changed later.`)) {
             $.ajax({
                 url: ajaxurl,
                 type: 'POST',

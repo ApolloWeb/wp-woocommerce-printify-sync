@@ -16,18 +16,19 @@ class ProductsPage extends AbstractAdminPage
 
     public function render()
     {
-        // Clear the cache when the page loads
-        $this->clearProductsCache();
+        // Do not automatically clear cache on page load
+        // Instead, just check if cache was manually cleared via action
+        $cache_cleared = isset($_GET['cache_cleared']) && $_GET['cache_cleared'] === '1';
         
         return $this->templateEngine->render('admin/wpwps-products.php', [
             'partials' => ['wpwps-header', 'wpwps-alerts', 'wpwps-filters'],
             'container' => $this->container,
-            'cache_cleared' => true // Pass flag to template
+            'cache_cleared' => $cache_cleared
         ]);
     }
 
     /**
-     * Clear the products cache on page load
+     * Clear the products cache - modified to be called explicitly, not automatically
      */
     private function clearProductsCache()
     {

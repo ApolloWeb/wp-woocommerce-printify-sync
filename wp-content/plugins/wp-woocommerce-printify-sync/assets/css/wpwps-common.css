@@ -1,5 +1,6 @@
 .wpwps-admin {
     margin: 0 -20px;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .wpwps-admin .navbar {
@@ -11,6 +12,14 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 1rem;
     background: white;
+    width: 100%;
+    overflow: hidden; /* Contain child content */
+    max-width: 100%; /* Prevent cards from extending beyond their container */
+}
+
+/* Ensure cards in container rows take full width */
+.row > div > .wpwps-card {
+    width: 100%;
 }
 
 /* Force full width for cards */
@@ -19,14 +28,59 @@
     max-width: 100% !important;
 }
 
+/* Universal text overflow protection */
+.card-body p {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
 /* Ensure all content areas fill full width */
 .container-fluid {
     width: 100%;
     padding-right: 15px;
     padding-left: 15px;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
-/* Ensure tables use full card width */
+/* Fix table overflow */
 .table-responsive {
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    min-height: 150px; /* Give some minimum height for tables with loading states */
+}
+
+/* Fix flex containers that might cause overflow */
+.d-flex {
+    flex-wrap: wrap;
+}
+
+/* Ensure images don't overflow */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Ensure code blocks and preformatted text don't cause overflow */
+pre, code {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Fix alert overflow issues */
+.alert {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.alert-message {
+    display: inline-block;
+    max-width: calc(100% - 50px); /* Allow space for icon and close button */
+}
+
+/* Improve button display in general */
+.btn {
+    white-space: normal; /* Allow buttons to wrap text */
+    text-align: center;
+    margin-bottom: 3px;
 }
