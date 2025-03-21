@@ -1,0 +1,44 @@
+/* ...existing code... */
+
+.wpwps-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.wpwps-toast {
+    max-width: 350px;
+    margin-bottom: 10px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+.wpwps-toast-header {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+}
+
+.wpwps-toast-body {
+    padding: 10px 15px;
+}
+
+.wpwps-toast-success { border-left: 4px solid #28a745; }
+.wpwps-toast-warning { border-left: 4px solid #ffc107; }
+.wpwps-toast-danger { border-left: 4px solid #dc3545; }
+
+.wpwps-toast .btn-close {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+}
+
+.wpwps-toast .fas {
+    margin-right: 8px;
+}

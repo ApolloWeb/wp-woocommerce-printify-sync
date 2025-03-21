@@ -1,0 +1,162 @@
+/**
+ * Admin styles.
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync
+ */
+
+/* General */
+.wpwps-admin-page {
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+.wpwps-admin-page h1 {
+    color: #7e3bd0; /* WooCommerce Purple */
+    display: flex;
+    align-items: center;
+}
+
+.wpwps-admin-page h1 i {
+    margin-right: 10px;
+}
+
+.wpwps-shop-name {
+    font-size: 16px;
+    margin-top: 5px;
+    color: #555;
+}
+
+/* Cards */
+.wpwps-admin-page .card {
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.wpwps-admin-page .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    padding: 15px 20px;
+}
+
+.wpwps-admin-page .card-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.wpwps-admin-page .card-header h2 i {
+    margin-right: 10px;
+    color: #7e3bd0; /* WooCommerce Purple */
+}
+
+.wpwps-admin-page .card-body {
+    padding: 20px;
+}
+
+/* Alerts */
+.wpwps-alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.wpwps-alert-success {
+    color: #0f5132;
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+}
+
+.wpwps-alert-danger {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+}
+
+.wpwps-alert-warning {
+    color: #664d03;
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+}
+
+.wpwps-alert-info {
+    color: #055160;
+    background-color: #cff4fc;
+    border-color: #b6effb;
+}
+
+/* Forms */
+.wpwps-admin-page label {
+    font-weight: 600;
+}
+
+.wpwps-admin-page .form-text {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.wpwps-admin-page .required {
+    color: #dc3545;
+}
+
+/* Buttons */
+.wpwps-admin-page .btn-primary {
+    background-color: #7e3bd0; /* WooCommerce Purple */
+    border-color: #7e3bd0;
+}
+
+.wpwps-admin-page .btn-primary:hover {
+    background-color: #6a2cb0;
+    border-color: #6a2cb0;
+}
+
+/* Status Badges */
+.wpwps-admin-page .connection-status {
+    margin-bottom: 20px;
+}
+
+.wpwps-admin-page .connection-status h5 {
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+/* Tables */
+.wpwps-admin-page table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wpwps-admin-page th,
+.wpwps-admin-page td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.wpwps-admin-page th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.wpwps-admin-page tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Loading Spinner */
+.wpwps-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #7e3bd0;
+    animation: wpwps-spin 1s ease-in-out infinite;
+    margin-right: 10px;
+}
+
+@keyframes wpwps-spin {
+    to { transform: rotate(360deg); }
+}
