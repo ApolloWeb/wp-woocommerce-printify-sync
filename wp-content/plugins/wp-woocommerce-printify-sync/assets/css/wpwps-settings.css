@@ -1,0 +1,117 @@
+/**
+ * Settings page styles.
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync
+ */
+
+.wpwps-admin-wrap {
+    margin: 20px;
+}
+
+.wpwps-shop-info {
+    display: inline-block;
+    margin-left: 15px;
+}
+
+.wpwps-shop-badge {
+    display: inline-block;
+    background-color: #7e3bd0;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.wpwps-settings-container {
+    margin-top: 20px;
+}
+
+.wpwps-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    color: #7e3bd0;
+    background-color: transparent;
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.btn-primary {
+    background-color: #7e3bd0;
+    border-color: #7e3bd0;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #6c30b3;
+    border-color: #6c30b3;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.alert-info {
+    background-color: #e0f7fa;
+    border-color: #b2ebf2;
+    color: #0c5460;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+#temperature_value {
+    font-weight: bold;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}

@@ -1,0 +1,249 @@
+/**
+ * Dashboard page styles.
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync
+ */
+
+.wpwps-dashboard-container {
+    margin-top: 20px;
+}
+
+.wpwps-admin-wrap h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.wpwps-admin-wrap h1 i {
+    margin-right: 8px;
+    color: #7e3bd0;
+}
+
+.wpwps-shop-info {
+    display: inline-block;
+    margin-left: 15px;
+}
+
+.wpwps-shop-badge {
+    background-color: #f0f0f1;
+    color: #3c434a;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.wpwps-shop-badge i {
+    margin-right: 4px;
+    color: #7e3bd0;
+}
+
+.wpwps-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+    height: 100%;
+}
+
+.wpwps-card .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3c434a;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.wpwps-card .card-title i {
+    margin-right: 8px;
+    color: #7e3bd0;
+}
+
+.wpwps-card .card-stat {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #2c3338;
+}
+
+.wpwps-card .card-text {
+    color: #646970;
+    margin-bottom: 1rem;
+}
+
+.btn-primary {
+    background-color: #7e3bd0;
+    border-color: #7e3bd0;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #6c30b3;
+    border-color: #6c30b3;
+}
+
+.btn-outline-primary {
+    color: #7e3bd0;
+    border-color: #7e3bd0;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+    background-color: #7e3bd0;
+    border-color: #7e3bd0;
+    color: #fff;
+}
+
+.btn-outline-primary.active {
+    background-color: #7e3bd0;
+    border-color: #7e3bd0;
+    color: #fff;
+}
+
+/* Chart styling */
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+.chart-filters {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.chart-filters button {
+    margin: 0 5px;
+}
+
+.chart-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #646970;
+}
+
+.chart-error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #d63638;
+}
+
+/* API Status indicators */
+.status-healthy {
+    color: #28a745;
+    font-size: 2.5rem;
+}
+
+.status-error {
+    color: #dc3545;
+    font-size: 2.5rem;
+}
+
+.status-unknown {
+    color: #6c757d;
+    font-size: 2.5rem;
+}
+
+/* Activity list */
+.activity-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f1;
+    display: flex;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-time {
+    color: #646970;
+    font-size: 0.8rem;
+    width: 100px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-content i {
+    margin-right: 5px;
+    color: #7e3bd0;
+}
+
+/* Queue status */
+.queue-status {
+    margin-top: 10px;
+}
+
+.queue-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.queue-item:last-child {
+    border-bottom: none;
+}
+
+.queue-label {
+    font-weight: 500;
+}
+
+.queue-value {
+    color: #646970;
+}
+
+/* System info list */
+.system-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.system-info-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.system-info-list li:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 500;
+}
+
+.info-value {
+    color: #646970;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .wpwps-shop-info {
+        display: block;
+        margin-left: 0;
+        margin-top: 10px;
+    }
+    
+    .card-stat {
+        font-size: 2rem;
+    }
+    
+    .activity-time {
+        width: 80px;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+}

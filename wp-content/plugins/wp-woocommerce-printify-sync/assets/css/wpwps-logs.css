@@ -1,0 +1,138 @@
+/**
+ * Logs page styles.
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync
+ */
+
+.wpwps-logs-container {
+    margin-top: 20px;
+}
+
+.wpwps-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+#logs-table {
+    font-family: monospace;
+    font-size: 13px;
+}
+
+#logs-table td {
+    white-space: normal;
+    word-wrap: break-word;
+    vertical-align: middle;
+}
+
+#logs-table th:first-child,
+#logs-table td:first-child {
+    width: 15%;
+}
+
+#logs-table th:nth-child(2),
+#logs-table td:nth-child(2) {
+    width: 10%;
+}
+
+#logs-table th:nth-child(3),
+#logs-table td:nth-child(3) {
+    width: 75%;
+}
+
+/* Log level colors */
+.log-level-emergency,
+.log-level-alert,
+.log-level-critical,
+.log-level-error {
+    background-color: rgba(255, 235, 238, 0.5);
+}
+
+.log-level-warning {
+    background-color: rgba(255, 243, 224, 0.5);
+}
+
+.log-level-notice {
+    background-color: rgba(232, 245, 233, 0.5);
+}
+
+.log-level-info {
+    background-color: rgba(227, 242, 253, 0.5);
+}
+
+.log-level-debug {
+    background-color: rgba(241, 241, 241, 0.5);
+}
+
+/* Badge colors */
+.bg-danger {
+    background-color: #dc3545;
+}
+
+.bg-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.bg-info {
+    background-color: #17a2b8;
+}
+
+.bg-success {
+    background-color: #28a745;
+}
+
+.bg-secondary {
+    background-color: #6c757d;
+}
+
+/* Form elements */
+.form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: auto;
+}
+
+.form-select {
+    display: block;
+    width: auto;
+    padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    appearance: none;
+}
+
+.ms-2 {
+    margin-left: 0.5rem !important;
+}
+
+@media (max-width: 768px) {
+    .form-inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-inline > * {
+        margin-bottom: 10px;
+    }
+    
+    .ms-2 {
+        margin-left: 0 !important;
+    }
+}
