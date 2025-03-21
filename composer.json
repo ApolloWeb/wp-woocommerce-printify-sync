@@ -1,0 +1,20 @@
+{
+    "name": "apolloweb/wp-woocommerce-printify-sync",
+    "description": "Sync products from Printify to WooCommerce",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "ApolloWeb\\WPWooCommercePrintifySync\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.3",
+        "jenssegers/blade": "^1.4"
+    },
+    "scripts": {
+        "autoload": [
+            "composer dump-autoload"
+        ]
+    }
+}
