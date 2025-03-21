@@ -1,4 +1,102 @@
-// ...existing code...
+<?php
+/**
+ * Products page.
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync\Admin\Pages
+ */
+
+namespace ApolloWeb\WPWooCommercePrintifySync\Admin\Pages;
+
+use ApolloWeb\WPWooCommercePrintifySync\API\PrintifyAPI;
+use ApolloWeb\WPWooCommercePrintifySync\Helpers\TemplateRenderer;
+use ApolloWeb\WPWooCommercePrintifySync\Helpers\Logger;
+
+/**
+ * Products admin page.
+ */
+class Products {
+    /**
+     * PrintifyAPI instance.
+     *
+     * @var PrintifyAPI
+     */
+    private $api;
+
+    /**
+     * Logger instance.
+     *
+     * @var Logger
+     */
+    private $logger;
+
+    /**
+     * TemplateRenderer instance.
+     *
+     * @var TemplateRenderer
+     */
+    private $template;
+
+    /**
+     * Constructor.
+     *
+     * @param PrintifyAPI      $api      PrintifyAPI instance.
+     * @param TemplateRenderer $template TemplateRenderer instance.
+     * @param Logger           $logger   Logger instance.
+     */
+    public function __construct(PrintifyAPI $api, TemplateRenderer $template, Logger $logger) {
+        $this->api = $api;
+        $this->template = $template;
+        $this->logger = $logger;
+    }
+
+    /**
+     * Initialize products admin page.
+     *
+     * @return void
+     */
+    public function init() {
+        add_action('wp_ajax_wpwps_get_local_products', [$this, 'getProducts']);
+    }
+
+    /**
+     * Render products admin page.
+     *
+     * @return void
+     */
+    public function render() {
+        // Get shop details
+        $settings = get_option('wpwps_settings', []);
+        $shop_id = isset($settings['shop_id']) ? $settings['shop_id'] : '';
+        $shop_name = isset($settings['shop_name']) ? $settings['shop_name'] : '';
+        
+        // Get recent products
+        global $wpdb;
+        $recent_products = $wpdb->get_results("
+            SELECT 
+                p.ID as product_id,
+                p.post_title as title,
+                p.post_status as status,
+                pm.meta_value as printify_id
+            FROM {$wpdb->posts} p
+            LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_printify_product_id'
+            WHERE p.post_type = 'product'
+            ORDER BY p.post_date DESC
+            LIMIT 10
+        ");
+        
+        // Get stats
+        $stats = $this->getProductStats();
+        
+        // Render template
+        $this->template->render('products', [
+            'shop_id' => $shop_id,
+            'shop_name' => $shop_name,
+            'recent_products' => $recent_products,
+            'stats' => $stats,
+            'nonce' => wp_create_nonce('wpwps_products_nonce'),
+        ]);
+    }
+
     /**
      * Get products via AJAX.
      *
@@ -65,4 +163,50 @@
             'pages' => ceil($total / $per_page),
         ]);
     }
-// ...existing code...
+
+    /**
+     * Get product statistics.
+     *
+     * @return array
+     */
+    private function getProductStats() {
+        global $wpdb;
+        
+        // Count Printify products
+        $printify_count = $wpdb->get_var(
+            "SELECT COUNT(DISTINCT post_id) 
+            FROM {$wpdb->postmeta} 
+            WHERE meta_key = '_printify_product_id' 
+            AND post_id IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')"
+        );
+        
+        // Count total products
+        $total_count = $wpdb->get_var(
+            "SELECT COUNT(ID) 
+            FROM {$wpdb->posts} 
+            WHERE post_type = 'product' AND post_status IN ('publish', 'draft')"
+        );
+        
+        // Count published products
+        $published_count = $wpdb->get_var(
+            "SELECT COUNT(ID) 
+            FROM {$wpdb->posts} 
+            WHERE post_type = 'product' AND post_status = 'publish'"
+        );
+        
+        // Count draft products
+        $draft_count = $wpdb->get_var(
+            "SELECT COUNT(ID) 
+            FROM {$wpdb->posts} 
+            WHERE post_type = 'product' AND post_status = 'draft'"
+        );
+        
+        return [
+            'total' => $total_count ?: 0,
+            'printify' => $printify_count ?: 0,
+            'non_printify' => ($total_count - $printify_count) ?: 0,
+            'published' => $published_count ?: 0,
+            'draft' => $draft_count ?: 0,
+        ];
+    }
+}

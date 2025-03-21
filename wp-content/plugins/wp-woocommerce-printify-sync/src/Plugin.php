@@ -21,8 +21,9 @@ use ApolloWeb\WPWooCommercePrintifySync\Orders\OrderStatusFactory;
 use ApolloWeb\WPWooCommercePrintifySync\Orders\PrintifyStatusMapper;
 use ApolloWeb\WPWooCommercePrintifySync\Webhooks\WebhookHandler;
 use ApolloWeb\WPWooCommercePrintifySync\Helpers\Logger;
-use ApolloWeb\WPWooCommercePrintifySync\Helpers\Container;
+use ApolloWeb\WPWooCommercePrintifySync\Services\ServiceContainer;
 use ApolloWeb\WPWooCommercePrintifySync\Helpers\TemplateRenderer;
+use ApolloWeb\WPWooCommercePrintifySync\Shipping\ShippingManager;
 
 // Exit if accessed directly.
 if (!defined('ABSPATH')) {
@@ -36,7 +37,7 @@ class Plugin {
     /**
      * Container.
      *
-     * @var Container
+     * @var ServiceContainer
      */
     private $container;
 
@@ -44,7 +45,7 @@ class Plugin {
      * Constructor.
      */
     public function __construct() {
-        $this->container = new Container();
+        $this->container = new ServiceContainer();
         
         $this->registerServices();
         $this->checkDependencies();
@@ -164,6 +165,14 @@ class Plugin {
                 $this->container->get('logger')
             );
         });
+        
+        // Shipping services
+        $this->container->register('shipping_manager', function () {
+            return new ShippingManager(
+                $this->container->get('printify_api'),
+                $this->container->get('logger')
+            );
+        });
     }
 
     /**
@@ -207,6 +216,11 @@ class Plugin {
         
         // Initialize order sync.
         $this->container->get('order_sync')->init();
+        
+        // Initialize shipping manager
+        if ($this->container->has('shipping_manager')) {
+            $this->container->get('shipping_manager')->init();
+        }
     }
 
     /**
@@ -248,6 +262,15 @@ class Plugin {
         if (!wp_next_scheduled('wpwps_product_sync')) {
             wp_schedule_event(time(), 'twicedaily', 'wpwps_product_sync');
         }
+
+        // Schedule initial product import (one-time)
+        // This is commented out by default to avoid unwanted imports on every plugin activation
+        // Uncomment if you want automatic import on activation
+        /*
+        if (!as_has_scheduled_action('wpwps_product_sync', [], 'wpwps_product_import')) {
+            as_schedule_single_action(time() + 60, 'wpwps_product_sync', [], 'wpwps_product_import');
+        }
+        */
     }
 
     /**

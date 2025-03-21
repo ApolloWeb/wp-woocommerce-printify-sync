@@ -291,6 +291,45 @@ class PrintifyAPI {
     }
 
     /**
+     * Update a product on Printify.
+     *
+     * @param string $product_id Printify product ID.
+     * @param array  $data       Product data.
+     * @return array|WP_Error
+     */
+    public function updateProduct($product_id, $data) {
+        $settings = get_option('wpwps_settings', []);
+        $shop_id = $settings['shop_id'] ?? '';
+        
+        if (empty($shop_id)) {
+            return new \WP_Error('invalid_shop', __('Shop ID is not set.', 'wp-woocommerce-printify-sync'));
+        }
+        
+        $endpoint = "shops/{$shop_id}/products/{$product_id}.json";
+        
+        return $this->request($endpoint, 'PUT', $data);
+    }
+    
+    /**
+     * Publish a product to Printify.
+     *
+     * @param string $product_id Printify product ID.
+     * @return array|WP_Error
+     */
+    public function publishProduct($product_id) {
+        $settings = get_option('wpwps_settings', []);
+        $shop_id = $settings['shop_id'] ?? '';
+        
+        if (empty($shop_id)) {
+            return new \WP_Error('invalid_shop', __('Shop ID is not set.', 'wp-woocommerce-printify-sync'));
+        }
+        
+        $endpoint = "shops/{$shop_id}/products/{$product_id}/publish.json";
+        
+        return $this->request($endpoint, 'POST');
+    }
+
+    /**
      * Get orders.
      *
      * @param int $limit Number of orders to return.
@@ -362,5 +401,35 @@ class PrintifyAPI {
         }
         
         return true;
+    }
+
+    /**
+     * Get print providers.
+     *
+     * @return array|WP_Error
+     */
+    public function getPrintProviders() {
+        return $this->request('print-providers.json');
+    }
+
+    /**
+     * Get shipping profiles for a provider.
+     *
+     * @param int $provider_id Provider ID.
+     * @return array|WP_Error
+     */
+    public function getShippingProfiles($provider_id) {
+        return $this->request("print-providers/{$provider_id}/shipping.json");
+    }
+
+    /**
+     * Get specific shipping profile.
+     *
+     * @param int $provider_id Provider ID.
+     * @param int $profile_id  Profile ID.
+     * @return array|WP_Error
+     */
+    public function getShippingProfile($provider_id, $profile_id) {
+        return $this->request("print-providers/{$provider_id}/shipping/{$profile_id}.json");
     }
 }

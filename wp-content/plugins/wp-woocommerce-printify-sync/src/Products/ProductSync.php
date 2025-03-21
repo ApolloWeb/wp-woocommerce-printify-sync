@@ -63,6 +63,9 @@ class ProductSync {
         
         // HPOS compatibility.
         add_action('before_woocommerce_init', [$this, 'declareHposCompatibility']);
+        
+        // Add action to export products back to Printify
+        add_action('woocommerce_update_product', [$this, 'maybeUpdatePrintifyProduct'], 20, 1);
     }
 
     /**
@@ -1072,5 +1075,90 @@ class ProductSync {
         }
         
         return $query;
+    }
+
+    /**
+     * Check if WooCommerce product should update Printify product and send data if needed.
+     *
+     * @param int $product_id WooCommerce product ID.
+     * @return void
+     */
+    public function maybeUpdatePrintifyProduct($product_id) {
+        // Check if this is a Printify product
+        $printify_product_id = get_post_meta($product_id, '_printify_product_id', true);
+        if (!$printify_product_id) {
+            return;
+        }
+        
+        // Get updated settings
+        $settings = get_option('wpwps_settings', []);
+        $sync_back_to_printify = isset($settings['sync_back_to_printify']) && $settings['sync_back_to_printify'];
+        
+        // Check if we should sync back to Printify
+        if (!$sync_back_to_printify) {
+            return;
+        }
+        
+        // Get product
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            return;
+        }
+        
+        // Only sync certain fields back to Printify
+        $data = [
+            'title' => $product->get_name(),
+            'description' => $product->get_description(),
+            'external_id' => (string) $product_id,
+        ];
+        
+        // If it's a variable product, sync variants
+        if ($product->is_type('variable')) {
+            $variants = [];
+            $variations = $product->get_available_variations();
+            
+            foreach ($variations as $variation) {
+                $variation_id = $variation['variation_id'];
+                $variation_obj = wc_get_product($variation_id);
+                
+                if (!$variation_obj) {
+                    continue;
+                }
+                
+                $printify_variant_id = $variation_obj->get_meta('_printify_variant_id');
+                
+                if (!$printify_variant_id) {
+                    continue;
+                }
+                
+                $variant_data = [
+                    'id' => $printify_variant_id,
+                    'price' => (float) $variation_obj->get_regular_price(),
+                    'is_enabled' => $variation_obj->get_status() === 'publish',
+                ];
+                
+                $variants[] = $variant_data;
+            }
+            
+            if (!empty($variants)) {
+                $data['variants'] = $variants;
+            }
+        }
+        
+        // Send data to Printify
+        $response = $this->api->updateProduct($printify_product_id, $data);
+        
+        if (is_wp_error($response)) {
+            $this->logger->error(
+                sprintf('Failed to update product %s on Printify', $product_id),
+                ['error' => $response->get_error_message(), 'product_id' => $product_id]
+            );
+            return;
+        }
+        
+        $this->logger->info(
+            sprintf('Product %s updated on Printify', $product_id),
+            ['printify_product_id' => $printify_product_id]
+        );
     }
 }
