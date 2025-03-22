@@ -9,6 +9,7 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Admin;
 
 use ApolloWeb\WPWooCommercePrintifySync\Services\TemplateLoader;
 use ApolloWeb\WPWooCommercePrintifySync\Services\Logger;
+use Exception;
 
 /**
  * Admin Menu Handler class.
@@ -30,15 +31,57 @@ class AdminMenu
     private $logger;
 
     /**
+     * Product service instance.
+     *
+     * @var \ApolloWeb\WPWooCommercePrintifySync\Products\ProductSync
+     */
+    private $productService;
+
+    /**
+     * Order service instance.
+     *
+     * @var \ApolloWeb\WPWooCommercePrintifySync\Orders\OrderSync
+     */
+    private $orderService;
+
+    /**
+     * Activity service instance.
+     *
+     * @var \ApolloWeb\WPWooCommercePrintifySync\Services\ActivityService
+     */
+    private $activityService;
+
+    /**
+     * Action scheduler service instance.
+     *
+     * @var \ApolloWeb\WPWooCommercePrintifySync\Services\ActionSchedulerService
+     */
+    private $action_scheduler;
+
+    /**
      * Constructor.
      *
-     * @param TemplateLoader $template Template loader.
-     * @param Logger         $logger   Logger instance.
+     * @param TemplateLoader       $template         Template loader.
+     * @param Logger               $logger           Logger instance.
+     * @param null|object          $productService   Product service instance.
+     * @param null|object          $orderService     Order service instance.
+     * @param null|object          $activityService  Activity service instance.
+     * @param null|object          $action_scheduler Action scheduler service instance.
      */
-    public function __construct(TemplateLoader $template, Logger $logger)
-    {
+    public function __construct(
+        TemplateLoader $template, 
+        Logger $logger,
+        $productService = null,
+        $orderService = null,
+        $activityService = null,
+        $action_scheduler = null
+    ) {
         $this->template = $template;
         $this->logger = $logger;
+        $this->productService = $productService;
+        $this->orderService = $orderService;
+        $this->activityService = $activityService;
+        $this->action_scheduler = $action_scheduler;
     }
 
     /**
@@ -48,8 +91,16 @@ class AdminMenu
      */
     public function init()
     {
-        add_action('admin_menu', [$this, 'registerMenus']);
+        // Higher priority to ensure our menu is registered after other admin menus
+        add_action('admin_menu', [$this, 'registerMenus'], 20);
         add_action('admin_init', [$this, 'registerSettings']);
+        
+        // Debug hook to check if init is being called
+        add_action('admin_notices', function() {
+            if (current_user_can('manage_options')) {
+                error_log('AdminMenu init called');
+            }
+        });
     }
 
     /**
@@ -59,15 +110,27 @@ class AdminMenu
      */
     public function registerMenus()
     {
+        // Debug log to check if registerMenus is being called
+        error_log('AdminMenu registerMenus called');
+        
+        // Use a consistent capability across all menu items
+        $capability = 'manage_options';
+        
+        // Create base64 encoded SVG icon that looks like a shirt/t-shirt (Font Awesome style)
+        $icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
+            <path fill="white" d="M640 162.8c0 6.917-2.293 13.88-7.012 19.7l-49.96 61.63c-6.32 7.796-15.62 11.85-25.01 11.85c-7.01 0-14.07-2.262-19.97-6.919L480 203.3V464c0 26.51-21.49 48-48 48H208C181.5 512 160 490.5 160 464V203.3L101.1 249.1C96.05 253.7 88.99 256 81.98 256c-9.388 0-18.69-4.057-25.01-11.85L7.012 182.5C2.292 176.7-.0003 169.7-.0003 162.8c0-9.262 4.111-18.44 12.01-24.68l135-106.6C159.8 21.49 175.7 16 191.1 16H448.9c16.26 0 32.15 5.492 45.06 15.54l135 106.6C636.9 144.4 640 153.6 640 162.8z"/>
+        </svg>';
+        $icon_base64 = 'data:image/svg+xml;base64,' . base64_encode($icon_svg);
+        
         // Main menu
         add_menu_page(
             __('Printify Sync', 'wp-woocommerce-printify-sync'),
             __('Printify Sync', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
+            $capability,
             'wpwps-dashboard',
             [$this, 'renderDashboardPage'],
-            'dashicons-admin-appearance',  // Changed from 'dashicons-store' to 'dashicons-admin-appearance' (clothing icon)
-            58
+            $icon_base64, // Custom SVG icon that resembles Font Awesome shirt
+            30
         );
 
         // Dashboard submenu
@@ -75,7 +138,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Dashboard', 'wp-woocommerce-printify-sync'),
             __('Dashboard', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
+            $capability,
             'wpwps-dashboard',
             [$this, 'renderDashboardPage']
         );
@@ -85,7 +148,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Settings', 'wp-woocommerce-printify-sync'),
             __('Settings', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
+            $capability,
             'wpwps-settings',
             [$this, 'renderSettingsPage']
         );
@@ -95,7 +158,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Products', 'wp-woocommerce-printify-sync'),
             __('Products', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
+            $capability,
             'wpwps-products',
             [$this, 'renderProductsPage']
         );
@@ -105,7 +168,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Orders', 'wp-woocommerce-printify-sync'),
             __('Orders', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
+            $capability,
             'wpwps-orders',
             [$this, 'renderOrdersPage']
         );
@@ -115,7 +178,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Shipping', 'wp-woocommerce-printify-sync'),
             __('Shipping', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
+            $capability, 
             'wpwps-shipping',
             [$this, 'renderShippingPage']
         );
@@ -125,7 +188,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Tickets', 'wp-woocommerce-printify-sync'),
             __('Tickets', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
+            $capability,
             'wpwps-tickets',
             [$this, 'renderTicketsPage']
         );
@@ -135,7 +198,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Logs', 'wp-woocommerce-printify-sync'),
             __('Logs', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
+            $capability,
             'wpwps-logs',
             [$this, 'renderLogsPage']
         );
@@ -161,34 +224,138 @@ class AdminMenu
     }
 
     /**
-     * Render the dashboard page.
+     * Render the dashboard page with robust error handling.
      *
      * @return void
      */
     public function renderDashboardPage()
     {
+        // Set error reporting to catch all issues
+        $original_error_reporting = error_reporting(E_ALL);
+        $original_display_errors = ini_get('display_errors');
+        ini_set('display_errors', 0);
+        
         try {
-            $data = $this->getDashboardData();
-            echo $this->template->render('dashboard.php', $data);
-        } catch (Exception $e) {
-            $this->logger->error($e->getMessage());
-            wp_die(__('Error loading dashboard', 'wp-woocommerce-printify-sync'));
+            // Buffer output to catch any warnings/errors
+            ob_start();
+            
+            // Basic dashboard structure that doesn't rely on templates or complex data
+            echo '<div class="wrap" style="font-family: -apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Oxygen-Sans,Ubuntu,Cantarell,\'Helvetica Neue\',sans-serif;">';
+            echo '<h1 style="margin-bottom: 20px;"><span class="dashicons dashicons-store" style="font-size: 30px; vertical-align: middle; margin-right: 10px;"></span> ' . esc_html__('Printify Sync Dashboard', 'wp-woocommerce-printify-sync') . '</h1>';
+            
+            // Check if we have shop ID configured
+            $shop_id = get_option('wpwps_printify_shop_id', '');
+            
+            if (empty($shop_id)) {
+                echo '<div class="notice notice-warning" style="padding: 15px; border-left-color: #ffb900;">';
+                echo '<p>' . esc_html__('Your Printify Shop is not configured yet. Please go to the Settings page and set up your API connection.', 'wp-woocommerce-printify-sync') . ' ';
+                echo '<a href="' . esc_url(admin_url('admin.php?page=wpwps-settings')) . '" class="button button-primary">';
+                echo esc_html__('Go to Settings', 'wp-woocommerce-printify-sync');
+                echo '</a></p></div>';
+            } else {
+                // Dashboard content for configured shop
+                echo '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 20px;">';
+                
+                // Quick actions card
+                echo '<div style="background: white; border-radius: 5px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">';
+                echo '<h2 style="margin-top: 0;">' . esc_html__('Quick Actions', 'wp-woocommerce-printify-sync') . '</h2>';
+                echo '<div style="display: grid; gap: 10px;">';
+                echo '<a href="' . esc_url(admin_url('admin.php?page=wpwps-products')) . '" class="button" style="text-align: center;">';
+                echo '<span class="dashicons dashicons-products" style="margin-right: 5px;"></span> ' . esc_html__('Manage Products', 'wp-woocommerce-printify-sync');
+                echo '</a>';
+                echo '<a href="' . esc_url(admin_url('admin.php?page=wpwps-orders')) . '" class="button" style="text-align: center;">';
+                echo '<span class="dashicons dashicons-cart" style="margin-right: 5px;"></span> ' . esc_html__('Manage Orders', 'wp-woocommerce-printify-sync');
+                echo '</a>';
+                echo '<a href="' . esc_url(admin_url('admin.php?page=wpwps-settings')) . '" class="button" style="text-align: center;">';
+                echo '<span class="dashicons dashicons-admin-settings" style="margin-right: 5px;"></span> ' . esc_html__('Settings', 'wp-woocommerce-printify-sync');
+                echo '</a>';
+                echo '</div>';
+                echo '</div>';
+                
+                // Info card
+                echo '<div style="background: white; border-radius: 5px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">';
+                echo '<h2 style="margin-top: 0;">' . esc_html__('Getting Started', 'wp-woocommerce-printify-sync') . '</h2>';
+                echo '<p>' . esc_html__('Use the Products page to synchronize products from Printify to WooCommerce.', 'wp-woocommerce-printify-sync') . '</p>';
+                echo '<p>' . esc_html__('The Orders page allows you to send WooCommerce orders to Printify for fulfillment.', 'wp-woocommerce-printify-sync') . '</p>';
+                echo '</div>';
+                
+                // System Status
+                echo '<div style="background: white; border-radius: 5px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">';
+                echo '<h2 style="margin-top: 0;">' . esc_html__('System Status', 'wp-woocommerce-printify-sync') . '</h2>';
+                echo '<ul style="margin-left: 0; padding-left: 0; list-style: none;">';
+                
+                // Show WordPress version
+                echo '<li style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0;">';
+                echo '<strong>WordPress:</strong> <span style="float: right;">' . esc_html(get_bloginfo('version')) . '</span>';
+                echo '</li>';
+                
+                // Show WooCommerce version if active
+                if (defined('WC_VERSION')) {
+                    echo '<li style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0;">';
+                    echo '<strong>WooCommerce:</strong> <span style="float: right;">' . esc_html(WC_VERSION) . '</span>';
+                    echo '</li>';
+                }
+                
+                // Show PHP version
+                echo '<li style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0;">';
+                echo '<strong>PHP:</strong> <span style="float: right;">' . esc_html(phpversion()) . '</span>';
+                echo '</li>';
+                
+                // Plugin version
+                echo '<li style="margin-bottom: 10px;">';
+                echo '<strong>Plugin:</strong> <span style="float: right;">' . esc_html(WPWPS_VERSION) . '</span>';
+                echo '</li>';
+                
+                echo '</ul>';
+                echo '</div>';
+                
+                echo '</div>'; // End grid
+            }
+            
+            // Plugin version and support info
+            echo '<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 12px;">';
+            echo 'WP WooCommerce Printify Sync v' . esc_html(WPWPS_VERSION);
+            echo ' | <a href="https://example.com/support" target="_blank">Support</a>';
+            echo '</div>';
+            
+            echo '</div>'; // End wrap
+            
+            // Get and clean output buffer
+            $output = ob_get_clean();
+            echo $output;
+            
+        } catch (\Throwable $e) {
+            // Clean any existing output
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            
+            // Log the error
+            if (method_exists($this, 'logger') && $this->logger) {
+                $this->logger->error('Dashboard rendering error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+            } else {
+                error_log('Printify Sync Dashboard Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+            }
+            
+            // Show friendly error message
+            echo '<div class="wrap">';
+            echo '<h1>' . esc_html__('Printify Sync Dashboard', 'wp-woocommerce-printify-sync') . '</h1>';
+            echo '<div class="notice notice-error"><p>';
+            echo esc_html__('There was an error loading the dashboard. Please check the server logs for more information.', 'wp-woocommerce-printify-sync');
+            echo '</p>';
+            
+            // Only show detailed error to administrators
+            if (current_user_can('manage_options')) {
+                echo '<p><strong>Error details (visible to admins only):</strong> ' . esc_html($e->getMessage()) . '</p>';
+            }
+            
+            echo '</div>';
+            echo '</div>';
         }
-    }
-
-    private function getDashboardData() {
-        return [
-            'product_count' => $this->productService->getProductCount(),
-            'order_count' => $this->orderService->getOrderCount(),
-            'pending_syncs' => $this->getPendingSyncs(),
-            'recent_activities' => $this->activityService->getRecentActivities(10),
-            'revenue_data' => $this->getRevenueData(),
-            'queue_stats' => [
-                'products' => $this->action_scheduler->getPendingActionsCount('wpwps_sync_product'),
-                'orders' => $this->action_scheduler->getPendingActionsCount('wpwps_sync_order'),
-                'emails' => $this->action_scheduler->getPendingActionsCount('wpwps_process_email')
-            ]
-        ];
+        
+        // Restore original error settings
+        error_reporting($original_error_reporting);
+        ini_set('display_errors', $original_display_errors);
     }
 
     /**
