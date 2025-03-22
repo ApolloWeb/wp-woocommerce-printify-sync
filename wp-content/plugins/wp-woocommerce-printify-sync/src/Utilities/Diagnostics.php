@@ -55,16 +55,30 @@ class Diagnostics {
      * @return array Diagnostic results.
      */
     public function runAll() {
-        $this->checkForDuplicateMethods();
-        $this->checkMissingClasses();
-        $this->checkFileInclusions();
-        $this->validateDependencies();
+        try {
+            // Ensure the directory exists before running checks
+            if (!is_dir($this->root_dir) || !is_readable($this->root_dir)) {
+                $this->results['errors'][] = sprintf(
+                    'Plugin root directory not found or not readable: %s',
+                    $this->root_dir
+                );
+                return $this->results;
+            }
 
-        $this->logger->info('Diagnostics completed', [
-            'error_count' => count($this->results['errors']),
-            'warning_count' => count($this->results['warnings']),
-            'notice_count' => count($this->results['notices']),
-        ]);
+            $this->checkForDuplicateMethods();
+            $this->checkMissingClasses();
+            $this->checkFileInclusions();
+            $this->validateDependencies();
+
+            $this->logger->info('Diagnostics completed', [
+                'error_count' => count($this->results['errors']),
+                'warning_count' => count($this->results['warnings']),
+                'notice_count' => count($this->results['notices']),
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error('Diagnostic error: ' . $e->getMessage());
+            $this->results['errors'][] = 'Diagnostic error: ' . $e->getMessage();
+        }
 
         return $this->results;
     }
@@ -75,22 +89,43 @@ class Diagnostics {
     private function checkForDuplicateMethods() {
         $this->logger->info('Checking for duplicate method declarations');
         
-        $php_files = $this->scanDirectory($this->root_dir . 'src', 'php');
-        
-        foreach ($php_files as $file) {
-            $content = file_get_contents($file);
-            $methods = $this->extractMethodNames($content);
-            $duplicates = $this->findDuplicates($methods);
+        try {
+            $php_files = $this->scanDirectory($this->root_dir . 'src', 'php');
             
-            if (!empty($duplicates)) {
-                foreach ($duplicates as $method) {
-                    $this->results['errors'][] = sprintf(
-                        'Duplicate method "%s" found in %s',
-                        $method,
+            foreach ($php_files as $file) {
+                if (!file_exists($file) || !is_readable($file)) {
+                    $this->results['warnings'][] = sprintf(
+                        'File not found or not readable: %s',
                         str_replace($this->root_dir, '', $file)
                     );
+                    continue;
+                }
+                
+                $content = file_get_contents($file);
+                if ($content === false) {
+                    $this->results['warnings'][] = sprintf(
+                        'Could not read file: %s',
+                        str_replace($this->root_dir, '', $file)
+                    );
+                    continue;
+                }
+                
+                $methods = $this->extractMethodNames($content);
+                $duplicates = $this->findDuplicates($methods);
+                
+                if (!empty($duplicates)) {
+                    foreach ($duplicates as $method) {
+                        $this->results['errors'][] = sprintf(
+                            'Duplicate method "%s" found in %s',
+                            $method,
+                            str_replace($this->root_dir, '', $file)
+                        );
+                    }
                 }
             }
+        } catch (\Exception $e) {
+            $this->logger->error('Error checking duplicate methods: ' . $e->getMessage());
+            $this->results['errors'][] = 'Error checking duplicate methods: ' . $e->getMessage();
         }
     }
 
@@ -100,31 +135,44 @@ class Diagnostics {
     private function checkMissingClasses() {
         $this->logger->info('Checking for missing class references');
         
-        $php_files = $this->scanDirectory($this->root_dir . 'src', 'php');
-        $all_classes = $this->extractAllClasses($php_files);
-        
-        foreach ($php_files as $file) {
-            $content = file_get_contents($file);
-            $referenced_classes = $this->extractClassReferences($content);
+        try {
+            $php_files = $this->scanDirectory($this->root_dir . 'src', 'php');
+            $all_classes = $this->extractAllClasses($php_files);
             
-            foreach ($referenced_classes as $class) {
-                // Skip built-in PHP classes and WordPress classes
-                if (class_exists($class) || interface_exists($class)) {
+            foreach ($php_files as $file) {
+                if (!file_exists($file) || !is_readable($file)) {
                     continue;
                 }
                 
-                // Skip classes that are found in our codebase
-                if (in_array($class, $all_classes)) {
+                $content = file_get_contents($file);
+                if ($content === false) {
                     continue;
                 }
                 
-                // Class not found - report it
-                $this->results['warnings'][] = sprintf(
-                    'Potential missing class reference: "%s" in %s',
-                    $class,
-                    str_replace($this->root_dir, '', $file)
-                );
+                $referenced_classes = $this->extractClassReferences($content);
+                
+                foreach ($referenced_classes as $class) {
+                    // Skip built-in PHP classes and WordPress classes
+                    if (class_exists($class) || interface_exists($class)) {
+                        continue;
+                    }
+                    
+                    // Skip classes that are found in our codebase
+                    if (in_array($class, $all_classes)) {
+                        continue;
+                    }
+                    
+                    // Class not found - report it
+                    $this->results['warnings'][] = sprintf(
+                        'Potential missing class reference: "%s" in %s',
+                        $class,
+                        str_replace($this->root_dir, '', $file)
+                    );
+                }
             }
+        } catch (\Exception $e) {
+            $this->logger->error('Error checking missing classes: ' . $e->getMessage());
+            $this->results['errors'][] = 'Error checking missing classes: ' . $e->getMessage();
         }
     }
 
@@ -134,31 +182,44 @@ class Diagnostics {
     private function checkFileInclusions() {
         $this->logger->info('Checking for file inclusion issues');
         
-        $php_files = $this->scanDirectory($this->root_dir, 'php');
-        
-        foreach ($php_files as $file) {
-            $content = file_get_contents($file);
-            $includes = $this->extractFileInclusions($content);
+        try {
+            $php_files = $this->scanDirectory($this->root_dir, 'php');
             
-            foreach ($includes as $include) {
-                // Try to resolve relative paths
-                if (strpos($include, './') === 0 || strpos($include, '../') === 0) {
-                    $resolved = realpath(dirname($file) . '/' . $include);
-                    if (!$resolved || !file_exists($resolved)) {
+            foreach ($php_files as $file) {
+                if (!file_exists($file) || !is_readable($file)) {
+                    continue;
+                }
+                
+                $content = file_get_contents($file);
+                if ($content === false) {
+                    continue;
+                }
+                
+                $includes = $this->extractFileInclusions($content);
+                
+                foreach ($includes as $include) {
+                    // Try to resolve relative paths
+                    if (strpos($include, './') === 0 || strpos($include, '../') === 0) {
+                        $resolved = realpath(dirname($file) . '/' . $include);
+                        if (!$resolved || !file_exists($resolved)) {
+                            $this->results['errors'][] = sprintf(
+                                'File inclusion not found: "%s" in %s',
+                                $include,
+                                str_replace($this->root_dir, '', $file)
+                            );
+                        }
+                    } else if (strpos($include, WPWPS_PLUGIN_DIR) === 0 && !file_exists($include)) {
                         $this->results['errors'][] = sprintf(
                             'File inclusion not found: "%s" in %s',
                             $include,
                             str_replace($this->root_dir, '', $file)
                         );
                     }
-                } else if (strpos($include, WPWPS_PLUGIN_DIR) === 0 && !file_exists($include)) {
-                    $this->results['errors'][] = sprintf(
-                        'File inclusion not found: "%s" in %s',
-                        $include,
-                        str_replace($this->root_dir, '', $file)
-                    );
                 }
             }
+        } catch (\Exception $e) {
+            $this->logger->error('Error checking file inclusions: ' . $e->getMessage());
+            $this->results['errors'][] = 'Error checking file inclusions: ' . $e->getMessage();
         }
     }
 
@@ -168,33 +229,46 @@ class Diagnostics {
     private function validateDependencies() {
         $this->logger->info('Validating class dependencies');
         
-        $php_files = $this->scanDirectory($this->root_dir . 'src', 'php');
-        
-        foreach ($php_files as $file) {
-            $content = file_get_contents($file);
-            $class_name = $this->extractClassName($content);
+        try {
+            $php_files = $this->scanDirectory($this->root_dir . 'src', 'php');
             
-            if (!$class_name) {
-                continue;
-            }
-            
-            $dependencies = $this->extractConstructorDependencies($content);
-            
-            foreach ($dependencies as $dependency) {
-                // Skip built-in PHP classes and WordPress classes
-                if (class_exists($dependency) || interface_exists($dependency)) {
+            foreach ($php_files as $file) {
+                if (!file_exists($file) || !is_readable($file)) {
                     continue;
                 }
                 
-                // Check if this is our own class without the full namespace
-                if (strpos($dependency, '\\') === false) {
-                    $this->results['notices'][] = sprintf(
-                        'Potential non-namespaced dependency: "%s" in %s',
-                        $dependency,
-                        str_replace($this->root_dir, '', $file)
-                    );
+                $content = file_get_contents($file);
+                if ($content === false) {
+                    continue;
+                }
+                
+                $class_name = $this->extractClassName($content);
+                
+                if (!$class_name) {
+                    continue;
+                }
+                
+                $dependencies = $this->extractConstructorDependencies($content);
+                
+                foreach ($dependencies as $dependency) {
+                    // Skip built-in PHP classes and WordPress classes
+                    if (class_exists($dependency) || interface_exists($dependency)) {
+                        continue;
+                    }
+                    
+                    // Check if this is our own class without the full namespace
+                    if (strpos($dependency, '\\') === false) {
+                        $this->results['notices'][] = sprintf(
+                            'Potential non-namespaced dependency: "%s" in %s',
+                            $dependency,
+                            str_replace($this->root_dir, '', $file)
+                        );
+                    }
                 }
             }
+        } catch (\Exception $e) {
+            $this->logger->error('Error validating dependencies: ' . $e->getMessage());
+            $this->results['errors'][] = 'Error validating dependencies: ' . $e->getMessage();
         }
     }
 
@@ -206,22 +280,26 @@ class Diagnostics {
      * @return array Array of file paths.
      */
     private function scanDirectory($directory, $extension) {
-        $files = [];
-        
-        if (!is_dir($directory)) {
-            return $files;
+        if (!is_dir($directory) || !is_readable($directory)) {
+            $this->logger->warning('Directory not found or not readable: ' . $directory);
+            return [];
         }
-        
-        $dir_iterator = new \RecursiveDirectoryIterator($directory);
-        $iterator = new \RecursiveIteratorIterator($dir_iterator);
-        
-        foreach ($iterator as $file) {
+
+        $results = [];
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(
+                $directory,
+                \RecursiveDirectoryIterator::SKIP_DOTS
+            )
+        );
+
+        foreach ($files as $file) {
             if ($file->isFile() && $file->getExtension() === $extension) {
-                $files[] = $file->getPathname();
+                $results[] = $file->getPathname();
             }
         }
-        
-        return $files;
+
+        return $results;
     }
 
     /**
@@ -277,7 +355,15 @@ class Diagnostics {
         $classes = [];
         
         foreach ($files as $file) {
+            if (!file_exists($file) || !is_readable($file)) {
+                continue;
+            }
+            
             $content = file_get_contents($file);
+            if ($content === false) {
+                continue;
+            }
+            
             $namespace = $this->extractNamespace($content);
             $class_name = $this->extractClassName($content);
             

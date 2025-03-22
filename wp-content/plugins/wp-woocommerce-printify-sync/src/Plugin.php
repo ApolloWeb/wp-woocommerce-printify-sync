@@ -89,7 +89,10 @@ class Plugin {
         
         // ChatGPT services
         $this->container->bind('chatgpt_client', function($container) {
-            return new Services\ChatGPTClient($container->make('logger'));
+            return new API\ChatGPTClient(
+                $container->make('logger'),
+                new Services\EncryptionService()
+            );
         }, true);
         
         // Email services
@@ -127,6 +130,26 @@ class Plugin {
                 $container->make('logger')
             );
         }, true);
+        
+        // Action scheduler service
+        $this->container->bind('action_scheduler', function($container) {
+            return new Services\ActionSchedulerService($container->make('logger'));
+        }, true);
+        
+        // Activity service
+        $this->container->bind('activity_service', function($container) {
+            return new Services\ActivityService($container->make('logger'));
+        }, true);
+        
+        // Product sync service
+        $this->container->bind('product_sync', function($container) {
+            return new Products\ProductSync(
+                $container->make('api_client'),
+                $container->make('logger'),
+                $container->make('action_scheduler'),
+                $container->make('activity_service')
+            );
+        }, true);
     }
 
     /**
@@ -140,26 +163,6 @@ class Plugin {
                 $container->make('logger'),
                 new Services\EncryptionService(),
                 new Services\Cache()
-            );
-        }, true);
-        
-        // Action scheduler service
-        $this->container->bind('action_scheduler', function($container) {
-            return new Services\ActionSchedulerService($container->make('logger'));
-        }, true);
-        
-        // Activity service
-        $this->container->bind('activity_service', function() {
-            return new Services\ActivityService();
-        }, true);
-        
-        // Product sync service
-        $this->container->bind('product_sync', function($container) {
-            return new Products\ProductSync(
-                $container->make('api_client'),
-                $container->make('logger'),
-                $container->make('action_scheduler'),
-                $container->make('activity_service')
             );
         }, true);
         
@@ -202,10 +205,10 @@ class Plugin {
             
             // Initialize API controller
             $api_controller = new API\APIController(
-                $this->container->make('logger'),
                 $this->container->make('api_client'),
-                $this->container->make('product_sync'),
-                $this->container->make('order_sync')
+                $this->container->make('chatgpt_client'),
+                $this->container->make('logger'),
+                new Services\EncryptionService()
             );
             $api_controller->init();
             

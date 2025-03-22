@@ -34,23 +34,62 @@ class DiagnosticsPage {
      * Initialize the diagnostics page.
      */
     public function init() {
+        // Add as a top-level menu item instead of submenu for testing
+        add_menu_page(
+            __('Diagnostics', 'wp-woocommerce-printify-sync'),   // Page title
+            __('Printify Diagnostics', 'wp-woocommerce-printify-sync'),   // Menu title
+            'manage_options',               // Capability - Using a common capability for testing
+            'wpwps-diagnostics',            // Menu slug
+            [$this, 'renderPage'],          // Callback
+            'dashicons-chart-area',         // Icon
+            100                             // Position
+        );
+        
+        // We'll keep the submenu registration as well, but the standalone menu will help for testing
         add_submenu_page(
             'wpwps-dashboard',              // Parent slug
             __('Diagnostics', 'wp-woocommerce-printify-sync'),   // Page title
             __('Diagnostics', 'wp-woocommerce-printify-sync'),   // Menu title
-            'manage_options',               // Capability
+            'manage_options',               // Capability - changed to common WordPress capability
             'wpwps-diagnostics',            // Menu slug
             [$this, 'renderPage']           // Callback
         );
 
         // Register AJAX handlers
         add_action('wp_ajax_wpwps_run_diagnostics', [$this, 'runDiagnostics']);
+        
+        // Add debug information to the page to help troubleshoot
+        add_action('admin_notices', [$this, 'debugNotice']);
+    }
+    
+    /**
+     * Display debug information for troubleshooting.
+     */
+    public function debugNotice() {
+        global $pagenow, $plugin_page;
+        
+        // Only show on our diagnostics page or WP admin
+        if (!is_admin() || ($pagenow !== 'admin.php' && $plugin_page !== 'wpwps-diagnostics')) {
+            return;
+        }
+        
+        echo '<div class="notice notice-info is-dismissible">';
+        echo '<p><strong>Debug Info:</strong></p>';
+        echo '<p>Current page: ' . esc_html($pagenow) . '</p>';
+        echo '<p>Plugin page: ' . esc_html($plugin_page) . '</p>';
+        echo '<p>Current user can manage_options: ' . (current_user_can('manage_options') ? 'Yes' : 'No') . '</p>';
+        echo '<p>Access this page at: <a href="' . esc_url(admin_url('admin.php?page=wpwps-diagnostics')) . '">Diagnostics Page</a></p>';
+        echo '</div>';
     }
 
     /**
      * Render the diagnostics page.
      */
     public function renderPage() {
+        // Check for permissions here as well
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Sorry, you do not have sufficient permissions to access this page.', 'wp-woocommerce-printify-sync'));
+        }
         ?>
         <div class="wrap wpwps-admin-wrap">
             <h1 class="wp-heading-inline">

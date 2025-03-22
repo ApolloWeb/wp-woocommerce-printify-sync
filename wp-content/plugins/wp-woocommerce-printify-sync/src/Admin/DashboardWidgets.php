@@ -1,13 +1,97 @@
-                    gap: 10px;
-                    margin-bottom: 15px;
+<?php
+/**
+ * Dashboard Widgets.
+ *
+ * @package ApolloWeb\WPWooCommercePrintifySync\Admin
+ */
+
+namespace ApolloWeb\WPWooCommercePrintifySync\Admin;
+
+use ApolloWeb\WPWooCommercePrintifySync\Services\Logger;
+
+/**
+ * Dashboard Widgets class.
+ */
+class DashboardWidgets
+{
+    /**
+     * Logger instance.
+     *
+     * @var Logger
+     */
+    private $logger;
+
+    /**
+     * Constructor.
+     *
+     * @param Logger $logger Logger instance.
+     */
+    public function __construct(Logger $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    /**
+     * Initialize the dashboard widgets.
+     *
+     * @return void
+     */
+    public function init()
+    {
+        add_action('wp_dashboard_setup', [$this, 'registerDashboardWidgets']);
+    }
+
+    /**
+     * Register dashboard widgets.
+     *
+     * @return void
+     */
+    public function registerDashboardWidgets()
+    {
+        wp_add_dashboard_widget(
+            'wpwps_status_widget',
+            __('Printify Sync Status', 'wp-woocommerce-printify-sync'),
+            [$this, 'renderStatusWidget']
+        );
+        
+        wp_add_dashboard_widget(
+            'wpwps_recent_orders_widget',
+            __('Recent Printify Orders', 'wp-woocommerce-printify-sync'),
+            [$this, 'renderRecentOrdersWidget']
+        );
+    }
+
+    /**
+     * Render the Status widget.
+     *
+     * @return void
+     */
+    public function renderStatusWidget()
+    {
+        try {
+            // Get status information
+            ?>
+            <style>
+                .wpwps-dashboard-widget {
+                    background-color: #fff;
+                    border: 1px solid #e1e1e1;
+                    border-radius: 4px;
+                    padding: 15px;
+                    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
                 }
                 
-                .wpwps-status-item {
-                    padding: 8px 0;
-                    border-bottom: 1px solid #f0f0f1;
+                .wpwps-status-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                
+                .wpwps-status-list li {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #f0f0f1;
                 }
                 
                 .wpwps-status-label {
@@ -122,7 +206,6 @@
             
             <style>
                 .wpwps-orders-table {
-                    border-collapse: collapse;
                     width: 100%;
                     font-family: 'Inter', sans-serif;
                 }
