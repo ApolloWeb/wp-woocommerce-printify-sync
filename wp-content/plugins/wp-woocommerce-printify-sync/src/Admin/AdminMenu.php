@@ -52,7 +52,7 @@ class AdminMenu
     private $activityService;
 
     /**
-     * Action scheduler service instance.
+     * Action scheduler instance.
      *
      * @var \ApolloWeb\WPWooCommercePrintifySync\Services\ActionSchedulerService
      */
@@ -61,20 +61,20 @@ class AdminMenu
     /**
      * Constructor.
      *
-     * @param TemplateLoader       $template         Template loader.
-     * @param Logger               $logger           Logger instance.
-     * @param null|object          $productService   Product service instance.
-     * @param null|object          $orderService     Order service instance.
-     * @param null|object          $activityService  Activity service instance.
-     * @param null|object          $action_scheduler Action scheduler service instance.
+     * @param TemplateLoader $template Template loader.
+     * @param Logger         $logger   Logger instance.
+     * @param \ApolloWeb\WPWooCommercePrintifySync\Products\ProductSync $productService Product service instance.
+     * @param \ApolloWeb\WPWooCommercePrintifySync\Orders\OrderSync $orderService Order service instance.
+     * @param \ApolloWeb\WPWooCommercePrintifySync\Services\ActivityService $activityService Activity service instance.
+     * @param \ApolloWeb\WPWooCommercePrintifySync\Services\ActionSchedulerService $action_scheduler Action scheduler instance.
      */
     public function __construct(
-        TemplateLoader $template, 
+        TemplateLoader $template,
         Logger $logger,
-        $productService = null,
-        $orderService = null,
-        $activityService = null,
-        $action_scheduler = null
+        $productService,
+        $orderService,
+        $activityService,
+        $action_scheduler
     ) {
         $this->template = $template;
         $this->logger = $logger;
@@ -113,24 +113,15 @@ class AdminMenu
         // Debug log to check if registerMenus is being called
         error_log('AdminMenu registerMenus called');
         
-        // Use a consistent capability across all menu items
-        $capability = 'manage_options';
-        
-        // Create base64 encoded SVG icon that looks like a shirt/t-shirt (Font Awesome style)
-        $icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
-            <path fill="white" d="M640 162.8c0 6.917-2.293 13.88-7.012 19.7l-49.96 61.63c-6.32 7.796-15.62 11.85-25.01 11.85c-7.01 0-14.07-2.262-19.97-6.919L480 203.3V464c0 26.51-21.49 48-48 48H208C181.5 512 160 490.5 160 464V203.3L101.1 249.1C96.05 253.7 88.99 256 81.98 256c-9.388 0-18.69-4.057-25.01-11.85L7.012 182.5C2.292 176.7-.0003 169.7-.0003 162.8c0-9.262 4.111-18.44 12.01-24.68l135-106.6C159.8 21.49 175.7 16 191.1 16H448.9c16.26 0 32.15 5.492 45.06 15.54l135 106.6C636.9 144.4 640 153.6 640 162.8z"/>
-        </svg>';
-        $icon_base64 = 'data:image/svg+xml;base64,' . base64_encode($icon_svg);
-        
-        // Main menu
+        // Main menu - Use Font Awesome icon directly
         add_menu_page(
             __('Printify Sync', 'wp-woocommerce-printify-sync'),
             __('Printify Sync', 'wp-woocommerce-printify-sync'),
-            $capability,
+            'manage_options', // Changed from manage_woocommerce to core WP capability
             'wpwps-dashboard',
             [$this, 'renderDashboardPage'],
-            $icon_base64, // Custom SVG icon that resembles Font Awesome shirt
-            30
+            'dashicons-tshirt', // WP built-in icon that looks like a t-shirt
+            30 // Changed position to be higher in the menu
         );
 
         // Dashboard submenu
@@ -138,7 +129,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Dashboard', 'wp-woocommerce-printify-sync'),
             __('Dashboard', 'wp-woocommerce-printify-sync'),
-            $capability,
+            'manage_options',
             'wpwps-dashboard',
             [$this, 'renderDashboardPage']
         );
@@ -148,7 +139,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Settings', 'wp-woocommerce-printify-sync'),
             __('Settings', 'wp-woocommerce-printify-sync'),
-            $capability,
+            'manage_options',
             'wpwps-settings',
             [$this, 'renderSettingsPage']
         );
@@ -158,7 +149,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Products', 'wp-woocommerce-printify-sync'),
             __('Products', 'wp-woocommerce-printify-sync'),
-            $capability,
+            'manage_options',
             'wpwps-products',
             [$this, 'renderProductsPage']
         );
@@ -168,7 +159,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Orders', 'wp-woocommerce-printify-sync'),
             __('Orders', 'wp-woocommerce-printify-sync'),
-            $capability,
+            'manage_options',
             'wpwps-orders',
             [$this, 'renderOrdersPage']
         );
@@ -178,7 +169,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Shipping', 'wp-woocommerce-printify-sync'),
             __('Shipping', 'wp-woocommerce-printify-sync'),
-            $capability, 
+            'manage_options',
             'wpwps-shipping',
             [$this, 'renderShippingPage']
         );
@@ -188,7 +179,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Tickets', 'wp-woocommerce-printify-sync'),
             __('Tickets', 'wp-woocommerce-printify-sync'),
-            $capability,
+            'manage_options',
             'wpwps-tickets',
             [$this, 'renderTicketsPage']
         );
@@ -198,7 +189,7 @@ class AdminMenu
             'wpwps-dashboard',
             __('Logs', 'wp-woocommerce-printify-sync'),
             __('Logs', 'wp-woocommerce-printify-sync'),
-            $capability,
+            'manage_options',
             'wpwps-logs',
             [$this, 'renderLogsPage']
         );
