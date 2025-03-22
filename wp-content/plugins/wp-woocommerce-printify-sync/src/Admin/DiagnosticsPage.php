@@ -287,6 +287,11 @@ class DiagnosticsPage {
             $original_display_errors = ini_get('display_errors');
             ini_set('display_errors', 1);
             
+            // Set a flag that we're running diagnostics to modify autoloader behavior
+            if (!defined('WPWPS_RUNNING_DIAGNOSTICS')) {
+                define('WPWPS_RUNNING_DIAGNOSTICS', true);
+            }
+            
             // Log the beginning of diagnostics
             $this->logger->info('Starting diagnostics run');
             
