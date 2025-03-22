@@ -916,4 +916,165 @@ class ProductSync
             ));
         }
     }
+
+    /**
+     * Create or update product variation attributes.
+     *
+     * @param int   $product_id    WooCommerce product ID.
+     * @param array $printify_data Printify product data.
+     * @return array Array of attribute ids and names.
+     */
+    private function setupProductAttributes($product_id, $printify_data)
+    {
+        if (empty($printify_data['variants'])) {
+            return [];
+        }
+        
+        // Extract all possible attributes
+        $attributes = [];
+        $attribute_taxonomies = [];
+        
+        // Get existing product attributes
+        $product = wc_get_product($product_id);
+        $existing_attributes = $product->get_attributes();
+        
+        // Collect all variant properties
+        foreach ($printify_data['variants'] as $variant) {
+            if (!empty($variant['options'])) {
+                foreach ($variant['options'] as $option_name => $option_value) {
+                    if (!isset($attributes[$option_name])) {
+                        $attributes[$option_name] = [];
+                    }
+                    
+                    if (!empty($option_value) && !in_array($option_value, $attributes[$option_name])) {
+                        $attributes[$option_name][] = $option_value;
+                    }
+                }
+            }
+        }
+        
+        // Define attribute data
+        $attribute_data = [];
+        
+        // Process each attribute
+        foreach ($attributes as $name => $values) {
+            if (empty($values)) {
+                continue;
+            }
+            
+            // Format attribute name
+            $attribute_name = $this->formatAttributeName($name);
+            $attribute_label = $this->formatAttributeLabel($name);
+            
+            // Check if attribute taxonomy exists
+            $attribute_taxonomy_name = wc_attribute_taxonomy_name($attribute_name);
+            $attribute_taxonomy_id = wc_attribute_taxonomy_id_by_name($attribute_name);
+            
+            // Create attribute taxonomy if it doesn't exist
+            if (!$attribute_taxonomy_id) {
+                $taxonomy_data = [
+                    'name' => $attribute_label,
+                    'slug' => $attribute_name,
+                    'type' => 'select',
+                    'order_by' => 'menu_order',
+                    'has_archives' => false,
+                ];
+                
+                $attribute_taxonomy_id = wc_create_attribute($taxonomy_data);
+                
+                if (is_wp_error($attribute_taxonomy_id)) {
+                    $this->logger->error('Error creating attribute taxonomy: ' . $attribute_taxonomy_id->get_error_message());
+                    continue;
+                }
+                
+                // Register the taxonomy immediately
+                register_taxonomy(
+                    $attribute_taxonomy_name,
+                    ['product'],
+                    [
+                        'labels' => [
+                            'name' => $attribute_label,
+                        ],
+                        'hierarchical' => false,
+                        'show_ui' => false,
+                        'query_var' => true,
+                        'rewrite' => false,
+                    ]
+                );
+                
+                $this->logger->info('Created new attribute taxonomy', [
+                    'name' => $attribute_name,
+                    'id' => $attribute_taxonomy_id,
+                ]);
+            }
+            
+            $attribute_taxonomies[$attribute_name] = $attribute_taxonomy_name;
+            
+            // Ensure all terms exist
+            $term_ids = [];
+            
+            foreach ($values as $value) {
+                $term_name = sanitize_text_field($value);
+                $term = get_term_by('name', $term_name, $attribute_taxonomy_name);
+                
+                if (!$term) {
+                    $term = wp_insert_term($term_name, $attribute_taxonomy_name);
+                    
+                    if (is_wp_error($term)) {
+                        $this->logger->error('Error creating attribute term: ' . $term->get_error_message());
+                        continue;
+                    }
+                    
+                    $term_id = $term['term_id'];
+                } else {
+                    $term_id = $term->term_id;
+                }
+                
+                $term_ids[] = $term_id;
+            }
+            
+            // Create attribute data
+            $attribute_data[$attribute_taxonomy_name] = [
+                'name' => $attribute_taxonomy_name,
+                'value' => '',
+                'is_visible' => true,
+                'is_variation' => true,
+                'is_taxonomy' => true,
+                'position' => count($attribute_data),
+            ];
+            
+            // Assign terms to product
+            wp_set_object_terms($product_id, $term_ids, $attribute_taxonomy_name);
+        }
+        
+        // Save attributes to product
+        if (!empty($attribute_data)) {
+            $product->set_attributes($attribute_data);
+            $product->save();
+        }
+        
+        return $attribute_taxonomies;
+    }
+
+    /**
+     * Format attribute name for WooCommerce.
+     *
+     * @param string $name Attribute name.
+     * @return string Formatted attribute name.
+     */
+    private function formatAttributeName($name)
+    {
+        return wc_sanitize_taxonomy_name(strtolower(str_replace(' ', '-', $name)));
+    }
+
+    /**
+     * Format attribute label for display.
+     *
+     * @param string $name Attribute name.
+     * @return string Formatted attribute label.
+     */
+    private function formatAttributeLabel($name)
+    {
+        return ucfirst(str_replace(['_', '-'], ' ', $name));
+    }
 }

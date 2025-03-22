@@ -118,6 +118,15 @@ class Plugin {
             );
         };
 
+        // Webhook services
+        $this->container['webhook_handler'] = function() {
+            return new Webhooks\WebhookHandler(
+                $this->container['logger'],
+                $this->container['product_sync'],
+                $this->container['order_sync']
+            );
+        };
+
         // Initialize services
         $this->initializeServices();
     }

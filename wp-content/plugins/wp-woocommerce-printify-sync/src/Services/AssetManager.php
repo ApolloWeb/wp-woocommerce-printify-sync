@@ -30,6 +30,7 @@ class AssetManager {
         wp_register_script('wpwps-dashboard', $this->plugin_url . 'assets/js/wpwps-dashboard.js', ['jquery', 'wpwps-bootstrap', 'wpwps-chartjs', 'wpwps-utils'], $this->version, true);
         wp_register_script('wpwps-orders', $this->plugin_url . 'assets/js/wpwps-orders.js', ['jquery', 'wpwps-bootstrap', 'wpwps-utils'], $this->version, true);
         wp_register_script('wpwps-settings', $this->plugin_url . 'assets/js/wpwps-settings.js', ['jquery', 'wpwps-bootstrap', 'wpwps-utils'], $this->version, true);
+        wp_register_script('wpwps-webhooks', $this->plugin_url . 'assets/js/wpwps-webhooks.js', ['jquery', 'wpwps-utils'], $this->version, true);
         wp_register_script('wpwps-logs', $this->plugin_url . 'assets/js/wpwps-logs.js', ['jquery', 'wpwps-utils'], $this->version, true);
         wp_register_script('wpwps-email-testing', $this->plugin_url . 'assets/js/email-testing.js', ['jquery', 'wpwps-utils'], $this->version, true);
         
@@ -45,11 +46,20 @@ class AssetManager {
         wp_register_style('wpwps-email-settings', $this->plugin_url . 'assets/css/email-settings.css', ['wpwps-global', 'wpwps-components'], $this->version);
     }
 
+    /**
+     * Enqueue page-specific assets.
+     *
+     * @param string $hook The current admin page.
+     */
     public function enqueuePageAssets($hook) {
         $page_scripts = [
             'wpwps-dashboard' => ['wpwps-dashboard'],
             'wpwps-orders' => ['wpwps-orders'],
-            'wpwps-settings' => ['wpwps-settings']
+            'wpwps-settings' => ['wpwps-settings', 'wpwps-webhooks'],
+            'wpwps-logs' => ['wpwps-logs'],
+            'wpwps-tickets' => ['wpwps-tickets'],
+            'wpwps-products' => ['wpwps-products'],
+            'wpwps-shipping' => ['wpwps-shipping'],
         ];
 
         foreach ($page_scripts as $page => $scripts) {

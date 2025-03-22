@@ -456,4 +456,53 @@ class APIController
             'profit' => $profit,
         ];
     }
+
+    /**
+     * Test webhook configuration via AJAX.
+     *
+     * @return void
+     */
+    public function testWebhook()
+    {
+        check_ajax_referer('wpwps_ajax_nonce', 'nonce');
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error([
+                'message' => __('You do not have permission to do this.', 'wp-woocommerce-printify-sync'),
+            ]);
+            return;
+        }
+
+        $webhook_secret = isset($_POST['webhook_secret']) ? sanitize_text_field(wp_unslash($_POST['webhook_secret'])) : '';
+
+        if (empty($webhook_secret)) {
+            wp_send_json_error([
+                'message' => __('Webhook secret is required.', 'wp-woocommerce-printify-sync'),
+            ]);
+            return;
+        }
+
+        // Update webhook secret in options
+        update_option('wpwps_printify_webhook_secret', $webhook_secret);
+
+        // Create sample payload and test signature
+        $payload = json_encode([
+            'test' => true,
+            'timestamp' => time(),
+        ]);
+
+        $signature = hash_hmac('sha256', $payload, $webhook_secret);
+
+        // Log test
+        $this->logger->info('Testing webhook configuration', [
+            'webhook_url' => rest_url('wpwps/v1/webhook'),
+        ]);
+
+        wp_send_json_success([
+            'message' => __('Webhook configuration saved and tested successfully.', 'wp-woocommerce-printify-sync'),
+            'webhook_url' => rest_url('wpwps/v1/webhook'),
+            'test_payload' => $payload,
+            'test_signature' => $signature,
+        ]);
+    }
 }

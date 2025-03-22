@@ -12,6 +12,83 @@ use ApolloWeb\WPWooCommercePrintifySync\Services\EncryptionService;
 use ApolloWeb\WPWooCommercePrintifySync\Services\Cache;
 
 /**
+ * Rate limiter for API requests.
+ */
+class RateLimiter {
+    private $max_requests = 100; // Default Printify rate limit per minute
+    private $time_window = 60; // Time window in seconds (1 minute)
+    private $requests = [];
+    private $option_name = 'wpwps_printify_rate_limiter';
+    
+    public function __construct() {
+        // Load saved requests from option
+        $saved = get_option($this->option_name, []);
+        if (is_array($saved) && !empty($saved)) {
+            $this->requests = $saved;
+        }
+        
+        // Clean up old requests
+        $this->cleanup();
+    }
+    
+    /**
+     * Check if request is allowed.
+     *
+     * @return bool Whether request is allowed
+     */
+    public function isAllowed() {
+        $this->cleanup();
+        return count($this->requests) < $this->max_requests;
+    }
+    
+    /**
+     * Record a request.
+     */
+    public function recordRequest() {
+        $this->requests[] = time();
+        $this->saveRequests();
+    }
+    
+    /**
+     * Get wait time in seconds.
+     *
+     * @return int Seconds to wait
+     */
+    public function getWaitTime() {
+        if (empty($this->requests)) {
+            return 0;
+        }
+        
+        $oldest = min($this->requests);
+        $wait_time = ($oldest + $this->time_window) - time();
+        
+        return max(0, $wait_time);
+    }
+    
+    /**
+     * Clean up old requests.
+     */
+    private function cleanup() {
+        $current_time = time();
+        $cutoff = $current_time - $this->time_window;
+        
+        // Filter out requests older than the time window
+        $this->requests = array_filter($this->requests, function($time) use ($cutoff) {
+            return $time >= $cutoff;
+        });
+        
+        $this->saveRequests();
+    }
+    
+    /**
+     * Save requests to option.
+     */
+    private function saveRequests() {
+        update_option($this->option_name, $this->requests, false);
+    }
+}
+
+/**
  * Printify API Client class.
  */
 class PrintifyAPIClient
@@ -1060,6 +1137,24 @@ class PrintifyAPIClient
                 sleep($wait_time);
             }
         }
+
+        // Check rate limiting
+        static $rate_limiter = null;
+        if ($rate_limiter === null) {
+            $rate_limiter = new RateLimiter();
+        }
+        
+        if (!$rate_limiter->isAllowed()) {
+            $wait_time = $rate_limiter->getWaitTime();
+            $this->logger->warning("API rate limit reached, waiting {$wait_time} seconds");
+            
+            if ($wait_time > 0) {
+                sleep($wait_time);
+            }
+        }
+        
+        // Record this request
+        $rate_limiter->recordRequest();
 
         $url = $this->api_endpoint . $endpoint;
         

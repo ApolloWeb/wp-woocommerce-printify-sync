@@ -43,6 +43,11 @@ if (!defined('ABSPATH')) {
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="webhooks-tab" data-bs-toggle="tab" data-bs-target="#webhooks" type="button" role="tab" aria-controls="webhooks" aria-selected="false">
+                                <i class="fas fa-bell"></i> <?php esc_html_e('Webhooks', 'wp-woocommerce-printify-sync'); ?>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
                             <button class="nav-link" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="false">
                                 <i class="fas fa-sliders-h"></i> <?php esc_html_e('General', 'wp-woocommerce-printify-sync'); ?>
                             </button>
@@ -152,6 +157,9 @@ if (!defined('ABSPATH')) {
                             </div>
                         </div>
                         
+                        <!-- Webhooks Tab -->
+                        <?php require WPWPS_PLUGIN_DIR . 'templates/partials/settings/webhooks-tab.php'; ?>
+
                         <!-- General Settings Tab -->
                         <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">
                             <div class="row mb-3">
