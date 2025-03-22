@@ -686,6 +686,20 @@ class ProductSync
                 $variation->set_price($variant['price']);
             }
             
+            // Set cost price and retail price
+            if (isset($variant['cost'])) {
+                $variation->update_meta_data('_printify_cost_price', $variant['cost']);
+                // Store cost breakdown if available
+                if (isset($variant['cost_breakdown'])) {
+                    $variation->update_meta_data('_printify_cost_breakdown', $variant['cost_breakdown']);
+                }
+            }
+            
+            if (isset($variant['price'])) {
+                $variation->set_regular_price($variant['price']);
+                $variation->set_price($variant['price']);
+            }
+            
             // Set stock status based on availability
             $is_enabled = isset($variant['is_enabled']) ? (bool) $variant['is_enabled'] : true;
             $is_available = isset($variant['is_available']) ? (bool) $variant['is_available'] : true;
@@ -829,9 +843,22 @@ class ProductSync
             return $saved_blueprints[$blueprint_id];
         }
         
-        // If we don't have it, use the default mapping for now
-        // This should be enhanced to fetch from Printify API when they expose blueprint endpoints
-        $blueprints = [
+        // Try to fetch from the Printify API using the new catalog endpoints
+        $blueprint_data = $this->api_client->getCatalogBlueprint($blueprint_id);
+        
+        if (!is_wp_error($blueprint_data) && !empty($blueprint_data['title'])) {
+            $blueprint_name = $blueprint_data['title'];
+            
+            // Update cache and save to options
+            $blueprints_cache[$blueprint_id] = $blueprint_name;
+            $saved_blueprints[$blueprint_id] = $blueprint_name;
+            update_option('wpwps_blueprints', $saved_blueprints);
+            
+            return $blueprint_name;
+        }
+        
+        // Fall back to default mapping if API fetch failed
+        $default_blueprints = [
             1 => 'T-Shirts',
             2 => 'Hoodies',
             3 => 'Mugs',
@@ -845,7 +872,14 @@ class ProductSync
             // Add more blueprints as needed
         ];
         
-        $blueprint_name = isset($blueprints[$blueprint_id]) ? $blueprints[$blueprint_id] : 'Product ' . $blueprint_id;
+        $blueprint_name = isset($default_blueprints[$blueprint_id]) 
+            ? $default_blueprints[$blueprint_id] 
+            : 'Product ' . $blueprint_id;
+        
+        // Log error if API fetch failed
+        if (is_wp_error($blueprint_data)) {
+            $this->logger->error("Error fetching blueprint {$blueprint_id}: " . $blueprint_data->get_error_message());
+        }
         
         // Update cache
         $blueprints_cache[$blueprint_id] = $blueprint_name;
@@ -853,5 +887,33 @@ class ProductSync
         update_option('wpwps_blueprints', $saved_blueprints);
         
         return $blueprint_name;
+    }
+
+    private function updateProductPrices($product, $printify_data)
+    {
+        $price_calculator = new PriceCalculator($this->logger);
+        
+        foreach ($printify_data['variants'] as $variant) {
+            $retail_price = $price_calculator->calculateRetailPrice(
+                $variant['cost'],
+                $printify_data['print_provider_id'],
+                $printify_data['type']
+            );
+            
+            // Store both prices
+            update_post_meta($product->get_id(), '_printify_cost_' . $variant['id'], $variant['cost']);
+            update_post_meta($product->get_id(), '_regular_price', $retail_price);
+            
+            // Store markup info for reference
+            update_post_meta($product->get_id(), '_printify_markup_provider', $printify_data['print_provider_id']);
+            update_post_meta($product->get_id(), '_printify_product_type', $printify_data['type']);
+            
+            $this->logger->info(sprintf(
+                'Updated prices for variant %s: Cost %.2f, Retail %.2f',
+                $variant['id'],
+                $variant['cost'],
+                $retail_price
+            ));
+        }
     }
 }

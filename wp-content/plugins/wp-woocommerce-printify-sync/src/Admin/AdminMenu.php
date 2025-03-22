@@ -157,22 +157,28 @@ class AdminMenu
      */
     public function renderDashboardPage()
     {
-        $shop_id = get_option('wpwps_printify_shop_id', '');
-        $shop_name = get_option('wpwps_printify_shop_name', '');
-        
-        // Get Action Scheduler counts
-        global $wpwps_container;
-        $action_scheduler = $wpwps_container->get('action_scheduler');
-        
-        $product_queue = $action_scheduler->getPendingActionsCount('wpwps_as_sync_product');
-        $order_queue = $action_scheduler->getPendingActionsCount('wpwps_as_sync_order');
-        
-        $this->template->render('wpwps-dashboard', [
-            'shop_id' => $shop_id,
-            'shop_name' => $shop_name,
-            'product_queue' => $product_queue,
-            'order_queue' => $order_queue,
-        ]);
+        try {
+            $data = $this->getDashboardData();
+            echo $this->template->render('dashboard.php', $data);
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage());
+            wp_die(__('Error loading dashboard', 'wp-woocommerce-printify-sync'));
+        }
+    }
+
+    private function getDashboardData() {
+        return [
+            'product_count' => $this->productService->getProductCount(),
+            'order_count' => $this->orderService->getOrderCount(),
+            'pending_syncs' => $this->getPendingSyncs(),
+            'recent_activities' => $this->activityService->getRecentActivities(10),
+            'revenue_data' => $this->getRevenueData(),
+            'queue_stats' => [
+                'products' => $this->action_scheduler->getPendingActionsCount('wpwps_sync_product'),
+                'orders' => $this->action_scheduler->getPendingActionsCount('wpwps_sync_order'),
+                'emails' => $this->action_scheduler->getPendingActionsCount('wpwps_process_email')
+            ]
+        ];
     }
 
     /**

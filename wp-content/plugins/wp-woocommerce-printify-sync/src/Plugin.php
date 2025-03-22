@@ -73,7 +73,14 @@ class Plugin
     {
         // Register core services
         $this->container->register('logger', 'ApolloWeb\WPWooCommercePrintifySync\Services\Logger');
-        $this->container->register('template', 'ApolloWeb\WPWooCommercePrintifySync\Services\TemplateService');
+        
+        // Register template loader
+        $this->container->register('template_loader', 'ApolloWeb\WPWooCommercePrintifySync\Services\TemplateLoader');
+        
+        // Update template service registration
+        $this->container->register('template', 'ApolloWeb\WPWooCommercePrintifySync\Services\TemplateService')
+            ->addArgument($this->container->get('template_loader'));
+        
         $this->container->register('encryption', 'ApolloWeb\WPWooCommercePrintifySync\Services\EncryptionService');
         $this->container->register('email_service', 'ApolloWeb\WPWooCommercePrintifySync\Services\EmailService')
             ->addArgument($this->container->get('logger'));
@@ -96,7 +103,9 @@ class Plugin
         
         $this->container->register('webhook_controller', 'ApolloWeb\WPWooCommercePrintifySync\Webhooks\WebhookController')
             ->addArgument($this->container->get('logger'))
-            ->addArgument($this->container->get('action_scheduler'));
+            ->addArgument($this->container->get('action_scheduler'))
+            ->addArgument($this->container->get('api_client'))
+            ->addArgument($this->container->get('activity_service'));
         
         // Register action scheduler service
         $this->container->register('action_scheduler', 'ApolloWeb\WPWooCommercePrintifySync\Services\ActionSchedulerService')
@@ -150,6 +159,34 @@ class Plugin
             ->addArgument($this->container->get('ticket_service'))
             ->addArgument($this->container->get('logger'))
             ->addArgument($this->container->get('template'));
+        
+        // Register asset manager
+        $this->container->register('asset_manager', 'ApolloWeb\WPWooCommercePrintifySync\Services\AssetManager');
+        
+        // Register queue handler
+        $this->container->register('queue_handler', 'ApolloWeb\WPWooCommercePrintifySync\Services\QueueHandler')
+            ->addArgument($this->container->get('logger'))
+            ->addArgument($this->container->get('action_scheduler'));
+            
+        // Register import scheduler
+        $this->container->register('import_scheduler', 'ApolloWeb\WPWooCommercePrintifySync\Services\ImportScheduler')
+            ->addArgument($this->container->get('action_scheduler'))
+            ->addArgument($this->container->get('logger'));
+            
+        $this->container->get('import_scheduler')->init();
+        
+        // Initialize queue handler
+        $this->container->get('queue_handler')->init();
+        
+        // Initialize asset manager
+        $this->container->get('asset_manager')->init();
+        
+        // Register image handler
+        $this->container->register('image_handler', 'ApolloWeb\WPWooCommercePrintifySync\Services\ImageHandler')
+            ->addArgument($this->container->get('logger'))
+            ->addArgument($this->container->get('action_scheduler'));
+            
+        $this->container->get('image_handler')->init();
     }
     
     /**

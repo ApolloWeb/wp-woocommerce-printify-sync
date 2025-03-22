@@ -9,6 +9,7 @@ namespace ApolloWeb\WPWooCommercePrintifySync\API;
 
 use ApolloWeb\WPWooCommercePrintifySync\Services\Logger;
 use ApolloWeb\WPWooCommercePrintifySync\Services\EncryptionService;
+use ApolloWeb\WPWooCommercePrintifySync\Services\Cache;
 
 /**
  * Printify API Client class.
@@ -56,17 +57,60 @@ class PrintifyAPIClient
      * @var array
      */
     private $last_response;
+
+    /**
+     * Rate limit information.
+     *
+     * @var array
+     */
+    private $rate_limit = [
+        'remaining' => 300,
+        'reset' => 0
+    ];
     
+    /**
+     * Cache duration for blueprints in seconds (24 hours)
+     */
+    const BLUEPRINT_CACHE_DURATION = 86400;
+
+    /**
+     * Cache duration for shipping profiles in seconds (1 hour)
+     */
+    const SHIPPING_PROFILE_CACHE_DURATION = 3600;
+
+    /**
+     * Cache instance.
+     *
+     * @var Cache
+     */
+    private $cache;
+
+    /**
+     * Last request timestamp.
+     *
+     * @var float
+     */
+    private $last_request = 0;
+
+    /**
+     * Rate limit in seconds.
+     *
+     * @var float
+     */
+    private $rate_limit_seconds = 1;
+
     /**
      * Constructor.
      *
      * @param Logger           $logger     Logger instance.
      * @param EncryptionService $encryption Encryption service.
+     * @param Cache            $cache      Cache instance.
      */
-    public function __construct(Logger $logger, EncryptionService $encryption)
+    public function __construct(Logger $logger, EncryptionService $encryption, Cache $cache)
     {
         $this->logger = $logger;
         $this->encryption = $encryption;
+        $this->cache = $cache;
         
         // Load API settings
         $this->api_endpoint = get_option('wpwps_printify_api_endpoint', 'https://api.printify.com/v1/');
@@ -298,11 +342,56 @@ class PrintifyAPIClient
      */
     public function getShippingProfiles()
     {
-        if (empty($this->shop_id)) {
-            return new \WP_Error('missing_shop_id', 'Shop ID is required.');
+        $cache_key = 'wpwps_shipping_profiles_' . $this->shop_id;
+        $profiles = get_transient($cache_key);
+
+        if ($profiles !== false) {
+            return $profiles;
         }
-        
-        return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles.json", 'GET');
+
+        $response = $this->makeRequest("shops/{$this->shop_id}/shipping_profiles.json", 'GET');
+
+        if (!is_wp_error($response)) {
+            set_transient($cache_key, $response, self::SHIPPING_PROFILE_CACHE_DURATION);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Create shipping profile.
+     *
+     * @param array $profile_data Profile data including name, regions, etc.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function createShippingProfile($profile_data)
+    {
+        return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles.json", 'POST', $profile_data);
+    }
+
+    /**
+     * Update shipping profile.
+     *
+     * @param int   $profile_id   Profile ID.
+     * @param array $profile_data Updated profile data.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function updateShippingProfile($profile_id, $profile_data)
+    {
+        delete_transient('wpwps_shipping_profiles_' . $this->shop_id);
+        return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles/{$profile_id}.json", 'PUT', $profile_data);
+    }
+
+    /**
+     * Delete shipping profile.
+     *
+     * @param int $profile_id Profile ID.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function deleteShippingProfile($profile_id)
+    {
+        delete_transient('wpwps_shipping_profiles_' . $this->shop_id);
+        return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles/{$profile_id}.json", 'DELETE');
     }
     
     /**
@@ -750,6 +839,184 @@ class PrintifyAPIClient
     }
     
     /**
+     * Get catalog items.
+     *
+     * @param int $page Page number.
+     * @param int $per_page Items per page.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function getCatalog($page = 1, $per_page = 20)
+    {
+        return $this->makeRequest('catalog.json', 'GET', [
+            'page' => $page,
+            'limit' => $per_page
+        ]);
+    }
+
+    /**
+     * Get blueprint details.
+     *
+     * @param int $blueprint_id Blueprint ID.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function getBlueprint($blueprint_id)
+    {
+        return $this->makeRequest("catalog/blueprints/{$blueprint_id}.json", 'GET');
+    }
+
+    /**
+     * Get all blueprints.
+     *
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function getBlueprints()
+    {
+        $cache_key = 'wpwps_blueprints';
+        $blueprints = get_transient($cache_key);
+
+        if ($blueprints !== false) {
+            return $blueprints;
+        }
+
+        $response = $this->makeRequest('catalog/blueprints.json', 'GET');
+
+        if (!is_wp_error($response)) {
+            set_transient($cache_key, $response, self::BLUEPRINT_CACHE_DURATION);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Get blueprint details with variants.
+     *
+     * @param int $blueprint_id Blueprint ID.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function getBlueprintDetails($blueprint_id)
+    {
+        $cache_key = 'wpwps_blueprint_' . $blueprint_id;
+        $blueprint = get_transient($cache_key);
+
+        if ($blueprint !== false) {
+            return $blueprint;
+        }
+
+        $response = $this->makeRequest("catalog/blueprints/{$blueprint_id}.json", 'GET');
+
+        if (!is_wp_error($response)) {
+            set_transient($cache_key, $response, self::BLUEPRINT_CACHE_DURATION);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Get blueprint print providers.
+     *
+     * @param int $blueprint_id Blueprint ID.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function getBlueprintProviders($blueprint_id)
+    {
+        return $this->makeRequest("catalog/blueprints/{$blueprint_id}/print_providers.json", 'GET');
+    }
+
+    /**
+     * Get provider shipping options.
+     *
+     * @param int   $provider_id Provider ID.
+     * @param array $line_items  Array of line items with product and variant IDs.
+     * @param array $address     Shipping address.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function getProviderShippingOptions($provider_id, $line_items, $address)
+    {
+        $cache_key = 'wpwps_provider_shipping_' . $provider_id . '_' . md5(serialize($line_items) . serialize($address));
+        $cached = get_transient($cache_key);
+
+        if ($cached !== false) {
+            return $cached;
+        }
+
+        $data = [
+            'line_items' => $line_items,
+            'address_to' => $address
+        ];
+
+        $response = $this->makeRequest("print-providers/{$provider_id}/shipping.json", 'POST', $data);
+
+        if (!is_wp_error($response)) {
+            set_transient($cache_key, $response, HOUR_IN_SECONDS);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Get provider shipping locations.
+     *
+     * @param int $provider_id Provider ID.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function getProviderLocations($provider_id)
+    {
+        $cache_key = 'wpwps_provider_locations_' . $provider_id;
+        $cached = get_transient($cache_key);
+
+        if ($cached !== false) {
+            return $cached;
+        }
+
+        $response = $this->makeRequest("print-providers/{$provider_id}/locations.json", 'GET');
+
+        if (!is_wp_error($response)) {
+            set_transient($cache_key, $response, DAY_IN_SECONDS);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Calculate shipping costs for multiple providers.
+     *
+     * @param array $shipping_requests Array of provider shipping requests.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function calculateMultiProviderShipping($shipping_requests)
+    {
+        return $this->makeRequest("shipping/calculate-batch.json", 'POST', [
+            'requests' => $shipping_requests
+        ]);
+    }
+
+    /**
+     * Handle rate limiting.
+     *
+     * @param array $response WordPress HTTP response.
+     * @return void
+     */
+    private function handleRateLimit($response)
+    {
+        $headers = wp_remote_retrieve_headers($response);
+        
+        if (isset($headers['x-ratelimit-remaining'])) {
+            $this->rate_limit['remaining'] = (int) $headers['x-ratelimit-remaining'];
+        }
+        
+        if (isset($headers['x-ratelimit-reset'])) {
+            $this->rate_limit['reset'] = (int) $headers['x-ratelimit-reset'];
+        }
+
+        if ($this->rate_limit['remaining'] === 0) {
+            $sleep_seconds = $this->rate_limit['reset'] - time();
+            if ($sleep_seconds > 0) {
+                sleep($sleep_seconds);
+            }
+        }
+    }
+
+    /**
      * Make an API request.
      *
      * @param string $endpoint API endpoint.
@@ -763,6 +1030,15 @@ class PrintifyAPIClient
             return new \WP_Error('missing_api_key', 'API key is required.');
         }
         
+        // Add rate limiting check
+        if ($this->rate_limit['remaining'] === 0) {
+            $wait_time = $this->rate_limit['reset'] - time();
+            if ($wait_time > 0) {
+                $this->logger->info("Rate limit reached, waiting {$wait_time} seconds");
+                sleep($wait_time);
+            }
+        }
+
         $url = $this->api_endpoint . $endpoint;
         
         $args = [
@@ -800,6 +1076,9 @@ class PrintifyAPIClient
             'body' => $response_body,
         ];
         
+        // Handle rate limiting headers
+        $this->handleRateLimit($response);
+
         // Check for rate limiting
         if ($response_code === 429) {
             $this->logger->log("API rate limit exceeded.", 'error');
@@ -836,5 +1115,86 @@ class PrintifyAPIClient
     public function getLastResponse()
     {
         return $this->last_response;
+    }
+
+    /**
+     * Rate limit the requests.
+     *
+     * @return void
+     */
+    private function rateLimit()
+    {
+        $elapsed = microtime(true) - $this->last_request;
+        if ($elapsed < $this->rate_limit_seconds) {
+            usleep(($this->rate_limit_seconds - $elapsed) * 1000000);
+        }
+        $this->last_request = microtime(true);
+    }
+
+    /**
+     * Get cache key for the request.
+     *
+     * @param string $endpoint API endpoint.
+     * @param string $method   Request method.
+     * @param array  $data     Request data.
+     * @return string Cache key.
+     */
+    private function getCacheKey($endpoint, $method, $data)
+    {
+        return md5($endpoint . $method . json_encode($data));
+    }
+
+    /**
+     * Make a request with caching.
+     *
+     * @param string $endpoint  API endpoint.
+     * @param string $method    Request method.
+     * @param array  $data      Request data.
+     * @param int    $cache_ttl Cache TTL.
+     * @return array|WP_Error API response or WP_Error on failure.
+     */
+    public function request($endpoint, $method = 'GET', $data = null, $cache_ttl = 300)
+    {
+        $cache_key = $this->getCacheKey($endpoint, $method, $data);
+        
+        if ($method === 'GET' && $cached = $this->cache->get($cache_key)) {
+            return $cached;
+        }
+
+        $this->rateLimit();
+
+        $args = [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->api_key,
+                'Content-Type' => 'application/json'
+            ],
+            'method' => $method,
+            'timeout' => 30,
+            'data' => $data ? json_encode($data) : null
+        ];
+
+        try {
+            $response = wp_remote_request($this->api_endpoint . $endpoint, $args);
+            
+            if (is_wp_error($response)) {
+                throw new \Exception($response->get_error_message());
+            }
+
+            $body = json_decode(wp_remote_retrieve_body($response), true);
+            
+            if ($method === 'GET') {
+                $this->cache->set($cache_key, $body, $cache_ttl);
+            }
+
+            $this->logger->debug(sprintf('API Request: %s %s', $method, $endpoint), [
+                'response' => $body,
+                'status' => wp_remote_retrieve_response_code($response)
+            ]);
+
+            return $body;
+        } catch (\Exception $e) {
+            $this->logger->error('API Error: ' . $e->getMessage());
+            throw $e;
+        }
     }
 }

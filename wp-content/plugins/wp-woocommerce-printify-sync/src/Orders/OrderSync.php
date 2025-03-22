@@ -496,57 +496,94 @@ class OrderSync
         return $order_id;
     }
 
-    /**
-     * Add line item to order.
-     *
-     * @param \WC_Order $order WooCommerce order.
-     * @param array     $item  Line item data from Printify.
-     * @return void
-     */
-    private function addLineItem($order, $item)
+    private function addLineItem($order, $item) 
     {
         // Try to find the WooCommerce product
         $variant_id = null;
+        $product_id = !empty($item['product_id']) ? $this->getWooCommerceProductIdByPrintifyId($item['product_id']) : null;
         
-        if (!empty($item['product_id']) && !empty($item['variant_id'])) {
-            // Find the WooCommerce product by Printify product ID
-            $product_id = $this->getWooCommerceProductIdByPrintifyId($item['product_id']);
+        // Get prices from Printify order
+        $retail_price = $item['price'] ?? 0;
+        $cost_price = $item['cost'] ?? 0; 
+        $quantity = $item['quantity'] ?? 1;
+        
+        // Create line item
+        $line_item = new \WC_Order_Item_Product();
+
+        // Set base product data
+        $title = $item['title'] ?? 'Printify Product';
+        $sku = $item['sku'] ?? '';
+        
+        // Try to find and link WooCommerce product
+        if ($product_id) {
+            $product = wc_get_product($product_id);
             
-            if ($product_id) {
-                // Find the WooCommerce variant by Printify variant ID
-                $variant_mapping = get_post_meta($product_id, '_printify_variant_ids', true) ?: [];
-                
-                if (isset($variant_mapping[$item['variant_id']])) {
-                    $variant_id = $variant_mapping[$item['variant_id']];
+            if ($product) {
+                $line_item->set_product($product);
+                $line_item->set_product_id($product_id);
+
+                // Try to find matching variant
+                if (!empty($item['variant_id'])) {
+                    $variant_mapping = get_post_meta($product_id, '_printify_variant_ids', true) ?: [];
+                    $variant_id = $variant_mapping[$item['variant_id']] ?? null;
+                    
+                    if ($variant_id) {
+                        $variant = wc_get_product($variant_id);
+                        if ($variant) {
+                            $line_item->set_variation_id($variant_id);
+                            $title = $variant->get_name();
+                            $sku = $variant->get_sku();
+                        }
+                    }
                 }
             }
         }
-        
-        // Create the line item
-        $line_item = new \WC_Order_Item_Product();
-        
-        if ($variant_id) {
-            $variant = wc_get_product($variant_id);
-            
-            if ($variant) {
-                $line_item->set_product($variant);
-                $line_item->set_variation_id($variant_id);
-                $line_item->set_product_id($variant->get_parent_id());
-            }
-        }
-        
+
         // Set line item data
-        $line_item->set_name(isset($item['title']) ? $item['title'] : 'Printify Product');
-        $line_item->set_quantity(isset($item['quantity']) ? $item['quantity'] : 1);
-        $line_item->set_total(isset($item['price']) ? $item['price'] : 0);
-        $line_item->set_subtotal(isset($item['price']) ? $item['price'] : 0);
+        $line_item->set_name($title);
+        $line_item->set_quantity($quantity);
+
+        // Handle prices
+        $line_item->set_total($retail_price * $quantity);
+        $line_item->set_subtotal($retail_price * $quantity);
         
-        // Add Printify metadata to line item
+        if ($sku) {
+            $line_item->set_sku($sku);
+        }
+
+        // Store Printify metadata
         $line_item->add_meta_data('_printify_product_id', $item['product_id'] ?? '', true);
         $line_item->add_meta_data('_printify_variant_id', $item['variant_id'] ?? '', true);
-        $line_item->add_meta_data('_printify_cost_price', $item['cost'] ?? 0, true);
+        $line_item->add_meta_data('_printify_cost', $cost_price, true);
+        $line_item->add_meta_data('_printify_retail_price', $retail_price, true);
         
-        // Add the line item to the order
+        // Calculate and store profit info
+        if ($cost_price > 0) {
+            $profit = $retail_price - $cost_price;
+            $margin = ($profit / $retail_price) * 100;
+            $markup = (($retail_price / $cost_price) - 1) * 100;
+            
+            $line_item->add_meta_data('_printify_profit', $profit, true);
+            $line_item->add_meta_data('_printify_margin', $margin, true); 
+            $line_item->add_meta_data('_printify_markup', $markup, true);
+        }
+
+        // Add cost breakdown if available
+        if (!empty($item['cost_breakdown'])) {
+            $line_item->add_meta_data('_printify_cost_breakdown', $item['cost_breakdown'], true);
+        }
+
+        // Set virtual/downloadable status
+        $line_item->add_meta_data('_virtual', 'no', true);
+        $line_item->add_meta_data('_downloadable', 'no', true);
+
+        // Add optional item metadata
+        if (!empty($item['options'])) {
+            foreach ($item['options'] as $key => $value) {
+                $line_item->add_meta_data(sanitize_text_field($key), sanitize_text_field($value), true);
+            }
+        }
+
         $order->add_item($line_item);
     }
 
@@ -789,5 +826,44 @@ class OrderSync
         }
         
         return $tracking_numbers;
+    }
+
+    private function importPrintifyOrder($printify_order)
+    {
+        // Store shipping costs
+        if (!empty($printify_order['shipping'])) {
+            $order->update_meta_data('_printify_shipping_cost', $printify_order['shipping']['cost']);
+            $order->update_meta_data('_printify_shipping_provider', $printify_order['shipping']['provider']);
+            $order->update_meta_data('_printify_shipping_service', $printify_order['shipping']['service']);
+        }
+
+        // Calculate and store total cost
+        $total_cost = 0;
+        foreach ($printify_order['line_items'] as $item) {
+            $total_cost += ($item['cost'] * $item['quantity']);
+        }
+        $order->update_meta_data('_printify_total_cost', $total_cost);
+        
+        if (!empty($printify_order['shipping']['cost'])) {
+            $total_cost += $printify_order['shipping']['cost'];
+        }
+        
+        $order->update_meta_data('_printify_total_cost_with_shipping', $total_cost);
+        $order->update_meta_data('_printify_profit', $order->get_total() - $total_cost);
+        
+        $order->save();
+    }
+
+    private function createOrderLineItem($order, $item)
+    {
+        $line_item = new \WC_Order_Item_Product();
+        
+        // Set cost price
+        if (isset($item['cost'])) {
+            $line_item->add_meta_data('_printify_cost_price', $item['cost'], true);
+            if (isset($item['cost_breakdown'])) {
+                $line_item->add_meta_data('_printify_cost_breakdown', $item['cost_breakdown'], true);
+            }
+        }
     }
 }
