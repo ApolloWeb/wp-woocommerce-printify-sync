@@ -216,7 +216,8 @@ class PrintifyAPIClient
         
         $params = [
             'page' => $page,
-            'limit' => $per_page,
+            'limit' => $per_page, // Printify API uses 'limit' instead of 'per_page'
+            'status' => 'all' // Include published and unpublished products
         ];
         
         return $this->makeRequest("shops/{$this->shop_id}/products.json", 'GET', $params);
@@ -224,6 +225,8 @@ class PrintifyAPIClient
     
     /**
      * Get a single product by ID.
+     *
+     * Updated to match Printify API docs.
      *
      * @param string $product_id Printify product ID.
      * @return array|WP_Error API response or WP_Error on failure.
@@ -244,11 +247,12 @@ class PrintifyAPIClient
     /**
      * Get orders from the shop.
      *
-     * @param int $page     Page number.
-     * @param int $per_page Items per page.
+     * @param int   $page     Page number.
+     * @param int   $per_page Items per page.
+     * @param array $filters  Additional filters like status.
      * @return array|WP_Error API response or WP_Error on failure.
      */
-    public function getOrders($page = 1, $per_page = 20)
+    public function getOrders($page = 1, $per_page = 20, $filters = [])
     {
         if (empty($this->shop_id)) {
             return new \WP_Error('missing_shop_id', 'Shop ID is required.');
@@ -256,8 +260,13 @@ class PrintifyAPIClient
         
         $params = [
             'page' => $page,
-            'limit' => $per_page,
+            'limit' => $per_page, 
         ];
+        
+        // Add additional filters if provided
+        if (!empty($filters)) {
+            $params = array_merge($params, $filters);
+        }
         
         return $this->makeRequest("shops/{$this->shop_id}/orders.json", 'GET', $params);
     }
@@ -548,6 +557,8 @@ class PrintifyAPIClient
     /**
      * Calculate shipping cost for an order.
      *
+     * Updated to match Printify shipping v2 endpoint.
+     *
      * @param array $shipping_data Shipping data including items and address.
      * @return array|WP_Error API response or WP_Error on failure.
      */
@@ -557,7 +568,8 @@ class PrintifyAPIClient
             return new \WP_Error('missing_shop_id', 'Shop ID is required.');
         }
         
-        return $this->makeRequest("shops/{$this->shop_id}/orders/shipping.json", 'POST', $shipping_data);
+        // Using v2 shipping endpoint as per docs
+        return $this->makeRequest("shops/{$this->shop_id}/shipping/calculate-v2.json", 'POST', $shipping_data);
     }
     
     /**
@@ -611,11 +623,11 @@ class PrintifyAPIClient
     /**
      * Publish a product to the shop.
      *
-     * @param string $product_id Product ID.
-     * @param array  $publish_data Publish data.
+     * @param string $product_id   Product ID.
+     * @param array  $publish_data Publish data including external ID and platform.
      * @return array|WP_Error API response or WP_Error on failure.
      */
-    public function publishProduct($product_id, $publish_data = [])
+    public function publishProduct($product_id, $publish_data)
     {
         if (empty($this->shop_id)) {
             return new \WP_Error('missing_shop_id', 'Shop ID is required.');
@@ -623,6 +635,15 @@ class PrintifyAPIClient
         
         if (empty($product_id)) {
             return new \WP_Error('missing_product_id', 'Product ID is required.');
+        }
+        
+        // Ensure we include the publish_connect platform for WooCommerce
+        if (empty($publish_data['external_id'])) {
+            $publish_data['external_id'] = 'wc_' . time(); // Generate ID if not provided
+        }
+        
+        if (empty($publish_data['platform'])) {
+            $publish_data['platform'] = 'woocommerce';
         }
         
         return $this->makeRequest("shops/{$this->shop_id}/products/{$product_id}/publish.json", 'POST', $publish_data);
@@ -968,7 +989,8 @@ class PrintifyAPIClient
             return $cached;
         }
 
-        $response = $this->makeRequest("print-providers/{$provider_id}/locations.json", 'GET');
+        // Updated endpoint as per API docs
+        $response = $this->makeRequest("print-providers/{$provider_id}/shipping.json", 'GET');
 
         if (!is_wp_error($response)) {
             set_transient($cache_key, $response, DAY_IN_SECONDS);
@@ -1046,7 +1068,7 @@ class PrintifyAPIClient
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->api_key,
                 'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
+                'Accept' => 'application/json;version=1', // API version 1
             ],
             'timeout' => 30,
         ];
@@ -1057,7 +1079,7 @@ class PrintifyAPIClient
             $args['body'] = json_encode($params);
         }
         
-        $this->logger->log("Making API request to: {$url}", 'info');
+        $this->logger->log("Making API request to: {$url}", 'debug');
         
         $response = wp_remote_request($url, $args);
         

@@ -16,17 +16,19 @@ $action_scheduler = $wpwps_container->get('action_scheduler');
 $pending_order_syncs = $action_scheduler->getPendingActionsCount('wpwps_as_sync_order');
 ?>
 <div class="wrap wpwps-admin-wrap">
-    <h1 class="wp-heading-inline">
-        <i class="fas fa-shopping-cart"></i> <?php echo esc_html__('Printify Sync - Orders', 'wp-woocommerce-printify-sync'); ?>
-    </h1>
-    
-    <?php if (!empty($shop_name)) : ?>
-    <div class="wpwps-shop-info">
-        <span class="wpwps-shop-badge">
-            <i class="fas fa-store"></i> <?php echo esc_html($shop_name); ?>
-        </span>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="wp-heading-inline">
+            <i class="fas fa-shopping-cart"></i> <?php echo esc_html__('Printify Sync - Orders', 'wp-woocommerce-printify-sync'); ?>
+        </h1>
+        
+        <?php if (!empty($shop_name)) : ?>
+        <div class="wpwps-shop-info">
+            <span class="wpwps-shop-badge">
+                <i class="fas fa-store"></i> <?php echo esc_html($shop_name); ?>
+            </span>
+        </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
     
     <hr class="wp-header-end">
     
@@ -34,14 +36,16 @@ $pending_order_syncs = $action_scheduler->getPendingActionsCount('wpwps_as_sync_
     <div class="alert alert-warning">
         <i class="fas fa-exclamation-triangle"></i>
         <?php esc_html_e('Your Printify Shop is not configured yet. Please go to the Settings page and set up your API connection.', 'wp-woocommerce-printify-sync'); ?>
-        <a href="<?php echo esc_url(admin_url('admin.php?page=wpwps-settings')); ?>" class="button button-primary"><?php esc_html_e('Go to Settings', 'wp-woocommerce-printify-sync'); ?></a>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=wpwps-settings')); ?>" class="btn btn-primary ms-3">
+            <i class="fas fa-cog"></i> <?php esc_html_e('Go to Settings', 'wp-woocommerce-printify-sync'); ?>
+        </a>
     </div>
     <?php else : ?>
     
     <div class="wpwps-orders-container">
         <div class="row mb-4">
             <div class="col-md-12">
-                <div class="card wpwps-card">
+                <div class="wpwps-card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="card-title mb-0">
@@ -73,7 +77,7 @@ $pending_order_syncs = $action_scheduler->getPendingActionsCount('wpwps_as_sync_
         
         <div class="row mb-4">
             <div class="col-md-12">
-                <div class="card wpwps-card">
+                <div class="wpwps-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><?php esc_html_e('Printify Orders', 'wp-woocommerce-printify-sync'); ?></h5>
                         <div class="form-inline">
@@ -123,7 +127,6 @@ $pending_order_syncs = $action_scheduler->getPendingActionsCount('wpwps_as_sync_
                                 </tbody>
                             </table>
                         </div>
-                        
                         <div class="pagination-wrapper mt-3 d-flex justify-content-between align-items-center">
                             <div class="pagination-info">
                                 <?php esc_html_e('Showing 0 of 0 orders', 'wp-woocommerce-printify-sync'); ?>
@@ -149,6 +152,7 @@ $pending_order_syncs = $action_scheduler->getPendingActionsCount('wpwps_as_sync_
             </div>
         </div>
         
+        <!-- Order Details Modal -->
         <div class="modal fade" id="order-details-modal" tabindex="-1" aria-labelledby="order-details-title" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">

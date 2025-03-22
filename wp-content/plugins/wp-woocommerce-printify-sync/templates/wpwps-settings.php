@@ -11,35 +11,30 @@ if (!defined('ABSPATH')) {
 }
 ?>
 <div class="wrap wpwps-admin-wrap">
-    <h1 class="wp-heading-inline">
-        <i class="fas fa-cog"></i> <?php echo esc_html__('Printify Sync - Settings', 'wp-woocommerce-printify-sync'); ?>
-    </h1>
-    
-    <?php if (!empty($shop_name)) : ?>
-    <div class="wpwps-shop-info">
-        <span class="wpwps-shop-badge">
-            <i class="fas fa-store"></i> <?php echo esc_html($shop_name); ?>
-        </span>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="wp-heading-inline">
+            <i class="fas fa-cog"></i> <?php echo esc_html__('Printify Sync - Settings', 'wp-woocommerce-printify-sync'); ?>
+        </h1>
+        
+        <?php if (!empty($shop_name)) : ?>
+        <div class="wpwps-shop-info">
+            <span class="wpwps-shop-badge">
+                <i class="fas fa-store"></i> <?php echo esc_html($shop_name); ?>
+            </span>
+        </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
     
     <hr class="wp-header-end">
     
-    <div class="notice notice-info inline">
-        <p>
-            <i class="fas fa-info-circle"></i>
-            <?php esc_html_e('Configure the Printify and ChatGPT API settings. API keys are stored securely using encryption.', 'wp-woocommerce-printify-sync'); ?>
-        </p>
-    </div>
-    
     <div class="wpwps-settings-container">
         <form id="wpwps-settings-form" method="post">
-            <div class="card">
+            <div class="wpwps-card">
                 <div class="card-header">
-                    <ul class="nav nav-tabs card-header-tabs" id="wpwps-settings-tabs" role="tablist">
+                    <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="printify-tab" data-bs-toggle="tab" data-bs-target="#printify" type="button" role="tab" aria-controls="printify" aria-selected="true">
-                                <i class="fas fa-tshirt"></i> <?php esc_html_e('Printify API', 'wp-woocommerce-printify-sync'); ?>
+                                <i class="fas fa-plug"></i> <?php esc_html_e('Printify API', 'wp-woocommerce-printify-sync'); ?>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -60,24 +55,27 @@ if (!defined('ABSPATH')) {
                         <div class="tab-pane fade show active" id="printify" role="tabpanel" aria-labelledby="printify-tab">
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="printify_api_key" class="form-label"><?php esc_html_e('Printify API Key', 'wp-woocommerce-printify-sync'); ?> <span class="required">*</span></label>
-                                    <div class="input-group mb-3">
-                                        <input type="password" class="form-control" id="printify_api_key" name="printify_api_key" placeholder="<?php esc_attr_e('Enter your Printify API key', 'wp-woocommerce-printify-sync'); ?>" required>
-                                        <button class="btn btn-outline-secondary" type="button" id="toggle-printify-key">
+                                    <label for="printify_api_key" class="form-label">
+                                        <?php esc_html_e('Printify API Key', 'wp-woocommerce-printify-sync'); ?>
+                                        <span class="required">*</span>
+                                    </label>
+                                    <div class="password-input-group">
+                                        <input type="password" class="form-control" id="printify_api_key" name="printify_api_key" value="<?php echo esc_attr($api_key ?? ''); ?>" required>
+                                        <button type="button" class="password-toggle" tabindex="-1">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
-                                    <div class="form-text"><?php esc_html_e('Your Printify API key. Get it from your Printify account.', 'wp-woocommerce-printify-sync'); ?></div>
+                                    <div class="form-text"><?php esc_html_e('Enter your Printify API key from your Printify account.', 'wp-woocommerce-printify-sync'); ?></div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="printify_api_endpoint" class="form-label"><?php esc_html_e('API Endpoint', 'wp-woocommerce-printify-sync'); ?></label>
-                                    <input type="text" class="form-control" id="printify_api_endpoint" name="printify_api_endpoint" value="<?php echo esc_attr($api_endpoint); ?>" placeholder="https://api.printify.com/v1/">
-                                    <div class="form-text"><?php esc_html_e('The Printify API endpoint. Default is https://api.printify.com/v1/', 'wp-woocommerce-printify-sync'); ?></div>
+                                    <input type="text" class="form-control" id="printify_api_endpoint" name="printify_api_endpoint" value="<?php echo esc_attr($api_endpoint); ?>">
+                                    <div class="form-text"><?php esc_html_e('Default: https://api.printify.com/v1/', 'wp-woocommerce-printify-sync'); ?></div>
                                 </div>
                             </div>
                             
                             <div class="row mb-3">
-                                <div class="col-12">
+                                <div class="col-md-6">
                                     <button type="button" id="test-printify-connection" class="btn btn-primary">
                                         <i class="fas fa-plug"></i> <?php esc_html_e('Test Connection', 'wp-woocommerce-printify-sync'); ?>
                                     </button>
@@ -115,27 +113,26 @@ if (!defined('ABSPATH')) {
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="chatgpt_api_key" class="form-label"><?php esc_html_e('ChatGPT API Key', 'wp-woocommerce-printify-sync'); ?></label>
-                                    <div class="input-group mb-3">
-                                        <input type="password" class="form-control" id="chatgpt_api_key" name="chatgpt_api_key" placeholder="<?php esc_attr_e('Enter your ChatGPT API key', 'wp-woocommerce-printify-sync'); ?>">
-                                        <button class="btn btn-outline-secondary" type="button" id="toggle-chatgpt-key">
+                                    <div class="password-input-group">
+                                        <input type="password" class="form-control" id="chatgpt_api_key" name="chatgpt_api_key" value="<?php echo esc_attr($chatgpt_api_key ?? ''); ?>">
+                                        <button type="button" class="password-toggle" tabindex="-1">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
-                                    <div class="form-text"><?php esc_html_e('Your OpenAI API key for ChatGPT. Get it from your OpenAI account.', 'wp-woocommerce-printify-sync'); ?></div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="chatgpt_temperature" class="form-label"><?php esc_html_e('Temperature', 'wp-woocommerce-printify-sync'); ?></label>
-                                    <input type="range" class="form-range" id="chatgpt_temperature" name="chatgpt_temperature" min="0" max="1" step="0.1" value="<?php echo esc_attr($temperature); ?>">
-                                    <div class="d-flex justify-content-between">
-                                        <span><?php esc_html_e('More Deterministic', 'wp-woocommerce-printify-sync'); ?> (0)</span>
-                                        <span id="temperature_value"><?php echo esc_html($temperature); ?></span>
-                                        <span>(1) <?php esc_html_e('More Creative', 'wp-woocommerce-printify-sync'); ?></span>
-                                    </div>
-                                    <div class="form-text"><?php esc_html_e('Controls randomness in responses. Lower values are more deterministic, higher are more creative.', 'wp-woocommerce-printify-sync'); ?></div>
+                                    <div class="form-text"><?php esc_html_e('Enter your OpenAI API key for ChatGPT functionality.', 'wp-woocommerce-printify-sync'); ?></div>
                                 </div>
                             </div>
                             
                             <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="chatgpt_temperature" class="form-label">
+                                        <?php esc_html_e('Model Temperature', 'wp-woocommerce-printify-sync'); ?>
+                                        <span id="temperature_value"><?php echo esc_html($temperature); ?></span>
+                                    </label>
+                                    <input type="range" class="range-slider form-range" id="chatgpt_temperature" name="chatgpt_temperature" min="0" max="1" step="0.1" value="<?php echo esc_attr($temperature); ?>">
+                                    <div class="form-text"><?php esc_html_e('Controls randomness: lower values give more deterministic results.', 'wp-woocommerce-printify-sync'); ?></div>
+                                </div>
+                                
                                 <div class="col-md-6">
                                     <label for="chatgpt_monthly_budget" class="form-label"><?php esc_html_e('Monthly Token Budget', 'wp-woocommerce-printify-sync'); ?></label>
                                     <input type="number" class="form-control" id="chatgpt_monthly_budget" name="chatgpt_monthly_budget" value="<?php echo esc_attr($monthly_budget); ?>" min="1000">

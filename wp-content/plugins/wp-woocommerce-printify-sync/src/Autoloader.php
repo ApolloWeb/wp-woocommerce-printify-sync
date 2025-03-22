@@ -1,51 +1,69 @@
 <?php
-/**
- * Autoloader class for WP WooCommerce Printify Sync plugin.
- *
- * @package ApolloWeb\WPWooCommercePrintifySync
- */
 
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
 /**
- * Autoloader class for loading classes automatically.
+ * Class Autoloader
+ * 
+ * Custom autoloader for PSR-12 compliant class loading
+ * 
+ * @package ApolloWeb\WPWooCommercePrintifySync
  */
 class Autoloader
 {
     /**
-     * Register the autoloader.
-     *
-     * @return void
+     * Namespace prefix for all plugin classes.
+     * 
+     * @var string
      */
-    public static function register()
+    private $namespacePrefix = 'ApolloWeb\\WPWooCommercePrintifySync\\';
+
+    /**
+     * Base directory for the namespace prefix.
+     * 
+     * @var string
+     */
+    private $baseDir;
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
     {
-        spl_autoload_register([self::class, 'autoload']);
+        $this->baseDir = WPWPS_PLUGIN_DIR . 'src/';
     }
 
     /**
-     * Autoload classes from the ApolloWeb\WPWooCommercePrintifySync namespace.
-     *
-     * @param string $class The fully-qualified class name.
+     * Register the autoloader.
+     * 
      * @return void
      */
-    public static function autoload($class)
+    public function register(): void
     {
-        // Check if the class belongs to our namespace
-        $prefix = 'ApolloWeb\\WPWooCommercePrintifySync\\';
-        $base_dir = WPWPS_PLUGIN_DIR . 'src/';
+        spl_autoload_register([$this, 'loadClass']);
+    }
 
-        $len = strlen($prefix);
-        if (strncmp($prefix, $class, $len) !== 0) {
+    /**
+     * Load a class by its fully qualified name.
+     *
+     * @param string $class The fully qualified class name.
+     * @return void
+     */
+    public function loadClass(string $class): void
+    {
+        // Check if the class uses our namespace prefix
+        $len = strlen($this->namespacePrefix);
+        if (strncmp($this->namespacePrefix, $class, $len) !== 0) {
             return;
         }
 
         // Get the relative class name
-        $relative_class = substr($class, $len);
+        $relativeClass = substr($class, $len);
         
         // Replace namespace separators with directory separators
-        $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+        $file = $this->baseDir . str_replace('\\', '/', $relativeClass) . '.php';
         
-        // If the file exists, require it
+        // Load the file if it exists
         if (file_exists($file)) {
             require_once $file;
         }

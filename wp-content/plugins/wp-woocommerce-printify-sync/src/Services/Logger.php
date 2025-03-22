@@ -13,27 +13,26 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Services;
 class Logger
 {
     /**
-     * Available log levels.
-     *
-     * @var array
+     * Log levels.
      */
-    private $levels = [
-        'emergency' => 0,
-        'alert'     => 1,
-        'critical'  => 2,
-        'error'     => 3,
-        'warning'   => 4,
-        'notice'    => 5,
-        'info'      => 6,
-        'debug'     => 7,
-    ];
+    const DEBUG = 'debug';
+    const INFO = 'info';
+    const NOTICE = 'notice';
+    const WARNING = 'warning';
+    const ERROR = 'error';
+    const CRITICAL = 'critical';
+    const ALERT = 'alert';
+    const EMERGENCY = 'emergency';
 
     /**
-     * Log file path.
-     *
-     * @var string
+     * Log directory.
      */
     private $log_dir;
+
+    /**
+     * Current log level.
+     */
+    private $log_level;
 
     /**
      * Constructor.
@@ -41,13 +40,14 @@ class Logger
     public function __construct()
     {
         $this->log_dir = WPWPS_PLUGIN_DIR . 'logs/';
+        $this->log_level = get_option('wpwps_log_level', self::INFO);
 
         // Create logs directory if it doesn't exist
         if (!file_exists($this->log_dir)) {
             wp_mkdir_p($this->log_dir);
 
-            // Create .htaccess to protect log files
-            $htaccess = "# Disable directory browsing\nOptions -Indexes\n\n# Deny access to all files\n<FilesMatch \".*\">\nOrder Allow,Deny\nDeny from all\n</FilesMatch>";
+            // Add .htaccess to protect logs
+            $htaccess = "Order Deny,Allow\nDeny from all\n";
             file_put_contents($this->log_dir . '.htaccess', $htaccess);
         }
     }
@@ -55,48 +55,28 @@ class Logger
     /**
      * Log a message.
      *
-     * @param string $message Message to log.
      * @param string $level   Log level.
-     * @param array  $context Additional context.
-     * @return bool Whether the message was logged.
+     * @param string $message Log message.
+     * @param array  $context Optional context data.
      */
-    public function log($message, $level = 'info', $context = [])
+    public function log($level, $message, array $context = [])
     {
-        if (!array_key_exists($level, $this->levels)) {
-            $level = 'info';
+        if (!$this->shouldLog($level)) {
+            return;
         }
 
-        // Check if we should log this level based on settings
-        $log_level = get_option('wpwps_log_level', 'info');
-        if (!array_key_exists($log_level, $this->levels)) {
-            $log_level = 'info';
-        }
+        $entry = [
+            'timestamp' => current_time('mysql'),
+            'level'     => $level,
+            'message'   => $this->interpolate($message, $context),
+            'context'   => $context
+        ];
 
-        if ($this->levels[$level] > $this->levels[$log_level]) {
-            return false;
-        }
+        // Write to daily log file
+        $filename = $this->log_dir . date('Y-m-d') . '.log';
+        $line = json_encode($entry) . "\n";
 
-        $timestamp = date('Y-m-d H:i:s');
-        $log_file = $this->getLogFile();
-
-        $log_entry = "[{$timestamp}] [{$level}] {$message}";
-
-        if (!empty($context)) {
-            $log_entry .= " " . json_encode($context);
-        }
-
-        $log_entry .= PHP_EOL;
-
-        // Write to log file
-        $result = file_put_contents($log_file, $log_entry, FILE_APPEND);
-
-        // If logging fails or file size exceeds limit, rotate logs
-        if ($result === false || filesize($log_file) > 10 * 1024 * 1024) {
-            $this->rotateLogFiles();
-            file_put_contents($this->getLogFile(), $log_entry, FILE_APPEND);
-        }
-
-        return true;
+        file_put_contents($filename, $line, FILE_APPEND);
     }
 
     /**
@@ -108,7 +88,7 @@ class Logger
      */
     public function emergency($message, $context = [])
     {
-        return $this->log($message, 'emergency', $context);
+        return $this->log(self::EMERGENCY, $message, $context);
     }
 
     /**
@@ -120,7 +100,7 @@ class Logger
      */
     public function alert($message, $context = [])
     {
-        return $this->log($message, 'alert', $context);
+        return $this->log(self::ALERT, $message, $context);
     }
 
     /**
@@ -132,7 +112,7 @@ class Logger
      */
     public function critical($message, $context = [])
     {
-        return $this->log($message, 'critical', $context);
+        return $this->log(self::CRITICAL, $message, $context);
     }
 
     /**
@@ -144,7 +124,7 @@ class Logger
      */
     public function error($message, $context = [])
     {
-        return $this->log($message, 'error', $context);
+        return $this->log(self::ERROR, $message, $context);
     }
 
     /**
@@ -156,7 +136,7 @@ class Logger
      */
     public function warning($message, $context = [])
     {
-        return $this->log($message, 'warning', $context);
+        return $this->log(self::WARNING, $message, $context);
     }
 
     /**
@@ -168,7 +148,7 @@ class Logger
      */
     public function notice($message, $context = [])
     {
-        return $this->log($message, 'notice', $context);
+        return $this->log(self::NOTICE, $message, $context);
     }
 
     /**
@@ -180,7 +160,7 @@ class Logger
      */
     public function info($message, $context = [])
     {
-        return $this->log($message, 'info', $context);
+        return $this->log(self::INFO, $message, $context);
     }
 
     /**
@@ -192,39 +172,52 @@ class Logger
      */
     public function debug($message, $context = [])
     {
-        return $this->log($message, 'debug', $context);
+        return $this->log(self::DEBUG, $message, $context);
     }
 
     /**
-     * Get the log file path.
+     * Interpolate context values into message placeholders.
      *
-     * @return string Log file path.
+     * @param string $message Log message with placeholders.
+     * @param array  $context Context data to replace placeholders.
+     * @return string Interpolated message.
      */
-    private function getLogFile()
+    private function interpolate($message, array $context = [])
     {
-        return $this->log_dir . 'wpwps-' . date('Y-m-d') . '.log';
-    }
+        if (empty($context)) {
+            return $message;
+        }
 
-    /**
-     * Rotate log files to keep disk usage under control.
-     *
-     * @return void
-     */
-    private function rotateLogFiles()
-    {
-        $log_files = glob($this->log_dir . 'wpwps-*.log');
-        
-        // Sort by modification time (newest first)
-        usort($log_files, function($a, $b) {
-            return filemtime($b) - filemtime($a);
-        });
-
-        // Keep only the 5 most recent files
-        for ($i = 5; $i < count($log_files); $i++) {
-            if (file_exists($log_files[$i])) {
-                unlink($log_files[$i]);
+        $replace = [];
+        foreach ($context as $key => $val) {
+            if (is_scalar($val) || (is_object($val) && method_exists($val, '__toString'))) {
+                $replace['{' . $key . '}'] = $val;
             }
         }
+
+        return strtr($message, $replace);
+    }
+
+    /**
+     * Check if the given level should be logged.
+     *
+     * @param string $level Log level to check.
+     * @return bool Whether the level should be logged.
+     */
+    private function shouldLog($level)
+    {
+        $levels = [
+            self::DEBUG     => 100,
+            self::INFO      => 200,
+            self::NOTICE    => 250,
+            self::WARNING   => 300,
+            self::ERROR     => 400,
+            self::CRITICAL  => 500,
+            self::ALERT     => 550,
+            self::EMERGENCY => 600,
+        ];
+
+        return $levels[$level] >= $levels[$this->log_level];
     }
 
     /**
@@ -302,16 +295,16 @@ class Logger
     public function clearLogsAjax()
     {
         check_ajax_referer('wpwps_ajax_nonce', 'nonce');
-        
+
         if (!current_user_can('manage_woocommerce')) {
             wp_send_json_error([
                 'message' => __('You do not have permission to do this.', 'wp-woocommerce-printify-sync'),
             ]);
             return;
         }
-        
+
         $result = $this->clearLogs();
-        
+
         if ($result) {
             wp_send_json_success([
                 'message' => __('Logs cleared successfully.', 'wp-woocommerce-printify-sync'),
@@ -343,5 +336,37 @@ class Logger
         }
 
         return $success;
+    }
+
+    /**
+     * Get the log file path.
+     *
+     * @return string Log file path.
+     */
+    private function getLogFile()
+    {
+        return $this->log_dir . 'wpwps-' . date('Y-m-d') . '.log';
+    }
+
+    /**
+     * Rotate log files to keep disk usage under control.
+     *
+     * @return void
+     */
+    private function rotateLogFiles()
+    {
+        $log_files = glob($this->log_dir . 'wpwps-*.log');
+
+        // Sort by modification time (newest first)
+        usort($log_files, function ($a, $b) {
+            return filemtime($b) - filemtime($a);
+        });
+
+        // Keep only the 5 most recent files
+        for ($i = 5; $i < count($log_files); $i++) {
+            if (file_exists($log_files[$i])) {
+                unlink($log_files[$i]);
+            }
+        }
     }
 }

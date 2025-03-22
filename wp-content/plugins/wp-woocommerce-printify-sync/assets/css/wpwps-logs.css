@@ -6,22 +6,57 @@
 
 .wpwps-logs-container {
     margin-top: 20px;
+    font-family: 'Inter', sans-serif;
 }
 
 .wpwps-card {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.wpwps-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 #logs-table {
-    font-family: monospace;
+    font-family: 'Inter', monospace;
     font-size: 13px;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#logs-table th {
+    background-color: rgba(150, 88, 138, 0.05);
+    color: var(--wpwps-text-primary);
+    padding: 12px 15px;
+    font-weight: 600;
+    border: none;
+    white-space: nowrap;
+}
+
+#logs-table th:first-child {
+    border-top-left-radius: 10px;
+}
+
+#logs-table th:last-child {
+    border-top-right-radius: 10px;
 }
 
 #logs-table td {
     white-space: normal;
     word-wrap: break-word;
     vertical-align: middle;
+    padding: 12px 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+#logs-table tr:hover td {
+    background-color: rgba(150, 88, 138, 0.03);
 }
 
 #logs-table th:first-child,
@@ -64,25 +99,33 @@
 }
 
 /* Badge colors */
+.badge {
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    padding: 0.35em 0.8em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
 .bg-danger {
-    background-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.9) !important;
 }
 
 .bg-warning {
-    background-color: #ffc107;
+    background-color: rgba(255, 193, 7, 0.9) !important;
     color: #212529;
 }
 
 .bg-info {
-    background-color: #17a2b8;
+    background-color: rgba(23, 162, 184, 0.9) !important;
 }
 
 .bg-success {
-    background-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.9) !important;
 }
 
 .bg-secondary {
-    background-color: #6c757d;
+    background-color: rgba(108, 117, 125, 0.9) !important;
 }
 
 /* Form elements */
@@ -100,10 +143,45 @@
     width: auto;
 }
 
+.form-control {
+    border-radius: 30px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--wpwps-primary);
+    box-shadow: 0 0 0 0.2rem rgba(150, 88, 138, 0.15);
+}
+
+.input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group-append .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 30px;
+    border-bottom-right-radius: 30px;
+}
+
+.btn-outline-secondary {
+    color: var(--wpwps-text-secondary);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline-secondary:hover {
+    color: var(--wpwps-primary);
+    background-color: rgba(150, 88, 138, 0.05);
+    border-color: rgba(150, 88, 138, 0.1);
+}
+
 .form-select {
     display: block;
     width: auto;
-    padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+    padding: 0.5rem 2.25rem 0.5rem 1rem;
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
@@ -113,9 +191,29 @@
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 16px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 0.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 30px;
     appearance: none;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: var(--wpwps-primary);
+    box-shadow: 0 0 0 0.2rem rgba(150, 88, 138, 0.15);
+}
+
+.btn-danger {
+    background-color: var(--wpwps-danger);
+    border-color: var(--wpwps-danger);
+    border-radius: 30px;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 .ms-2 {
@@ -134,5 +232,9 @@
     
     .ms-2 {
         margin-left: 0 !important;
+    }
+    
+    .input-group {
+        width: 100%;
     }
 }

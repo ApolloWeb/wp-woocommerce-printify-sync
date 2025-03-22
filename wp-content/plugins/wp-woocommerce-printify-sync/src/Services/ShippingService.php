@@ -9,6 +9,7 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Services;
 
 use ApolloWeb\WPWooCommercePrintifySync\API\PrintifyAPIClient;
 use ApolloWeb\WPWooCommercePrintifySync\Shipping\PrintifyShippingMethod;
+use ApolloWeb\WPWooCommercePrintifySync\Shipping\PrintifyDataFormatter;
 
 /**
  * Shipping Service for handling shipping methods.
@@ -70,7 +71,7 @@ class ShippingService
      * Get shipping rates from Printify.
      *
      * @param array $package Shipping package data.
-     * @return array|WP_Error Shipping rates or error.
+     * @return array|WP_Error Shipping rates or WP_Error on failure.
      */
     public function getShippingRates($package)
     {
@@ -90,10 +91,14 @@ class ShippingService
             return $this->getDefaultShippingRates();
         }
 
-        // Format the request for shipping rates
-        $shipping_request = $this->formatShippingRequest($package, $printify_items);
+        // Get the shipping address from the package
+        $address = $this->getAddressFromPackage($package);
+
+        // Format the request using our new formatter
+        $formatter = new PrintifyDataFormatter();
+        $shipping_request = $formatter->formatShippingRequest($address, $printify_items);
         
-        // Make the request to Printify
+        // Make the request to Printify using v2 endpoint
         $response = $this->api_client->getShippingRates($shipping_request);
         
         if (is_wp_error($response)) {
@@ -171,6 +176,34 @@ class ShippingService
     }
 
     /**
+     * Get address data from the package.
+     *
+     * @param array $package Shipping package data.
+     * @return array Address data.
+     */
+    private function getAddressFromPackage($package)
+    {
+        $address = [
+            'first_name' => $package['destination']['first_name'] ?? '',
+            'last_name' => $package['destination']['last_name'] ?? '',
+            'country' => $package['destination']['country'] ?? '',
+            'state' => $package['destination']['state'] ?? '',
+            'city' => $package['destination']['city'] ?? '',
+            'address_1' => $package['destination']['address_1'] ?? '',
+            'address_2' => $package['destination']['address_2'] ?? '',
+            'postcode' => $package['destination']['postcode'] ?? '',
+        ];
+        
+        // Add customer email if available
+        if (is_user_logged_in()) {
+            $current_user = wp_get_current_user();
+            $address['email'] = $current_user->user_email;
+        }
+        
+        return $address;
+    }
+
+    /**
      * Format shipping request for Printify API.
      *
      * @param array $package      Shipping package data.
@@ -201,37 +234,50 @@ class ShippingService
     }
 
     /**
-     * Format shipping rates from Printify for WooCommerce.
+     * Format shipping rates response for WooCommerce.
      *
      * @param array $response Printify API response.
      * @return array Formatted shipping rates.
      */
     private function formatShippingRates($response)
     {
-        $shipping_rates = [];
+        $rates = [];
         
-        if (empty($response['shipping_options'])) {
-            return $shipping_rates;
-        }
-        
-        foreach ($response['shipping_options'] as $option) {
-            $rate_id = sanitize_title($option['name']);
-            
-            $shipping_rates[$rate_id] = [
-                'id' => 'printify_' . $rate_id,
-                'label' => $option['name'],
-                'cost' => $option['cost'],
-                'calc_tax' => 'per_order',
+        // Parse v2 response format
+        if (isset($response['standard'])) {
+            $rates['standard'] = [
+                'id' => 'printify_standard',
+                'label' => __('Standard Shipping', 'wp-woocommerce-printify-sync'),
+                'cost' => $response['standard']['price'],
                 'meta_data' => [
-                    'printify_shipping_id' => $option['id'] ?? '',
-                    'printify_carrier' => $option['carrier'] ?? '',
-                    'printify_service' => $option['service'] ?? '',
-                    'printify_estimated_delivery' => $option['estimated_delivery'] ?? '',
+                    'printify_shipping_id' => $response['standard']['id'],
+                    'printify_shipping_name' => $response['standard']['name'],
+                    'printify_shipping_description' => $response['standard']['description'] ?? '',
                 ],
+                'calc_tax' => 'per_order',
             ];
         }
         
-        return $shipping_rates;
+        if (isset($response['express'])) {
+            $rates['express'] = [
+                'id' => 'printify_express',
+                'label' => __('Express Shipping', 'wp-woocommerce-printify-sync'),
+                'cost' => $response['express']['price'],
+                'meta_data' => [
+                    'printify_shipping_id' => $response['express']['id'],
+                    'printify_shipping_name' => $response['express']['name'],
+                    'printify_shipping_description' => $response['express']['description'] ?? '',
+                ],
+                'calc_tax' => 'per_order',
+            ];
+        }
+        
+        // If no valid rates found, use default rates
+        if (empty($rates)) {
+            return $this->getDefaultShippingRates();
+        }
+        
+        return $rates;
     }
 
     /**

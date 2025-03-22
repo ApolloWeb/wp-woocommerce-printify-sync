@@ -19,17 +19,19 @@ $log_entries = $logger->getLogEntries(
 );
 ?>
 <div class="wrap wpwps-admin-wrap">
-    <h1 class="wp-heading-inline">
-        <i class="fas fa-file-alt"></i> <?php echo esc_html__('Printify Sync - Logs', 'wp-woocommerce-printify-sync'); ?>
-    </h1>
-    
-    <?php if (!empty($shop_name)) : ?>
-    <div class="wpwps-shop-info">
-        <span class="wpwps-shop-badge">
-            <i class="fas fa-store"></i> <?php echo esc_html($shop_name); ?>
-        </span>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="wp-heading-inline">
+            <i class="fas fa-file-alt"></i> <?php echo esc_html__('Printify Sync - Logs', 'wp-woocommerce-printify-sync'); ?>
+        </h1>
+        
+        <?php if (!empty($shop_name)) : ?>
+        <div class="wpwps-shop-info">
+            <span class="wpwps-shop-badge">
+                <i class="fas fa-store"></i> <?php echo esc_html($shop_name); ?>
+            </span>
+        </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
     
     <hr class="wp-header-end">
     
@@ -37,14 +39,16 @@ $log_entries = $logger->getLogEntries(
     <div class="alert alert-warning">
         <i class="fas fa-exclamation-triangle"></i>
         <?php esc_html_e('Your Printify Shop is not configured yet. Please go to the Settings page and set up your API connection.', 'wp-woocommerce-printify-sync'); ?>
-        <a href="<?php echo esc_url(admin_url('admin.php?page=wpwps-settings')); ?>" class="button button-primary"><?php esc_html_e('Go to Settings', 'wp-woocommerce-printify-sync'); ?></a>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=wpwps-settings')); ?>" class="btn btn-primary ms-3">
+            <i class="fas fa-cog"></i> <?php esc_html_e('Go to Settings', 'wp-woocommerce-printify-sync'); ?>
+        </a>
     </div>
     <?php else : ?>
     
     <div class="wpwps-logs-container">
         <div class="row mb-4">
             <div class="col-md-12">
-                <div class="card wpwps-card">
+                <div class="wpwps-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><?php esc_html_e('System Logs', 'wp-woocommerce-printify-sync'); ?></h5>
                         <div class="form-inline">
@@ -71,6 +75,10 @@ $log_entries = $logger->getLogEntries(
                             
                             <button id="clear-logs" class="btn btn-danger ms-2">
                                 <i class="fas fa-trash"></i> <?php esc_html_e('Clear Logs', 'wp-woocommerce-printify-sync'); ?>
+                            </button>
+
+                            <button id="toggle-refresh" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-sync"></i> <?php esc_html_e('Auto-refresh Off', 'wp-woocommerce-printify-sync'); ?>
                             </button>
                         </div>
                     </div>
@@ -157,15 +165,32 @@ jQuery(document).ready(function($) {
             });
         }
     });
+
+    // Handle auto-refresh toggle
+    let autoRefresh = false;
+    let refreshInterval;
+
+    $('#toggle-refresh').on('click', function() {
+        autoRefresh = !autoRefresh;
+        $(this).html('<i class="fas fa-sync"></i> ' + (autoRefresh ? '<?php esc_html_e('Auto-refresh On', 'wp-woocommerce-printify-sync'); ?>' : '<?php esc_html_e('Auto-refresh Off', 'wp-woocommerce-printify-sync'); ?>'));
+
+        if (autoRefresh) {
+            refreshInterval = setInterval(function() {
+                window.location.reload();
+            }, 30000); // Refresh every 30 seconds
+        } else {
+            clearInterval(refreshInterval);
+        }
+    });
 });
 </script>
 
 <?php
 /**
- * Get CSS class for log level.
+ * Get the badge class for a log level.
  *
  * @param string $level Log level.
- * @return string CSS class.
+ * @return string Badge class.
  */
 function getLevelClass($level) {
     switch ($level) {
