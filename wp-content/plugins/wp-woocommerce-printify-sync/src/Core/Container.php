@@ -34,9 +34,9 @@ class Container
     /**
      * Register a binding with the container.
      *
-     * @param string $abstract Abstract type to bind.
-     * @param mixed  $concrete Concrete implementation.
-     * @param bool   $shared   Whether the binding should be shared.
+     * @param string  $abstract Abstract type to bind.
+     * @param mixed   $concrete Concrete implementation.
+     * @param boolean $shared   Whether the binding should be shared.
      * @return void
      */
     public function bind($abstract, $concrete = null, $shared = false)
@@ -64,9 +64,20 @@ class Container
     }
 
     /**
+     * Determine if a given type has been bound.
+     *
+     * @param string $abstract Type to check.
+     * @return bool
+     */
+    public function has($abstract)
+    {
+        return isset($this->bindings[$abstract]) || isset($this->instances[$abstract]);
+    }
+
+    /**
      * Resolve the given type from the container.
      *
-     * @param string $abstract Abstract type to resolve.
+     * @param string $abstract   Abstract type to resolve.
      * @param array  $parameters Parameters to pass to the constructor.
      * @return mixed
      * @throws Exception If the type cannot be resolved.
@@ -125,7 +136,7 @@ class Container
     /**
      * Build a concrete type instance.
      *
-     * @param string $concrete Concrete type.
+     * @param string $concrete   Concrete type.
      * @param array  $parameters Parameters to pass to the constructor.
      * @return mixed
      * @throws Exception If the type cannot be built.
@@ -137,117 +148,87 @@ class Container
             return $concrete($this, $parameters);
         }
 
-        $reflector = new ReflectionClass($concrete);
+        try {
+            $reflector = new ReflectionClass($concrete);
+        } catch (\ReflectionException $e) {
+            throw new Exception("Class {$concrete} does not exist.");
+        }
 
-        // If the type is not instantiable, we can't build it
+        // If the type is not instantiable, the developer is attempting to resolve
+        // an abstract type such as an Interface or Abstract Class and we cannot
+        // resolve those types. So, we will throw an exception for them.
         if (!$reflector->isInstantiable()) {
-            throw new Exception("Type {$concrete} is not instantiable");
+            throw new Exception("Target [$concrete] is not instantiable.");
         }
 
         $constructor = $reflector->getConstructor();
 
-        // If there is no constructor, just return a new instance
+        // If there are no constructors, that means there are no dependencies then
+        // we can just resolve the instances without any dependencies or parameters
         if (is_null($constructor)) {
-            return new $concrete();
+            return new $concrete;
         }
 
-        // Get the constructor parameters
         $dependencies = $constructor->getParameters();
 
-        // If we have no constructor dependencies, just return a new instance
-        if (empty($dependencies)) {
-            return new $concrete();
-        }
+        // If we have provided parameters, replace the auto-resolved dependencies
+        // with the provided ones
+        $instances = $this->getDependencies($dependencies, $parameters);
 
-        // Build the constructor arguments
-        $instances = $this->resolveDependencies($dependencies, $parameters);
-
-        // Create a new instance with the resolved dependencies
         return $reflector->newInstanceArgs($instances);
     }
 
     /**
-     * Resolve all of the dependencies from the ReflectionParameters.
+     * Get all dependencies for a given method's parameters.
      *
-     * @param array $dependencies Constructor dependencies.
-     * @param array $parameters Parameters passed to make.
-     * @return array
+     * @param array $parameters Method parameters.
+     * @param array $primitives Primitive values to use.
+     * @return array Array of dependencies.
      * @throws Exception If a dependency cannot be resolved.
      */
-    protected function resolveDependencies(array $dependencies, array $parameters)
+    protected function getDependencies(array $parameters, array $primitives = [])
     {
-        $results = [];
+        $dependencies = [];
 
-        foreach ($dependencies as $dependency) {
-            // If the dependency is in the parameters, use that
-            if (array_key_exists($dependency->name, $parameters)) {
-                $results[] = $parameters[$dependency->name];
-                continue;
-            }
+        foreach ($parameters as $parameter) {
+            // If the parameter has a type hint, we will try to resolve it from the container
+            $dependency = $parameter->getClass();
 
-            // If the parameter is a class, resolve it from the container
-            $result = $this->resolveClass($dependency);
-
-            if (!is_null($result)) {
-                $results[] = $result;
-            } elseif ($dependency->isDefaultValueAvailable()) {
-                // If the dependency has a default value, use that
-                $results[] = $dependency->getDefaultValue();
+            if (array_key_exists($parameter->name, $primitives)) {
+                $dependencies[] = $primitives[$parameter->name];
+            } elseif (is_null($dependency)) {
+                // If there is no type hint, we will assume it's a primitive type such as a string
+                // or an integer, and we will resolve it from the primitive parameters.
+                $dependencies[] = $this->resolvePrimitive($parameter);
             } else {
-                // We can't resolve the dependency
-                throw new Exception("Unresolvable dependency: {$dependency->name}");
+                // If the class exists, we will try to resolve it from the container
+                $dependencies[] = $this->make($dependency->name);
             }
         }
 
-        return $results;
+        return $dependencies;
     }
 
     /**
-     * Resolve a class based dependency from the container.
+     * Resolve a primitive parameter.
      *
      * @param ReflectionParameter $parameter Parameter to resolve.
      * @return mixed
+     * @throws Exception If the parameter cannot be resolved.
      */
-    protected function resolveClass(ReflectionParameter $parameter)
+    protected function resolvePrimitive(ReflectionParameter $parameter)
     {
-        $type = $parameter->getType();
-
-        // If the parameter doesn't have a type hint, we can't resolve it
-        if (!$type || $type->isBuiltin()) {
-            return null;
+        if ($parameter->isDefaultValueAvailable()) {
+            return $parameter->getDefaultValue();
         }
 
-        // Get the class name from the type
-        $class = $type->getName();
-
-        // Try to resolve the class from the container
-        try {
-            return $this->make($class);
-        } catch (Exception $e) {
-            // If the class doesn't exist or can't be resolved, return null
-            if ($parameter->isOptional()) {
-                return null;
-            }
-
-            throw $e;
-        }
+        throw new Exception("Unresolvable dependency: parameter [{$parameter->name}] has no default value.");
     }
 
     /**
-     * Determine if a given type has been resolved.
+     * Register an existing instance in the container.
      *
-     * @param string $abstract Abstract type.
-     * @return bool
-     */
-    public function resolved($abstract)
-    {
-        return isset($this->instances[$abstract]) || isset($this->bindings[$abstract]);
-    }
-
-    /**
-     * Register an existing instance as shared in the container.
-     *
-     * @param string $abstract Abstract type.
+     * @param string $abstract Abstract type to bind.
      * @param mixed  $instance Instance to register.
      * @return mixed
      */
