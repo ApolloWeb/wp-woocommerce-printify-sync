@@ -7,7 +7,8 @@
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Admin;
 
-use ApolloWeb\WPWooCommercePrintifySync\Services\TemplateService;
+use ApolloWeb\WPWooCommercePrintifySync\Services\TemplateLoader;
+use ApolloWeb\WPWooCommercePrintifySync\Services\Logger;
 
 /**
  * Admin Menu Handler class.
@@ -15,20 +16,29 @@ use ApolloWeb\WPWooCommercePrintifySync\Services\TemplateService;
 class AdminMenu
 {
     /**
-     * Template service.
+     * Template loader.
      *
-     * @var TemplateService
+     * @var TemplateLoader
      */
     private $template;
+    
+    /**
+     * Logger instance.
+     *
+     * @var Logger
+     */
+    private $logger;
 
     /**
      * Constructor.
      *
-     * @param TemplateService $template Template service.
+     * @param TemplateLoader $template Template loader.
+     * @param Logger         $logger   Logger instance.
      */
-    public function __construct(TemplateService $template)
+    public function __construct(TemplateLoader $template, Logger $logger)
     {
         $this->template = $template;
+        $this->logger = $logger;
     }
 
     /**
@@ -56,7 +66,7 @@ class AdminMenu
             'manage_woocommerce',
             'wpwps-dashboard',
             [$this, 'renderDashboardPage'],
-            'dashicons-store',
+            'dashicons-admin-appearance',  // Changed from 'dashicons-store' to 'dashicons-admin-appearance' (clothing icon)
             58
         );
 

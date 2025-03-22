@@ -222,115 +222,58 @@ class ActivityService
     }
     
     /**
-     * Get relative time (e.g., "2 hours ago").
+     * Get relative time string from timestamp.
      *
-     * @param string $datetime Datetime string.
-     * @return string Relative time.
+     * @param string $timestamp MySQL timestamp.
+     * @return string Relative time string.
      */
-    private function getRelativeTime($datetime)
+    public function getRelativeTime($timestamp)
     {
-        $time = strtotime($datetime);
-        $now = current_time('timestamp');
-        $diff = $now - $time;
+        $time_diff = time() - strtotime($timestamp);
         
-        if ($diff < 60) {
-            return __('Just now', 'wp-woocommerce-printify-sync');
-        }
-        
-        if ($diff < 3600) {
-            $mins = round($diff / 60);
+        if ($time_diff < 60) {
+            return __('just now', 'wp-woocommerce-printify-sync');
+        } elseif ($time_diff < 3600) {
+            $mins = floor($time_diff / 60);
             return sprintf(
                 _n('%s minute ago', '%s minutes ago', $mins, 'wp-woocommerce-printify-sync'),
                 $mins
             );
-        }
-        
-        if ($diff < 86400) {
-            $hours = round($diff / 3600);
+        } elseif ($time_diff < 86400) {
+            $hours = floor($time_diff / 3600);
             return sprintf(
                 _n('%s hour ago', '%s hours ago', $hours, 'wp-woocommerce-printify-sync'),
                 $hours
             );
-        }
-        
-        if ($diff < 604800) {
-            $days = round($diff / 86400);
+        } elseif ($time_diff < 604800) {
+            $days = floor($time_diff / 86400);
             return sprintf(
                 _n('%s day ago', '%s days ago', $days, 'wp-woocommerce-printify-sync'),
                 $days
             );
+        } else {
+            return date_i18n(get_option('date_format'), strtotime($timestamp));
         }
-        
-        if ($diff < 2592000) {
-            $weeks = round($diff / 604800);
-            return sprintf(
-                _n('%s week ago', '%s weeks ago', $weeks, 'wp-woocommerce-printify-sync'),
-                $weeks
-            );
-        }
-        
-        if ($diff < 31536000) {
-            $months = round($diff / 2592000);
-            return sprintf(
-                _n('%s month ago', '%s months ago', $months, 'wp-woocommerce-printify-sync'),
-                $months
-            );
-        }
-        
-        $years = round($diff / 31536000);
-        return sprintf(
-            _n('%s year ago', '%s years ago', $years, 'wp-woocommerce-printify-sync'),
-            $years
-        );
     }
     
     /**
-     * Get activity icon class based on type.
+     * Get activity icon based on type.
      *
      * @param string $type Activity type.
-     * @return string FontAwesome icon class.
-     */
-    private function getActivityIcon($type)
-    {
-        switch ($type) {
-            case 'product_sync':
-                return 'fas fa-sync-alt';
-            case 'order_sync':
-                return 'fas fa-shopping-cart';
-            case 'order_status':
-                return 'fas fa-shipping-fast';
-            case 'api_connection':
-                return 'fas fa-plug';
-            case 'settings':
-                return 'fas fa-cog';
-            case 'error':
-                return 'fas fa-exclamation-triangle';
-            case 'ticket':
-                return 'fas fa-ticket-alt';
-            default:
-                return 'fas fa-info-circle';
-        }
-    }
-
-    /**
-     * Get icon class for a given activity type.
-     *
-     * @param string $type Activity type.
-     * @return string Icon class.
+     * @return string Icon CSS class.
      */
     public function getActivityIcon($type)
     {
-        $icon_map = [
-            'product_sync' => 'fas fa-box',
-            'order_sync' => 'fas fa-shopping-cart',
-            'order_status' => 'fas fa-truck',
-            'shipping_profile' => 'fas fa-shipping-fast',
-            'ticket' => 'fas fa-ticket-alt',
-            'settings' => 'fas fa-cog',
-            'api' => 'fas fa-plug',
-            'error' => 'fas fa-exclamation-triangle',
+        $icons = [
+            'product_sync'  => 'fas fa-exchange-alt',
+            'order_sync'    => 'fas fa-shopping-cart',
+            'api_connection' => 'fas fa-plug',
+            'webhook'       => 'fas fa-satellite-dish',
+            'error'         => 'fas fa-exclamation-circle',
+            'ticket'        => 'fas fa-ticket-alt',
+            'email'         => 'fas fa-envelope',
         ];
         
-        return isset($icon_map[$type]) ? $icon_map[$type] : 'fas fa-info-circle';
+        return isset($icons[$type]) ? $icons[$type] : 'fas fa-info-circle';
     }
 }

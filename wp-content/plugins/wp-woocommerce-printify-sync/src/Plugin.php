@@ -74,69 +74,59 @@ class Plugin {
 
     /**
      * Register services in the container.
+     * 
+     * This uses our updated Container method binding syntax
      */
     private function registerServices() {
         // Core services
-        $this->container['logger'] = function() {
+        $this->container->bind('logger', function() {
             return new Services\Logger();
-        };
+        }, true);
         
-        $this->container['template_loader'] = function() {
-            return new Services\TemplateLoader($this->container['logger']);
-        };
+        $this->container->bind('template_loader', function($container) {
+            return new Services\TemplateLoader($container->make('logger'));
+        }, true);
         
         // ChatGPT services
-        $this->container['chatgpt_client'] = function() {
-            return new Services\ChatGPTClient($this->container['logger']);
-        };
+        $this->container->bind('chatgpt_client', function($container) {
+            return new Services\ChatGPTClient($container->make('logger'));
+        }, true);
         
         // Email services
-        $this->container['email_analyzer'] = function() {
+        $this->container->bind('email_analyzer', function($container) {
             return new Email\Services\EmailAnalyzer(
-                $this->container['chatgpt_client'],
-                $this->container['logger']
+                $container->make('chatgpt_client'),
+                $container->make('logger')
             );
-        };
+        }, true);
         
-        $this->container['queue_manager'] = function() {
-            return new Email\Services\QueueManager($this->container['logger']);
-        };
+        $this->container->bind('queue_manager', function($container) {
+            return new Email\Services\QueueManager($container->make('logger'));
+        }, true);
         
-        $this->container['smtp_service'] = function() {
-            return new Email\Services\SMTPService($this->container['logger']);
-        };
+        $this->container->bind('smtp_service', function($container) {
+            return new Email\Services\SMTPService($container->make('logger'));
+        }, true);
         
-        $this->container['pop3_service'] = function() {
+        $this->container->bind('pop3_service', function($container) {
             return new Email\Services\POP3Service(
-                $this->container['logger'],
-                $this->container['queue_manager'],
-                $this->container['email_analyzer']
+                $container->make('logger'),
+                $container->make('queue_manager'),
+                $container->make('email_analyzer')
             );
-        };
+        }, true);
         
         // Order services
-        $this->container['id_mapper'] = function() {
+        $this->container->bind('id_mapper', function() {
             return new Services\IDMapper();
-        };
+        }, true);
         
-        $this->container['order_analyzer'] = function() {
+        $this->container->bind('order_analyzer', function($container) {
             return new Orders\OrderAnalyzer(
-                $this->container['chatgpt_client'],
-                $this->container['logger']
+                $container->make('chatgpt_client'),
+                $container->make('logger')
             );
-        };
-
-        // Webhook services
-        $this->container['webhook_handler'] = function() {
-            return new Webhooks\WebhookHandler(
-                $this->container['logger'],
-                $this->container['product_sync'],
-                $this->container['order_sync']
-            );
-        };
-
-        // Initialize services
-        $this->initializeServices();
+        }, true);
     }
 
     /**
@@ -144,11 +134,6 @@ class Plugin {
      */
     private function setupContainer()
     {
-        // Logger service
-        $this->container->bind('logger', function() {
-            return new Services\Logger();
-        }, true);
-        
         // API client service
         $this->container->bind('api_client', function($container) {
             return new API\PrintifyAPIClient(
@@ -156,11 +141,6 @@ class Plugin {
                 new Services\EncryptionService(),
                 new Services\Cache()
             );
-        }, true);
-        
-        // Template service
-        $this->container->bind('template_loader', function($container) {
-            return new Services\TemplateLoader($container->make('logger'));
         }, true);
         
         // Action scheduler service
@@ -228,6 +208,12 @@ class Plugin {
                 $this->container->make('order_sync')
             );
             $api_controller->init();
+            
+            // Initialize diagnostics page
+            $diagnostics_page = new Admin\DiagnosticsPage(
+                $this->container->make('logger')
+            );
+            $diagnostics_page->init();
         }
         
         // Set up asset manager

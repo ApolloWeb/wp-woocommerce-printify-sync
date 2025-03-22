@@ -452,6 +452,10 @@ class PrintifyAPIClient
      */
     public function createShippingProfile($profile_data)
     {
+        if (empty($this->shop_id)) {
+            return new \WP_Error('missing_shop_id', 'Shop ID is required.');
+        }
+        
         return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles.json", 'POST', $profile_data);
     }
 
@@ -481,21 +485,6 @@ class PrintifyAPIClient
     }
     
     /**
-     * Create a shipping profile.
-     *
-     * @param array $profile_data Shipping profile data.
-     * @return array|WP_Error API response or WP_Error on failure.
-     */
-    public function createShippingProfile($profile_data)
-    {
-        if (empty($this->shop_id)) {
-            return new \WP_Error('missing_shop_id', 'Shop ID is required.');
-        }
-        
-        return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles.json", 'POST', $profile_data);
-    }
-    
-    /**
      * Get shipping profile by ID.
      *
      * @param int $profile_id Shipping profile ID.
@@ -512,45 +501,6 @@ class PrintifyAPIClient
         }
         
         return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles/{$profile_id}.json", 'GET');
-    }
-    
-    /**
-     * Update shipping profile.
-     *
-     * @param int   $profile_id   Shipping profile ID.
-     * @param array $profile_data Shipping profile data.
-     * @return array|WP_Error API response or WP_Error on failure.
-     */
-    public function updateShippingProfile($profile_id, $profile_data)
-    {
-        if (empty($this->shop_id)) {
-            return new \WP_Error('missing_shop_id', 'Shop ID is required.');
-        }
-        
-        if (empty($profile_id)) {
-            return new \WP_Error('missing_profile_id', 'Profile ID is required.');
-        }
-        
-        return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles/{$profile_id}.json", 'PUT', $profile_data);
-    }
-    
-    /**
-     * Delete shipping profile.
-     *
-     * @param int $profile_id Shipping profile ID.
-     * @return array|WP_Error API response or WP_Error on failure.
-     */
-    public function deleteShippingProfile($profile_id)
-    {
-        if (empty($this->shop_id)) {
-            return new \WP_Error('missing_shop_id', 'Shop ID is required.');
-        }
-        
-        if (empty($profile_id)) {
-            return new \WP_Error('missing_profile_id', 'Profile ID is required.');
-        }
-        
-        return $this->makeRequest("shops/{$this->shop_id}/shipping_profiles/{$profile_id}.json", 'DELETE');
     }
     
     /**
