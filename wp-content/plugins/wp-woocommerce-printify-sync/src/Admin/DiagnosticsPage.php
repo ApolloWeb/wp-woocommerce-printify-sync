@@ -219,14 +219,40 @@ class DiagnosticsPage {
                                 $('.success-message').show();
                             }
                         } else {
-                            errorsList.append('<li class="list-group-item list-group-item-danger">' + response.data.message + '</li>');
+                            var errorsList = $('.errors-list');
+                            var errorMessage = response.data.message || 'Unknown error occurred.';
+                            
+                            // Add the main error message
+                            errorsList.append('<li class="list-group-item list-group-item-danger">' + errorMessage + '</li>');
+                            
+                            // Add stack trace if available (for admin debugging purposes)
+                            if (response.data.trace) {
+                                errorsList.append('<li class="list-group-item list-group-item-danger"><details><summary>Technical Details (for debugging)</summary><pre style="white-space: pre-wrap;">' + response.data.trace + '</pre></details></li>');
+                            }
+                            
                             $('.error-count').text('1');
+                            
+                            // Log to console for easier debugging
+                            console.error('Diagnostics error:', response.data);
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
                         var errorsList = $('.errors-list');
-                        errorsList.append('<li class="list-group-item list-group-item-danger">Failed to run diagnostics. Please try again.</li>');
-                        $('.error-count').text('1');
+                        errorsList.append('<li class="list-group-item list-group-item-danger">AJAX request failed: ' + status + ': ' + error + '</li>');
+                        
+                        if (xhr.responseText) {
+                            try {
+                                var jsonResponse = JSON.parse(xhr.responseText);
+                                if (jsonResponse.data && jsonResponse.data.message) {
+                                    errorsList.append('<li class="list-group-item list-group-item-danger">Server message: ' + jsonResponse.data.message + '</li>');
+                                }
+                            } catch(e) {
+                                errorsList.append('<li class="list-group-item list-group-item-danger"><details><summary>Server Response</summary><pre>' + xhr.responseText + '</pre></details></li>');
+                            }
+                        }
+                        
+                        $('.error-count').text(errorsList.find('li').length);
+                        console.error('AJAX Error:', xhr.responseText);
                     },
                     complete: function() {
                         // Hide spinner and show content
@@ -255,16 +281,69 @@ class DiagnosticsPage {
         }
         
         try {
-            // Run diagnostics
+            // Enable error reporting for debugging
+            $original_error_level = error_reporting();
+            error_reporting(E_ALL);
+            $original_display_errors = ini_get('display_errors');
+            ini_set('display_errors', 1);
+            
+            // Log the beginning of diagnostics
+            $this->logger->info('Starting diagnostics run');
+            
+            // Basic system info for logging
+            $this->logger->info('PHP Version: ' . PHP_VERSION);
+            $this->logger->info('WPWPS_PLUGIN_DIR: ' . (defined('WPWPS_PLUGIN_DIR') ? WPWPS_PLUGIN_DIR : 'Not defined'));
+            
+            // Validate that the Diagnostics class exists
+            if (!class_exists('ApolloWeb\WPWooCommercePrintifySync\Utilities\Diagnostics')) {
+                throw new \Exception('Diagnostics class not found. Check autoloader and namespace.');
+            }
+            
+            // Create diagnostics instance
             $diagnostics = new Diagnostics($this->logger);
+            
+            // Run diagnostics with additional error handlers
+            set_error_handler(function($errno, $errstr, $errfile, $errline) {
+                $this->logger->error("PHP Error ($errno): $errstr in $errfile on line $errline");
+                // Don't throw an exception for warnings/notices during diagnostics
+                if ($errno === E_ERROR || $errno === E_PARSE || $errno === E_CORE_ERROR || 
+                    $errno === E_COMPILE_ERROR || $errno === E_USER_ERROR) {
+                    throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+                }
+                return true; // Return true to continue execution for non-fatal errors
+            });
+            
+            // Run the diagnostics
             $results = $diagnostics->runAll();
             
-            wp_send_json_success($results);
-        } catch (\Exception $e) {
-            $this->logger->error('Error running diagnostics: ' . $e->getMessage());
+            // Restore original error handler
+            restore_error_handler();
             
+            // Restore original error settings
+            error_reporting($original_error_level);
+            ini_set('display_errors', $original_display_errors);
+            
+            // Log success
+            $this->logger->info('Diagnostics completed successfully', [
+                'error_count' => count($results['errors']),
+                'warning_count' => count($results['warnings']),
+                'notice_count' => count($results['notices']),
+            ]);
+            
+            wp_send_json_success($results);
+        } catch (\Throwable $e) {
+            // Catch all errors (including PHP 7 Error objects)
+            $error_message = $e->getMessage();
+            $error_trace = $e->getTraceAsString();
+            
+            // Log detailed error
+            $this->logger->error('Diagnostics failed: ' . $error_message);
+            $this->logger->debug('Error trace: ' . $error_trace);
+            
+            // Send a more detailed error message back to the client
             wp_send_json_error([
-                'message' => $e->getMessage(),
+                'message' => 'Diagnostics error: ' . $error_message,
+                'trace' => $error_trace,
             ]);
         }
     }
