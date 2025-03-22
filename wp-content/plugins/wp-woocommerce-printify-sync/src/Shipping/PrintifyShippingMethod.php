@@ -13,6 +13,8 @@ use ApolloWeb\WPWooCommercePrintifySync\Services\Logger;
 /**
  * Printify Shipping Method class.
  */
+class PrintifyShippingMethod extends WC_Shipping_Method {
+    /**
      * API client instance.
      *
      * @var null
