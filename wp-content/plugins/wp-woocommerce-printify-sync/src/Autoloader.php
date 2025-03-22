@@ -58,6 +58,11 @@ class Autoloader
      */
     public function loadClass(string $class): void
     {
+        // Add debug logging
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("Attempting to load class: {$class}");
+        }
+
         // Skip if we've already tried to load this class
         if (isset($this->loadedClasses[$class])) {
             return;
@@ -68,6 +73,9 @@ class Autoloader
         
         // Only handle classes in our namespace
         if (strpos($class, $this->namespacePrefix) !== 0) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("Class {$class} not in our namespace");
+            }
             return;
         }
 
@@ -81,30 +89,27 @@ class Autoloader
             // Get the full file path
             $file = $this->baseDir . $filePath;
             
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("Looking for file: {$file}");
+            }
+
             // If the file exists, require it
             if (file_exists($file)) {
-                // Use include instead of require_once during diagnostics to prevent fatal errors
-                if (defined('WPWPS_RUNNING_DIAGNOSTICS') && WPWPS_RUNNING_DIAGNOSTICS) {
-                    // Try to suppress parse errors during diagnostics
-                    $content = file_get_contents($file);
-                    if ($content !== false && $this->validatePhpSyntax($content)) {
-                        include $file;
-                        $this->loadedClasses[$class] = true;
-                    } else {
-                        // File exists but has syntax errors
-                        error_log("Syntax error in file: $file");
-                    }
-                } else {
-                    // Normal operation - use require_once for better performance
-                    require_once $file;
-                    $this->loadedClasses[$class] = true;
+                require_once $file;
+                $this->loadedClasses[$class] = true;
+                
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("Successfully loaded: {$file}");
+                }
+            } else {
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("File not found: {$file}");
                 }
             }
         } catch (\Throwable $e) {
             // Log the error but don't crash
-            if (function_exists('error_log')) {
-                error_log('Error loading class ' . $class . ': ' . $e->getMessage());
-            }
+            error_log('Error loading class ' . $class . ': ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
             
             // Call handler for missing classes
             $this->handleMissingClass($class);
