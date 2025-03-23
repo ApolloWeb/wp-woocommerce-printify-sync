@@ -3,11 +3,11 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Admin;
 
 class AdminAssets {
     private $pages = [
-        'wpwps-dashboard' => ['js' => 'dashboard', 'css' => 'dashboard'],
-        'wpwps-products' => ['js' => 'products', 'css' => 'products'],
-        'wpwps-orders' => ['js' => 'orders', 'css' => 'orders'],
-        'wpwps-settings' => ['js' => 'settings', 'css' => 'settings'],
-        'wpwps-tickets' => ['js' => 'tickets', 'css' => 'tickets'],
+        'wpwps-dashboard' => ['js' => 'wpwps-dashboard', 'css' => 'wpwps-dashboard'],
+        'wpwps-products' => ['js' => 'wpwps-products', 'css' => 'wpwps-products'],
+        'wpwps-orders' => ['js' => 'wpwps-orders', 'css' => 'wpwps-orders'],
+        'wpwps-settings' => ['js' => 'wpwps-settings', 'css' => 'wpwps-settings'],
+        'wpwps-tickets' => ['js' => 'wpwps-tickets', 'css' => 'wpwps-tickets'],
     ];
 
     public function init(): void {
@@ -56,7 +56,7 @@ class AdminAssets {
         // Core admin CSS
         wp_enqueue_style(
             'wpwps-admin',
-            WPPS_URL . 'assets/admin/css/admin.css',
+            WPPS_URL . 'assets/admin/css/wpwps-admin.css',
             ['wpwps-bootstrap'],
             WPPS_VERSION
         );
@@ -64,7 +64,7 @@ class AdminAssets {
         // Core admin JS
         wp_enqueue_script(
             'wpwps-admin',
-            WPPS_URL . 'assets/admin/js/admin.js',
+            WPPS_URL . 'assets/admin/js/wpwps-admin.js',
             ['jquery', 'wp-util'],
             WPPS_VERSION,
             true
@@ -88,7 +88,7 @@ class AdminAssets {
     private function enqueuePageAssets(string $page, array $assets): void {
         if (!empty($assets['css'])) {
             wp_enqueue_style(
-                "wpwps-{$assets['css']}",
+                $assets['css'],
                 WPPS_URL . "assets/admin/css/{$assets['css']}.css",
                 ['wpwps-admin'],
                 WPPS_VERSION
@@ -97,7 +97,7 @@ class AdminAssets {
         
         if (!empty($assets['js'])) {
             wp_enqueue_script(
-                "wpwps-{$assets['js']}",
+                $assets['js'],
                 WPPS_URL . "assets/admin/js/{$assets['js']}.js",
                 ['wpwps-admin'],
                 WPPS_VERSION,
