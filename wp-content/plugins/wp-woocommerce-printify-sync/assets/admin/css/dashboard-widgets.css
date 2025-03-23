@@ -1,0 +1,178 @@
+/**
+ * Dashboard Widgets Styles
+ */
+.wpwps-dashboard-widget {
+    margin: -12px -12px -12px -12px;
+    overflow: hidden;
+}
+
+.wpwps-widget-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #f9f9f9;
+    color: #555;
+}
+
+.wpwps-widget-loading .spinner {
+    margin-right: 10px;
+}
+
+.wpwps-widget-content {
+    padding: 16px;
+    background: #fff;
+}
+
+.wpwps-widget-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+}
+
+.wpwps-widget-view-all {
+    text-decoration: none;
+}
+
+.wpwps-widget-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.wpwps-widget-card {
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+.wpwps-widget-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #23282d;
+}
+
+.wpwps-widget-data {
+    margin-bottom: 8px;
+}
+
+.wpwps-big-number {
+    display: block;
+    font-size: 24px;
+    font-weight: 600;
+    color: #23282d;
+    margin-bottom: 4px;
+}
+
+.wpwps-status-indicators {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.wpwps-status-indicator {
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.wpwps-status-indicator.success {
+    background: #edf7ed;
+    color: #2e7d32;
+}
+
+.wpwps-status-indicator.danger {
+    background: #fdeded;
+    color: #d32f2f;
+}
+
+.wpwps-status-indicator.warning {
+    background: #fff8e1;
+    color: #f57c00;
+}
+
+.wpwps-widget-meta {
+    font-size: 11px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.wpwps-status-blocks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+}
+
+.wpwps-status-block {
+    text-align: center;
+    padding: 4px;
+    border-radius: 2px;
+    background: rgba(0,0,0,0.03);
+}
+
+.wpwps-status-number {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.wpwps-status-label {
+    font-size: 11px;
+    color: #555;
+}
+
+.wpwps-widget-refresh-time {
+    text-align: right;
+    padding: 4px;
+    color: #888;
+}
+
+/* Progress Bar */
+.wpwps-progress-container {
+    height: 8px;
+    background: #f1f1f1;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.wpwps-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.wpwps-progress-bar.success {
+    background: #4caf50;
+}
+
+.wpwps-progress-bar.warning {
+    background: #ff9800;
+}
+
+.wpwps-progress-bar.danger {
+    background: #f44336;
+}
+
+.wpwps-status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+.wpwps-status-badge.danger {
+    background: #fdeded;
+    color: #d32f2f;
+}
+
+.wpwps-queue-grid {
+    grid-template-columns: 1fr;
+}

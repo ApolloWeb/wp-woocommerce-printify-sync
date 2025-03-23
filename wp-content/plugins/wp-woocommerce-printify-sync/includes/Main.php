@@ -1,26 +1,31 @@
 <?php
 namespace ApolloWeb\WPWooCommercePrintifySync;
 
-use ApolloWeb\WPWooCommercePrintifySync\Admin\AdminAssets;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\AdminMenu;
-use ApolloWeb\WPWooCommercePrintifySync\Api\PrintifyApiClient;
-use ApolloWeb\WPWooCommercePrintifySync\Controllers\WebhookController;
-use ApolloWeb\WPWooCommercePrintifySync\Core\HPOSCompat;
-use ApolloWeb\WPWooCommercePrintifySync\Core\Logger;
-use ApolloWeb\WPWooCommercePrintifySync\Core\Settings;
-use ApolloWeb\WPWooCommercePrintifySync\Repositories\OrderRepository;
-use ApolloWeb\WPWooCommercePrintifySync\Repositories\ProductRepository;
-use ApolloWeb\WPWooCommercePrintifySync\Repositories\ShippingRepository;
-use ApolloWeb\WPWooCommercePrintifySync\Services\OrderSyncService;
-use ApolloWeb\WPWooCommercePrintifySync\Services\ShippingProfileService;
-use ApolloWeb\WPWooCommercePrintifySync\Services\WooCommerceHooks;
-use ApolloWeb\WPWooCommercePrintifySync\Webhooks\WebhookHandler;
+// ...existing use statements...
+use ApolloWeb\WPWooCommercePrintifySync\Admin\DashboardWidgets;
+use ApolloWeb\WPWooCommercePrintifySync\Api\ApiRateLimiter;
+use ApolloWeb\WPWooCommercePrintifySync\Services\StockSyncService;
 
 /**
  * Main plugin class
  */
 class Main {
-    private $services = [];
+    // ...existing code...
+    
+    /**
+     * @var DashboardWidgets
+     */
+    private $dashboard_widgets;
+    
+    /**
+     * @var ApiRateLimiter
+     */
+    private $api_rate_limiter;
+    
+    /**
+     * @var StockSyncService
+     */
+    private $stock_sync_service;
     
     /**
      * Initialize plugin
@@ -31,16 +36,33 @@ class Main {
         $this->services['settings'] = new Settings();
         $this->services['hpos_compat'] = new HPOSCompat();
         
-        // Initialize API client
+        // Initialize API rate limiter
+        $this->services['api_rate_limiter'] = new ApiRateLimiter(
+            $this->services['logger'], 
+            $this->services['settings']
+        );
+        $this->services['api_rate_limiter']->init();
+        
+        // Initialize API client with rate limiter
         $this->services['api'] = new PrintifyApiClient(
             $this->services['settings'],
-            $this->services['logger']
+            $this->services['logger'],
+            $this->services['api_rate_limiter']
         );
         
         // Initialize repositories
         $this->services['order_repository'] = new OrderRepository();
         $this->services['product_repository'] = new ProductRepository();
         $this->services['shipping_repository'] = new ShippingRepository();
+        
+        // Initialize email queue if support is enabled
+        if ($this->settings->get('enable_email_support', 'no') === 'yes') {
+            $this->services['email_queue'] = new EmailQueue(
+                $this->services['logger'],
+                $this->services['settings']
+            );
+            $this->services['email_queue']->init();
+        }
         
         // Initialize services
         $this->services['order_sync'] = new OrderSyncService(
@@ -55,6 +77,14 @@ class Main {
             $this->services['logger'],
             $this->services['shipping_repository']
         );
+        
+        $this->services['stock_sync'] = new StockSyncService(
+            $this->services['api'],
+            $this->services['logger'],
+            $this->services['settings'],
+            $this->services['product_repository']
+        );
+        $this->services['stock_sync']->init();
         
         $this->services['wc_hooks'] = new WooCommerceHooks(
             $this->services['api'],
@@ -100,26 +130,33 @@ class Main {
         
         $this->services['admin_assets'] = new AdminAssets();
         $this->services['admin_assets']->init();
-    }
-    
-    /**
-     * Load plugin textdomain
-     */
-    public function loadTextdomain(): void {
-        load_plugin_textdomain(
-            'wp-woocommerce-printify-sync',
-            false,
-            dirname(plugin_basename(WPPS_FILE)) . '/languages'
+        
+        // Initialize dashboard widgets
+        $this->services['dashboard_widgets'] = new DashboardWidgets(
+            $this->services['logger'],
+            $this->services['settings'],
+            isset($this->services['email_queue']) ? $this->services['email_queue'] : null
         );
+        $this->services['dashboard_widgets']->init();
     }
     
-    /**
-     * Get a service instance
-     *
-     * @param string $service Service name
-     * @return mixed Service instance or null if not found
-     */
-    public function getService(string $service) {
-        return $this->services[$service] ?? null;
+    private function initServices(): void {
+        // ...existing service initialization...
+        
+        // Initialize stock sync service
+        $this->services['stock_sync'] = new StockSyncService(
+            $this->services['api'],
+            $this->services['logger'],
+            $this->services['settings'],
+            $this->services['product_repository']
+        );
+        $this->services['stock_sync']->init();
+        
+        // Initialize template system
+        $this->services['template'] = new Template();
+        
+        // ...existing code...
     }
+    
+    // ...existing code...
 }
