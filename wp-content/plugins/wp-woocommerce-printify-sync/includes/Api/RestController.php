@@ -1,29 +1,24 @@
 <?php
-
 namespace ApolloWeb\WPWooCommercePrintifySync\Api;
 
 class RestController {
-    private const NAMESPACE = 'wpps/v1';
+    private $namespace = 'wpwps/v1';
 
     public function init(): void {
         add_action('rest_api_init', [$this, 'registerRoutes']);
     }
 
     public function registerRoutes(): void {
-        register_rest_route(self::NAMESPACE, '/settings', [
-            'methods' => 'GET',
-            'callback' => [$this, 'getSettings'],
-            'permission_callback' => [$this, 'checkPermission']
-        ]);
-
-        register_rest_route(self::NAMESPACE, '/settings', [
+        register_rest_route($this->namespace, '/webhooks', [
             'methods' => 'POST',
-            'callback' => [$this, 'updateSettings'],
-            'permission_callback' => [$this, 'checkPermission']
+            'callback' => [$this, 'handleWebhook'],
+            'permission_callback' => [$this, 'validateWebhook']
         ]);
-    }
 
-    public function checkPermission(): bool {
-        return current_user_can('manage_woocommerce');
+        register_rest_route($this->namespace, '/status', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getStatus'],
+            'permission_callback' => '__return_true'
+        ]);
     }
 }
