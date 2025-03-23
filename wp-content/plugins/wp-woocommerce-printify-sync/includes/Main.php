@@ -4,6 +4,7 @@ namespace ApolloWeb\WPWooCommercePrintifySync;
 // ...existing use statements...
 use ApolloWeb\WPWooCommercePrintifySync\Admin\DashboardWidgets;
 use ApolloWeb\WPWooCommercePrintifySync\Api\ApiRateLimiter;
+use  ApolloWeb\WPWooCommercePrintifySync\Core\Logger;
 use ApolloWeb\WPWooCommercePrintifySync\Services\StockSyncService;
 
 /**
