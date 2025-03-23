@@ -1,0 +1,29 @@
+.wpwps-required:after {
+    content: "*";
+    color: var(--wpps-primary);
+    margin-left: 4px;
+}
+
+.wpwps-toggle-password {
+    cursor: pointer;
+}
+
+.wpwps-form-label {
+    font-weight: 500;
+}
+
+.wpwps-input-group > .btn {
+    border-color: #ced4da;
+}
+
+.wpwps-input-group > .btn:hover {
+    background-color: #e9ecef;
+}
+
+#wpwps-estimate-cost {
+    margin-left: 0.5rem;
+}
+
+.wpwps-shop-selector {
+    transition: all 0.3s ease;
+}
