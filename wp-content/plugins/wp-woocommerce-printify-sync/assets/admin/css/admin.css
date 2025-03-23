@@ -1,213 +1,260 @@
-/**
- * WP WooCommerce Printify Sync - Admin CSS
- */
+:root {
+    --wpwps-primary: #96588a;
+    --wpwps-indigo: #4b3f72;
+    --wpwps-blue: #3498db;
+    --wpwps-teal: #1abc9c;
+    --wpwps-gray: #7f8c8d;
+    --wpwps-sidebar-width: 260px;
+    --wpwps-header-height: 64px;
+    --wpwps-glass-bg: rgba(255, 255, 255, 0.9);
+    --wpwps-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
 
-/* Admin Layout */
-.wpwps-admin-wrapper {
+/* Global Styles */
+.wpwps-admin {
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    margin: 0;
+}
+
+.wpwps-wrapper {
     display: flex;
-    background-color: #f0f0f1;
-    margin: 0 -20px; /* Negative margin to account for WP admin padding */
+    min-height: 100vh;
 }
 
+/* Sidebar Styles */
 .wpwps-sidebar {
-    width: 220px;
-    background-color: #fff;
-    border-right: 1px solid #e2e4e7;
-    transition: width 0.3s ease;
+    width: var(--wpwps-sidebar-width);
+    background: var(--wpwps-glass-bg);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transition: transform 0.3s ease;
 }
 
-.wpwps-sidebar.collapsed {
-    width: 60px;
+.wpwps-sidebar-collapsed .wpwps-sidebar {
+    transform: translateX(calc(-1 * var(--wpwps-sidebar-width) + 60px));
 }
 
-.wpwps-main-content {
+.wpwps-sidebar-header {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.wpwps-logo {
+    width: 32px;
+    height: 32px;
+}
+
+.wpwps-nav {
     flex: 1;
-    padding: 20px;
+    padding: 1rem 0;
+    overflow-y: auto;
+}
+
+.wpwps-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--wpwps-gray);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.wpwps-nav-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--wpwps-primary);
+}
+
+.wpwps-nav-item.active {
+    background: rgba(150, 88, 138, 0.1);
+    color: var(--wpwps-primary);
+}
+
+.wpwps-nav-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 1rem;
+}
+
+.wpwps-nav-badge {
+    position: absolute;
+    right: 1rem;
+    background: var(--wpwps-primary);
+    color: white;
+    border-radius: 10px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Main Content */
+.wpwps-main {
+    flex: 1;
+    margin-left: var(--wpwps-sidebar-width);
     transition: margin-left 0.3s ease;
 }
 
-.wpwps-sidebar-collapsed .wpwps-main-content {
-    margin-left: -160px;
+.wpwps-sidebar-collapsed .wpwps-main {
+    margin-left: 60px;
 }
 
-/* Admin Header */
-.wpwps-admin-header {
+/* Header */
+.wpwps-header {
+    height: var(--wpwps-header-height);
+    background: var(--wpwps-glass-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background-color: #fff;
-    border-bottom: 1px solid #e2e4e7;
-    margin-bottom: 20px;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 900;
 }
 
-.wpwps-admin-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-/* Sidebar Navigation */
-.wpwps-nav {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.wpwps-nav li {
-    margin: 0;
-    padding: 0;
-}
-
-.wpwps-nav a {
+.wpwps-header-start,
+.wpwps-header-end {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
-    color: #3c434a;
-    text-decoration: none;
-    border-left: 3px solid transparent;
-    transition: all 0.2s ease;
+    gap: 1rem;
 }
 
-.wpwps-nav a:hover,
-.wpwps-nav a.active {
-    background-color: #f6f7f7;
-    border-left-color: #2271b1;
-    color: #2271b1;
+.wpwps-search {
+    position: relative;
 }
 
-.wpwps-nav .nav-icon {
-    width: 20px;
-    margin-right: 10px;
-    text-align: center;
+.wpwps-search input {
+    padding-left: 2.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.5);
 }
 
-.wpwps-nav .nav-text {
-    white-space: nowrap;
-    overflow: hidden;
+.wpwps-search i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--wpwps-gray);
 }
 
-.wpwps-sidebar-collapsed .wpwps-nav .nav-text {
+/* Content Area */
+.wpwps-content {
+    padding: 2rem;
+}
+
+.wpwps-loading {
     display: none;
-}
-
-/* Cards and Widgets */
-.wpwps-card {
-    background-color: #fff;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.wpwps-card-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid #e2e4e7;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.wpwps-card-title {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.wpwps-card-body {
-    padding: 20px;
-}
-
-.wpwps-card-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #e2e4e7;
-}
-
-/* Stats widgets */
-.wpwps-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-}
-
-.wpwps-stat-card {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.wpwps-stat-title {
-    color: #3c434a;
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-}
-
-.wpwps-stat-value {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin: 0;
-}
-
-.wpwps-stat-trend {
-    font-size: 0.85rem;
-    margin-top: 5px;
-}
-
-.wpwps-stat-trend.positive {
-    color: #4caf50;
-}
-
-.wpwps-stat-trend.negative {
-    color: #f44336;
-}
-
-/* Forms */
-.wpwps-form-section {
-    margin-bottom: 30px;
-}
-
-.wpwps-form-section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e2e4e7;
-}
-
-/* Loaders and spinners */
-.wpwps-page-loader {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.7);
-    display: flex;
-    justify-content: center;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
     align-items: center;
-    z-index: 9999;
+    justify-content: center;
 }
 
-/* Toast notifications */
-.toast-container {
-    z-index: 11000;
+.wpwps-content[data-loading="true"] .wpwps-loading {
+    display: flex;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-    .wpwps-sidebar {
-        width: 60px;
+.wpwps-content[data-loading="true"] > *:not(.wpwps-loading) {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Cards */
+.wpwps-card {
+    background: var(--wpwps-glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: var(--wpwps-glass-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wpwps-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Tables */
+.wpwps-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.wpwps-table th {
+    background: rgba(0, 0, 0, 0.02);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.wpwps-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.wpwps-table tr:hover td {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 20px;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--wpwps-primary);
+    border-color: var(--wpwps-primary);
+}
+
+.btn-primary:hover {
+    background: darken(var(--wpwps-primary), 10%);
+    border-color: darken(var(--wpwps-primary), 10%);
+    transform: translateY(-1px);
+}
+
+/* Toasts */
+.toast {
+    background: var(--wpwps-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: var(--wpwps-glass-shadow);
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
-    
-    .wpwps-nav .nav-text {
-        display: none;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
-    
-    .wpwps-main-content {
-        margin-left: 0;
-    }
-    
-    .wpwps-stats-grid {
-        grid-template-columns: 1fr;
-    }
+}
+
+.wpwps-animate-in {
+    animation: slideIn 0.3s ease forwards;
 }
