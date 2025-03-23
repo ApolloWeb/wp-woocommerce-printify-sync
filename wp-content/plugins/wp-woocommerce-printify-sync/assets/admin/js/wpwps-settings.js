@@ -1,30 +1,30 @@
 (function($) {
     'use strict';
-
+    
     const Settings = {
         init() {
-            this.initializeFormHandlers();
-            this.initializeTestHandlers();
-            this.initializePasswordToggles();
+            this.initFormHandlers();
+            this.initTestHandlers();
+            this.initPasswordToggles();
         },
-
-        initializeFormHandlers() {
-            $('#wpps-settings-form').on('submit', (e) => {
+        
+        initFormHandlers() {
+            $('#wpwps-settings-form').on('submit', (e) => {
                 e.preventDefault();
                 this.saveSettings();
             });
-
-            $('#estimate_cost').on('click', () => this.estimateCost());
+            
+            $('#wpwps-estimate-cost').on('click', () => this.estimateCost());
         },
-
-        initializeTestHandlers() {
-            $('#test_printify').on('click', () => this.testPrintifyConnection());
-            $('#test_chatgpt').on('click', () => this.testChatGPTConnection());
+        
+        initTestHandlers() {
+            $('#wpwps-test-printify').on('click', () => this.testPrintifyConnection());
+            $('#wpwps-test-chatgpt').on('click', () => this.testChatGPTConnection());
         },
-
-        initializePasswordToggles() {
-            $('.toggle-password').on('click', function() {
-                const input = $(this).closest('.input-group').find('input');
+        
+        initPasswordToggles() {
+            $('.wpwps-toggle-password').on('click', function() {
+                const input = $(this).closest('.wpwps-input-group').find('input');
                 const icon = $(this).find('i');
                 
                 if (input.attr('type') === 'password') {
@@ -36,78 +36,94 @@
                 }
             });
         },
-
+        
         async saveSettings() {
             try {
-                const response = await $.post(wppsAdmin.ajaxUrl, {
-                    action: 'wpps_save_settings',
-                    _ajax_nonce: wppsAdmin.nonce,
-                    ...this.getFormData()
-                });
-
+                const form = document.getElementById('wpwps-settings-form');
+                const formData = WPWPS.form.serialize(form);
+                
+                const response = await WPWPS.api.post('save_settings', formData);
+                
                 if (response.success) {
-                    wppsAdmin.showToast(response.data.message, 'success');
+                    WPWPS.toast.success(response.data.message);
                 } else {
-                    wppsAdmin.showToast(response.data.message, 'error');
+                    WPWPS.toast.error(response.data.message || wppsAdmin.i18n.error);
                 }
             } catch (error) {
-                wppsAdmin.showToast(error.message, 'error');
+                WPWPS.toast.error(error.message || wppsAdmin.i18n.error);
             }
         },
-
+        
         async testPrintifyConnection() {
             try {
-                const response = await $.post(wppsAdmin.ajaxUrl, {
-                    action: 'wpps_test_printify',
-                    _ajax_nonce: wppsAdmin.nonce,
-                    api_key: $('#printify_key').val()
+                WPWPS.toast.info(wppsAdmin.i18n.testing);
+                
+                const apiKey = $('#wpwps-printify-key').val();
+                if (!apiKey) {
+                    WPWPS.toast.error(wppsAdmin.i18n.noApiKey);
+                    return;
+                }
+                
+                const response = await WPWPS.api.post('test_printify', {
+                    api_key: apiKey
                 });
-
+                
                 if (response.success) {
-                    wppsAdmin.showToast(response.data.message, 'success');
+                    WPWPS.toast.success(response.data.message);
                     this.populateShopSelector(response.data.shops);
                 } else {
-                    wppsAdmin.showToast(response.data.message, 'error');
+                    WPWPS.toast.error(response.data.message || wppsAdmin.i18n.connectionFailed);
                 }
             } catch (error) {
-                wppsAdmin.showToast(error.message, 'error');
+                WPWPS.toast.error(error.message || wppsAdmin.i18n.connectionFailed);
             }
         },
-
+        
         async testChatGPTConnection() {
             try {
-                const response = await $.post(wppsAdmin.ajaxUrl, {
-                    action: 'wpps_test_chatgpt',
-                    _ajax_nonce: wppsAdmin.nonce,
-                    api_key: $('#chatgpt_key').val()
+                WPWPS.toast.info(wppsAdmin.i18n.testing);
+                
+                const apiKey = $('#wpwps-chatgpt-key').val();
+                if (!apiKey) {
+                    WPWPS.toast.error(wppsAdmin.i18n.noApiKey);
+                    return;
+                }
+                
+                const response = await WPWPS.api.post('test_chatgpt', {
+                    api_key: apiKey,
+                    model: $('#wpwps-chatgpt-model').val()
                 });
-
+                
                 if (response.success) {
-                    wppsAdmin.showToast(response.data.message, 'success');
+                    WPWPS.toast.success(response.data.message);
                 } else {
-                    wppsAdmin.showToast(response.data.message, 'error');
+                    WPWPS.toast.error(response.data.message || wppsAdmin.i18n.connectionFailed);
                 }
             } catch (error) {
-                wppsAdmin.showToast(error.message, 'error');
+                WPWPS.toast.error(error.message || wppsAdmin.i18n.connectionFailed);
             }
         },
-
+        
         estimateCost() {
-            const tokenLimit = parseInt($('#token_limit').val());
-            const monthlyCap = parseInt($('#monthly_cap').val());
-            const costPer1k = 0.002;
+            const tokenLimit = parseInt($('#wpwps-token-limit').val()) || 1000;
+            const monthlyCap = parseInt($('#wpwps-monthly-cap').val()) || 100;
+            const model = $('#wpwps-chatgpt-model').val();
+            
+            // Rate per 1000 tokens - adjust for GPT-4 which is more expensive
+            const costPer1k = model.includes('gpt-4') ? 0.03 : 0.002;
             const estimatedCost = (tokenLimit * monthlyCap * costPer1k) / 1000;
             
-            wppsAdmin.showToast(
-                `Estimated monthly cost: $${estimatedCost.toFixed(2)}`,
-                'info'
+            WPWPS.toast.info(
+                wppsAdmin.i18n.estimatedCost.replace('{cost}', estimatedCost.toFixed(2))
             );
         },
-
+        
         populateShopSelector(shops) {
-            const $select = $('#shop_id');
+            if (!shops || !shops.length) return;
+            
+            const $select = $('#wpwps-shop-id');
             $select.empty().append(
-                `<option value="">${wppsL10n.select_shop}</option>`
+                `<option value="">${wppsAdmin.i18n.selectShop}</option>`
             );
             
             shops.forEach(shop => {
@@ -115,17 +131,11 @@
                     `<option value="${shop.id}">${shop.title}</option>`
                 );
             });
-
-            $('.shop-selector').removeClass('d-none');
-        },
-
-        getFormData() {
-            const form = document.getElementById('wpps-settings-form');
-            const formData = new FormData(form);
-            return Object.fromEntries(formData.entries());
+            
+            $('.wpwps-shop-selector').removeClass('d-none');
         }
     };
-
+    
     $(document).ready(() => Settings.init());
-
+    
 })(jQuery);

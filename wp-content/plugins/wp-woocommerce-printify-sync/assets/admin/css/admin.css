@@ -1,0 +1,213 @@
+/**
+ * WP WooCommerce Printify Sync - Admin CSS
+ */
+
+/* Admin Layout */
+.wpwps-admin-wrapper {
+    display: flex;
+    background-color: #f0f0f1;
+    margin: 0 -20px; /* Negative margin to account for WP admin padding */
+}
+
+.wpwps-sidebar {
+    width: 220px;
+    background-color: #fff;
+    border-right: 1px solid #e2e4e7;
+    transition: width 0.3s ease;
+}
+
+.wpwps-sidebar.collapsed {
+    width: 60px;
+}
+
+.wpwps-main-content {
+    flex: 1;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+}
+
+.wpwps-sidebar-collapsed .wpwps-main-content {
+    margin-left: -160px;
+}
+
+/* Admin Header */
+.wpwps-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #e2e4e7;
+    margin-bottom: 20px;
+}
+
+.wpwps-admin-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Sidebar Navigation */
+.wpwps-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.wpwps-nav li {
+    margin: 0;
+    padding: 0;
+}
+
+.wpwps-nav a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #3c434a;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.wpwps-nav a:hover,
+.wpwps-nav a.active {
+    background-color: #f6f7f7;
+    border-left-color: #2271b1;
+    color: #2271b1;
+}
+
+.wpwps-nav .nav-icon {
+    width: 20px;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.wpwps-nav .nav-text {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.wpwps-sidebar-collapsed .wpwps-nav .nav-text {
+    display: none;
+}
+
+/* Cards and Widgets */
+.wpwps-card {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.wpwps-card-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e2e4e7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wpwps-card-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.wpwps-card-body {
+    padding: 20px;
+}
+
+.wpwps-card-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e2e4e7;
+}
+
+/* Stats widgets */
+.wpwps-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.wpwps-stat-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.wpwps-stat-title {
+    color: #3c434a;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.wpwps-stat-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.wpwps-stat-trend {
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+.wpwps-stat-trend.positive {
+    color: #4caf50;
+}
+
+.wpwps-stat-trend.negative {
+    color: #f44336;
+}
+
+/* Forms */
+.wpwps-form-section {
+    margin-bottom: 30px;
+}
+
+.wpwps-form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e4e7;
+}
+
+/* Loaders and spinners */
+.wpwps-page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Toast notifications */
+.toast-container {
+    z-index: 11000;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .wpwps-sidebar {
+        width: 60px;
+    }
+    
+    .wpwps-nav .nav-text {
+        display: none;
+    }
+    
+    .wpwps-main-content {
+        margin-left: 0;
+    }
+    
+    .wpwps-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
