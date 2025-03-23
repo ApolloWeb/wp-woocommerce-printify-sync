@@ -37,6 +37,11 @@ class TicketManager {
     private $email_queue;
     
     /**
+     * @var AttachmentHandler
+     */
+    private $attachment_handler;
+    
+    /**
      * Constructor
      */
     public function __construct(
@@ -44,13 +49,15 @@ class TicketManager {
         Settings $settings,
         EmailProcessor $email_processor,
         AIAnalyzer $ai_analyzer,
-        EmailQueue $email_queue
+        EmailQueue $email_queue,
+        AttachmentHandler $attachment_handler
     ) {
         $this->logger = $logger;
         $this->settings = $settings;
         $this->email_processor = $email_processor;
         $this->ai_analyzer = $ai_analyzer;
         $this->email_queue = $email_queue;
+        $this->attachment_handler = $attachment_handler;
     }
     
     /**
@@ -408,84 +415,35 @@ class TicketManager {
      * @param array $email Email data
      * @return int|false Ticket ID or false if not found
      */
-    private function findExistingTicket(array $email) {
-        // Check if this is a reply to a specific message ID
-        if (!empty($email['in_reply_to'])) {
-            $args = [
-                'post_type' => 'support_ticket',
-                'meta_query' => [
-                    [
-                        'key' => '_wpwps_message_id',
-                        'value' => $email['in_reply_to'],
-                        'compare' => '='
-                    ]
-                ],
-                'posts_per_page' => 1
-            ];
+    private function findExistingTicket(array $email): ?int {
+        global $wpdb;
+        
+        // Check message threading first
+        if (!empty($email['thread_info']['in_reply_to'])) {
+            $ticket_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT post_id FROM {$wpdb->postmeta} 
+                 WHERE meta_key = '_wpwps_message_id' 
+                 AND meta_value = %s",
+                $email['thread_info']['in_reply_to']
+            ));
             
-            $query = new \WP_Query($args);
-            
-            if ($query->have_posts()) {
-                return $query->posts[0]->ID;
-            }
-            
-            // Check comments for message ID
-            global $wpdb;
-            $comment = $wpdb->get_row(
-                $wpdb->prepare(
-                    "SELECT comment_post_ID FROM {$wpdb->commentmeta} 
-                     JOIN {$wpdb->comments} ON {$wpdb->commentmeta}.comment_id = {$wpdb->comments}.comment_ID
-                     WHERE meta_key = 'message_id' AND meta_value = %s 
-                     LIMIT 1",
-                    $email['in_reply_to']
-                )
-            );
-            
-            if ($comment) {
-                return (int) $comment->comment_post_ID;
+            if ($ticket_id) {
+                return (int) $ticket_id;
             }
         }
         
         // Check references
-        if (!empty($email['references'])) {
-            $references = explode(' ', $email['references']);
-            
-            foreach ($references as $reference) {
-                $reference = trim($reference);
-                if (empty($reference)) continue;
+        if (!empty($email['thread_info']['references'])) {
+            foreach ($email['thread_info']['references'] as $ref) {
+                $ticket_id = $wpdb->get_var($wpdb->prepare(
+                    "SELECT post_id FROM {$wpdb->postmeta} 
+                     WHERE meta_key = '_wpwps_message_id' 
+                     AND meta_value = %s",
+                    $ref
+                ));
                 
-                $args = [
-                    'post_type' => 'support_ticket',
-                    'meta_query' => [
-                        [
-                            'key' => '_wpwps_message_id',
-                            'value' => $reference,
-                            'compare' => '='
-                        ]
-                    ],
-                    'posts_per_page' => 1
-                ];
-                
-                $query = new \WP_Query($args);
-                
-                if ($query->have_posts()) {
-                    return $query->posts[0]->ID;
-                }
-                
-                // Check comments for message ID
-                global $wpdb;
-                $comment = $wpdb->get_row(
-                    $wpdb->prepare(
-                        "SELECT comment_post_ID FROM {$wpdb->commentmeta} 
-                         JOIN {$wpdb->comments} ON {$wpdb->commentmeta}.comment_id = {$wpdb->comments}.comment_ID
-                         WHERE meta_key = 'message_id' AND meta_value = %s 
-                         LIMIT 1",
-                        $reference
-                    )
-                );
-                
-                if ($comment) {
-                    return (int) $comment->comment_post_ID;
+                if ($ticket_id) {
+                    return (int) $ticket_id;
                 }
             }
         }
@@ -533,50 +491,36 @@ class TicketManager {
      * @param array $attachments Array of attachment data
      * @param int|null $comment_id Comment ID if this is a reply
      */
-    private function saveTicketAttachments(int $ticket_id, array $attachments, int $comment_id = null): void {
-        $upload_dir = wp_upload_dir();
-        $ticket_dir = $upload_dir['basedir'] . '/wpwps-attachments/' . $ticket_id;
-        
-        // Create directory if it doesn't exist
-        if (!file_exists($ticket_dir)) {
-            wp_mkdir_p($ticket_dir);
-            
-            // Add an index.php file to prevent directory listing
-            file_put_contents($ticket_dir . '/index.php', '<?php // Silence is golden');
-        }
-        
+    private function saveTicketAttachments(int $ticket_id, array $attachments, ?int $comment_id = null): array {
         $saved_attachments = [];
         
         foreach ($attachments as $attachment) {
-            // Sanitize filename
-            $filename = sanitize_file_name($attachment['filename']);
+            $saved = $this->attachment_handler->saveAttachment($ticket_id, [
+                'name' => $attachment['filename'],
+                'type' => $attachment['mime_type'],
+                'tmp_name' => $this->createTempFile($attachment['content']),
+                'error' => 0,
+                'size' => strlen($attachment['content'])
+            ]);
             
-            // Generate a unique filename to avoid overwrites
-            $unique_filename = wp_unique_filename($ticket_dir, $filename);
-            $filepath = $ticket_dir . '/' . $unique_filename;
-            
-            // Save the file
-            if (file_put_contents($filepath, $attachment['content'])) {
-                $saved_attachments[] = [
-                    'filename' => $unique_filename,
-                    'original_filename' => $filename,
-                    'filepath' => $filepath,
-                    'filesize' => filesize($filepath),
-                    'mime_type' => $attachment['mime_type'] ?? 'application/octet-stream'
-                ];
-            }
+            $saved_attachments[] = $saved;
         }
         
-        // Save attachment metadata
-        if (!empty($saved_attachments)) {
-            if ($comment_id) {
-                // Attachments for a reply
-                add_comment_meta($comment_id, '_wpwps_attachments', $saved_attachments);
-            } else {
-                // Attachments for the original ticket
-                update_post_meta($ticket_id, '_wpwps_attachments', $saved_attachments);
-            }
+        // Store attachment metadata
+        if ($comment_id) {
+            update_comment_meta($comment_id, '_wpwps_attachments', $saved_attachments);
+        } else {
+            update_post_meta($ticket_id, '_wpwps_attachments', $saved_attachments);
         }
+        
+        return $saved_attachments;
+    }
+
+    private function createTempFile(string $content): string {
+        $tmp = tmpfile();
+        fwrite($tmp, $content);
+        $meta = stream_get_meta_data($tmp);
+        return $meta['uri'];
     }
     
     /**

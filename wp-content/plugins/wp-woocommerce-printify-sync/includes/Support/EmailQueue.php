@@ -19,11 +19,17 @@ class EmailQueue {
     private $settings;
     
     /**
+     * @var EmailTemplateHandler
+     */
+    private $template_handler;
+    
+    /**
      * Constructor
      */
-    public function __construct(Logger $logger, Settings $settings) {
+    public function __construct(Logger $logger, Settings $settings, EmailTemplateHandler $template_handler) {
         $this->logger = $logger;
         $this->settings = $settings;
+        $this->template_handler = $template_handler;
     }
     
     /**
@@ -391,6 +397,14 @@ class EmailQueue {
      * @return bool Whether the email was sent successfully
      */
     private function sendEmail(string $to, string $subject, string $message, string $headers, array $attachments = []): bool {
+        // Check if using WooCommerce templates
+        if ($this->settings->get('use_wc_templates', 'yes') === 'yes') {
+            $message = $this->template_handler->getTemplate('default', [
+                'heading' => $subject,
+                'content' => $message
+            ]);
+        }
+        
         // Use wp_mail to send the email
         $result = wp_mail($to, $subject, $message, $headers, $attachments);
         

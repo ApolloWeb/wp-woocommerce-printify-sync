@@ -454,4 +454,57 @@ class EmailProcessor {
         
         return '';
     }
+
+    private function extractThreadInfo($headers): array {
+        return [
+            'message_id' => $this->extractHeader($headers, 'Message-ID'),
+            'in_reply_to' => $this->extractHeader($headers, 'In-Reply-To'),
+            'references' => array_filter(explode(' ', $this->extractHeader($headers, 'References'))),
+            'thread_index' => $this->extractHeader($headers, 'Thread-Index')
+        ];
+    }
+
+    private function processEmailParts($structure, $message_number): array {
+        $parts = [];
+        $stack = [[$structure, '']];
+
+        while (!empty($stack)) {
+            [$part, $prefix] = array_pop($stack);
+            
+            if ($part->type === 0) { // Text part
+                $parts['body'][] = [
+                    'type' => strtolower($part->subtype),
+                    'content' => $this->getPart($message_number, $prefix, $part)
+                ];
+            } elseif ($part->type === 2) { // Message part
+                $parts['attachments'][] = [
+                    'filename' => $this->getFilename($part),
+                    'content' => $this->getPart($message_number, $prefix, $part),
+                    'mime_type' => "message/rfc822"
+                ];
+            }
+            
+            if (isset($part->parts)) {
+                for ($i = count($part->parts) - 1; $i >= 0; $i--) {
+                    $stack[] = [
+                        $part->parts[$i], 
+                        $prefix ? $prefix . '.' . ($i + 1) : ($i + 1)
+                    ];
+                }
+            }
+        }
+
+        return $parts;
+    }
+
+    private function getFilename($part): string {
+        if (isset($part->disposition) && $part->disposition === 'attachment') {
+            foreach ($part->dparameters as $param) {
+                if (strtolower($param->attribute) === 'filename') {
+                    return $this->decodeHeader($param->value);
+                }
+            }
+        }
+        return 'unknown';
+    }
 }
