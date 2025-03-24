@@ -1,0 +1,55 @@
+.wpwps-widget {
+    margin-bottom: 1rem;
+}
+
+.wpwps-widget .card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.3s ease;
+}
+
+.wpwps-widget .card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.wpwps-widget .card-title {
+    color: #23282d;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.wpwps-refresh-widget {
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s ease;
+}
+
+.wpwps-refresh-widget:hover {
+    color: #23282d;
+}
+
+.wpwps-status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.wpwps-status-indicator.healthy {
+    background-color: #00a32a;
+}
+
+.wpwps-status-indicator.warning {
+    background-color: #dba617;
+}
+
+.wpwps-status-indicator.error {
+    background-color: #d63638;
+}
+
+.wpwps-chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
