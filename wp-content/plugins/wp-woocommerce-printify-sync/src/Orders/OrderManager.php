@@ -1647,4 +1647,32 @@ class OrderManager
 
         return false;
     }
+
+    /**
+     * Process shipping packages
+     */
+    private function processShippingPackages(array $packages): array
+    {
+        $processed = [];
+        
+        foreach ($packages as $package) {
+            if (!empty($package['provider_id'])) {
+                $processed[] = $this->formatShippingPackage($package);
+            }
+        }
+        
+        return $processed;
+    }
+
+    /**
+     * Format shipping package data
+     */
+    private function formatShippingPackage(array $package): array
+    {
+        return [
+            'provider_id' => $package['provider_id'],
+            'method_id' => $package['method_id'] ?? 'standard',
+            'cost' => $package['cost'] ?? 0,
+        ];
+    }
 }

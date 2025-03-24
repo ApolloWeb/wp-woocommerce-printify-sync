@@ -193,79 +193,65 @@ class AdminLoader
     }
 
     /**
-     * Enqueue admin scripts and styles
-     *
-     * @param string $hook_suffix Admin page hook suffix
-     * @return void
+     * Enqueue admin assets
+     * 
+     * @param string $hook_suffix The current admin page hook suffix
+     * @return void 
      */
     public function enqueueAssets(string $hook_suffix): void
     {
-        // Only load on our plugin pages
+        // Only load on plugin pages
         if (strpos($hook_suffix, 'wpwps-') === false) {
             return;
         }
+
+        // Register common assets
+        $this->registerCommonAssets();
         
-        // Register and enqueue common styles
+        // Load page specific assets
+        $this->loadPageAssets($hook_suffix);
+        
+        // Add admin data
+        $this->localizeAdminData();
+    }
+
+    /**
+     * Register common CSS/JS assets
+     */
+    private function registerCommonAssets(): void
+    {
         wp_register_style(
             'wpwps-fontawesome',
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
             [],
             '6.4.0'
         );
+
+        wp_register_style('wpwps-common', WPWPS_PLUGIN_URL . 'assets/css/wpwps-common.css', ['wpwps-fontawesome'], WPWPS_VERSION);
+        wp_register_script('wpwps-common', WPWPS_PLUGIN_URL . 'assets/js/wpwps-common.js', ['jquery'], WPWPS_VERSION, true);
+    }
+
+    /**
+     * Load page specific assets
+     */
+    private function loadPageAssets(string $hook_suffix): void 
+    {
+        $page = str_replace('wpwps-', '', $hook_suffix);
         
-        wp_register_style(
-            'wpwps-bootstrap',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
-            [],
-            '5.3.0'
-        );
-        
-        wp_register_style(
-            'wpwps-inter-font',
-            'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
-            [],
-            '1.0.0'
-        );
-        
-        wp_register_style(
-            'wpwps-common',
-            WPWPS_PLUGIN_URL . 'assets/css/wpwps-common.css',
-            ['wpwps-fontawesome', 'wpwps-bootstrap', 'wpwps-inter-font'],
-            WPWPS_VERSION
-        );
-        
-        // Enqueue common styles
-        wp_enqueue_style('wpwps-common');
-        
-        // Register and enqueue common scripts
-        wp_register_script(
-            'wpwps-bootstrap',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
-            [],
-            '5.3.0',
-            true
-        );
-        
-        wp_register_script(
-            'wpwps-chartjs',
-            'https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js',
-            [],
-            '4.3.0',
-            true
-        );
-        
-        wp_register_script(
-            'wpwps-common',
-            WPWPS_PLUGIN_URL . 'assets/js/wpwps-common.js',
-            ['jquery', 'wpwps-bootstrap'],
-            WPWPS_VERSION,
-            true
-        );
-        
-        // Enqueue common scripts
-        wp_enqueue_script('wpwps-common');
-        
-        // Localize common script with Ajax URL and nonce
+        if (file_exists(WPWPS_PLUGIN_DIR . "assets/css/wpwps-{$page}.css")) {
+            wp_enqueue_style("wpwps-{$page}", WPWPS_PLUGIN_URL . "assets/css/wpwps-{$page}.css", ['wpwps-common'], WPWPS_VERSION);
+        }
+
+        if (file_exists(WPWPS_PLUGIN_DIR . "assets/js/wpwps-{$page}.js")) {
+            wp_enqueue_script("wpwps-{$page}", WPWPS_PLUGIN_URL . "assets/js/wpwps-{$page}.js", ['wpwps-common'], WPWPS_VERSION, true);
+        }
+    }
+
+    /**
+     * Localize admin data
+     */
+    private function localizeAdminData(): void
+    {
         wp_localize_script('wpwps-common', 'wpwps', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wpwps-admin-ajax-nonce'),
@@ -279,214 +265,6 @@ class AdminLoader
                 'loading' => __('Loading...', 'wp-woocommerce-printify-sync'),
             ],
         ]);
-        
-        // Page-specific assets
-        switch (true) {
-            case strpos($hook_suffix, 'wpwps-dashboard') !== false:
-                wp_enqueue_style(
-                    'wpwps-dashboard',
-                    WPWPS_PLUGIN_URL . 'assets/css/wpwps-dashboard.css',
-                    ['wpwps-common'],
-                    WPWPS_VERSION
-                );
-                
-                wp_enqueue_script(
-                    'wpwps-dashboard',
-                    WPWPS_PLUGIN_URL . 'assets/js/wpwps-dashboard.js',
-                    ['wpwps-common', 'wpwps-chartjs'],
-                    WPWPS_VERSION,
-                    true
-                );
-                break;
-                
-            case strpos($hook_suffix, 'wpwps-settings') !== false:
-                wp_enqueue_style(
-                    'wpwps-settings',
-                    WPWPS_PLUGIN_URL . 'assets/css/wpwps-settings.css',
-                    ['wpwps-common'],
-                    WPWPS_VERSION
-                );
-                
-                wp_enqueue_script(
-                    'wpwps-settings',
-                    WPWPS_PLUGIN_URL . 'assets/js/wpwps-settings.js',
-                    ['wpwps-common'],
-                    WPWPS_VERSION,
-                    true
-                );
-                break;
-                
-            case strpos($hook_suffix, 'wpwps-products') !== false:
-                wp_enqueue_style(
-                    'wpwps-products',
-                    WPWPS_PLUGIN_URL . 'assets/css/wpwps-products.css',
-                    ['wpwps-common'],
-                    WPWPS_VERSION
-                );
-                
-                wp_enqueue_script(
-                    'wpwps-products',
-                    WPWPS_PLUGIN_URL . 'assets/js/wpwps-products.js',
-                    ['wpwps-common'],
-                    WPWPS_VERSION,
-                    true
-                );
-                break;
-                
-            case strpos($hook_suffix, 'wpwps-orders') !== false:
-                wp_enqueue_style(
-                    'wpwps-orders',
-                    WPWPS_PLUGIN_URL . 'assets/css/wpwps-orders.css',
-                    ['wpwps-common'],
-                    WPWPS_VERSION
-                );
-                
-                wp_enqueue_script(
-                    'wpwps-orders',
-                    WPWPS_PLUGIN_URL . 'assets/js/wpwps-orders.js',
-                    ['wpwps-common'],
-                    WPWPS_VERSION,
-                    true
-                );
-                break;
-                
-            case strpos($hook_suffix, 'wpwps-shipping') !== false:
-                wp_enqueue_style(
-                    'wpwps-shipping',
-                    WPWPS_PLUGIN_URL . 'assets/css/wpwps-shipping.css',
-                    ['wpwps-common'],
-                    WPWPS_VERSION
-                );
-                
-                wp_enqueue_script(
-                    'wpwps-shipping',
-                    WPWPS_PLUGIN_URL . 'assets/js/wpwps-shipping.js',
-                    ['wpwps-common'],
-                    WPWPS_VERSION,
-                    true
-                );
-                break;
-                
-            case strpos($hook_suffix, 'wpwps-tickets') !== false:
-                wp_enqueue_style(
-                    'wpwps-tickets',
-                    WPWPS_PLUGIN_URL . 'assets/css/wpwps-tickets.css',
-                    ['wpwps-common'],
-                    WPWPS_VERSION
-                );
-                
-                wp_enqueue_script(
-                    'wpwps-tickets',
-                    WPWPS_PLUGIN_URL . 'assets/js/wpwps-tickets.js',
-                    ['wpwps-common'],
-                    WPWPS_VERSION,
-                    true
-                );
-                break;
-                
-            case strpos($hook_suffix, 'wpwps-admin') !== false:
-                wp_enqueue_style(
-                    'wpwps-admin',
-                    WPWPS_PLUGIN_URL . 'assets/css/wpwps-admin.css',
-                    [],
-                    WPWPS_VERSION
-                );
-                
-                wp_enqueue_script(
-                    'wpwps-admin',
-                    WPWPS_PLUGIN_URL . 'assets/js/wpwps-admin.js',
-                    ['jquery'],
-                    WPWPS_VERSION,
-                    true
-                );
-                break;
-        }
-    }
-
-    /**
-     * Enqueue admin scripts and styles
-     *
-     * @param string $hook_suffix Admin page hook suffix
-     * @return void
-     */
-    public function enqueueAssets($hook): void 
-    {
-        // Only load on our plugin pages
-        if (strpos($hook, 'wpwps') === false) {
-            return;
-        }
-
-        // Base styles and scripts
-        wp_enqueue_style(
-            'wpwps-admin-core',
-            WPWPS_PLUGIN_URL . 'assets/css/wpwps-admin-core.css',
-            [],
-            WPWPS_VERSION
-        );
-
-        // Font Awesome
-        wp_enqueue_style(
-            'wpwps-fontawesome',
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-            [],
-            '6.4.0'
-        );
-
-        // Custom icon font for menu
-        wp_add_inline_style('wpwps-admin-core', "
-            #adminmenu .toplevel_page_wpwps-dashboard .wp-menu-image::before {
-                content: '\\f553';
-                font-family: 'Font Awesome 6 Free';
-                font-weight: 900;
-            }
-        ");
-
-        // Common assets
-        wp_enqueue_style('wpwps-common');
-        wp_enqueue_script('wpwps-common');
-
-        // Page specific assets
-        $page = str_replace('wpwps-', '', $hook);
-        
-        // CSS
-        if (file_exists(WPWPS_PLUGIN_DIR . "assets/css/wpwps-{$page}.css")) {
-            wp_enqueue_style(
-                "wpwps-{$page}",
-                WPWPS_PLUGIN_URL . "assets/css/wpwps-{$page}.css",
-                ['wpwps-common'],
-                WPWPS_VERSION
-            );
-        }
-
-        // JavaScript
-        if (file_exists(WPWPS_PLUGIN_DIR . "assets/js/wpwps-{$page}.js")) {
-            wp_enqueue_script(
-                "wpwps-{$page}",
-                WPWPS_PLUGIN_URL . "assets/js/wpwps-{$page}.js",
-                ['jquery', 'wpwps-common'],
-                WPWPS_VERSION,
-                true
-            );
-        }
-
-        // Page specific data
-        switch ($page) {
-            case 'dashboard':
-                wp_localize_script('wpwps-dashboard', 'wpwpsDashboard', [
-                    'charts' => $this->getDashboardChartData(),
-                    'i18n' => $this->getDashboardTranslations()
-                ]);
-                break;
-
-            case 'products':
-                wp_localize_script('wpwps-products', 'wpwpsProducts', [
-                    'endpoints' => $this->getProductEndpoints(),
-                    'i18n' => $this->getProductTranslations()
-                ]);
-                break;
-                
-            // ...add other pages
-        }
     }
 
     /**

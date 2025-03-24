@@ -323,6 +323,37 @@ class ProductManager
     }
 
     /**
+     * Process product sync
+     */
+    public function processSync(array $product_data): bool
+    {
+        try {
+            // Validation
+            if (empty($product_data['id'])) {
+                $this->logger->error('Invalid product data - missing ID');
+                return false;
+            }
+
+            // Process sync
+            $result = $this->syncProduct($product_data);
+            
+            if ($result) {
+                $this->logger->info('Product synced successfully', [
+                    'product_id' => $product_data['id']
+                ]);
+            }
+
+            return $result;
+
+        } catch (\Exception $e) {
+            $this->logger->error('Product sync failed', [
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Create a new WooCommerce product from Printify data
      *
      * @param array $printify_product Printify product data
