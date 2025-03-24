@@ -1,0 +1,104 @@
+/**
+ * Admin styles for WP WooCommerce Printify Sync
+ */
+
+.wpwps-dashboard-wrapper {
+    margin-top: 20px;
+}
+
+.wpwps-card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.wpwps-dashboard-cards {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+.wpwps-dashboard-cards .wpwps-card {
+    flex: 0 0 calc(33.33% - 20px);
+    margin: 0 10px 20px;
+}
+
+.wpwps-card h2 {
+    margin-top: 0;
+}
+
+.wpwps-setup-prompt {
+    text-align: center;
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    border: 1px solid #e2e4e7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    background: #fff;
+}
+
+.wpwps-setup-prompt h2 {
+    margin-top: 0;
+}
+
+.wpwps-sync-options {
+    margin-bottom: 20px;
+}
+
+.wpwps-sync-spinner {
+    float: none;
+    margin: 0 0 0 10px;
+    vertical-align: middle;
+}
+
+.wpwps-dashboard-info {
+    margin-top: 30px;
+}
+
+@media screen and (max-width: 782px) {
+    .wpwps-dashboard-cards .wpwps-card {
+        flex: 0 0 calc(100% - 20px);
+    }
+}
+
+/* Dashboard Widgets */
+.wpwps-widget-content {
+    padding: 12px;
+}
+
+.wpwps-widget-stats {
+    margin-bottom: 16px;
+}
+
+.wpwps-stat {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.wpwps-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    text-align: center;
+}
+
+.wpwps-stat-item {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 4px;
+}
+
+.wpwps-stat-number {
+    display: block;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2271b1;
+}
+
+.wpwps-stat-label {
+    color: #646970;
+    font-size: 13px;
+}

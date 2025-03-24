@@ -1,0 +1,393 @@
+/**
+ * Order Sync styles
+ */
+
+/* Layout */
+.wpwps-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -15px 20px;
+}
+
+.wpwps-col-12 {
+    width: 100%;
+    padding: 0 15px;
+    box-sizing: border-box;
+}
+
+.wpwps-col-6 {
+    width: 50%;
+    padding: 0 15px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 782px) {
+    .wpwps-col-6 {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+/* Cards */
+.wpwps-card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.wpwps-card-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #e2e4e7;
+    background: #f8f9fa;
+}
+
+.wpwps-card-header h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+.wpwps-card-body {
+    padding: 20px;
+}
+
+/* Connection Info */
+.wpwps-connection-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.wpwps-connection-info p {
+    margin: 0 30px 0 0;
+}
+
+.wpwps-sync-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+/* Status Badges */
+.wpwps-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.wpwps-status-processing {
+    background-color: #c6e1c6;
+    color: #5b841b;
+}
+
+.wpwps-status-completed {
+    background-color: #c8d7e1;
+    color: #2e4453;
+}
+
+.wpwps-status-on-hold {
+    background-color: #f8dda7;
+    color: #94660c;
+}
+
+.wpwps-status-cancelled {
+    background-color: #eba3a3;
+    color: #761919;
+}
+
+.wpwps-status-refunded {
+    background-color: #e5e5e5;
+    color: #777;
+}
+
+.wpwps-status-pending {
+    background-color: #f1f1f1;
+    color: #777;
+}
+
+.wpwps-status-failed {
+    background-color: #eba3a3;
+    color: #761919;
+}
+
+/* Printify Status Badges */
+.wpwps-status-printify-in-production {
+    background-color: #a7cdf8;
+    color: #0c5594;
+}
+
+.wpwps-status-printify-shipped {
+    background-color: #c6e1c6;
+    color: #5b841b;
+}
+
+.wpwps-status-printify-delivered {
+    background-color: #c8d7e1;
+    color: #2e4453;
+}
+
+.wpwps-status-printify-canceled {
+    background-color: #eba3a3;
+    color: #761919;
+}
+
+.wpwps-status-printify-on-hold {
+    background-color: #f8dda7;
+    color: #94660c;
+}
+
+.wpwps-status-printify-has-issues {
+    background-color: #eba3a3;
+    color: #761919;
+}
+
+/* Progress Bars */
+.wpwps-queue-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.wpwps-queue-stat h3 {
+    margin: 0 0 10px;
+    font-size: 14px;
+}
+
+.wpwps-progress {
+    height: 20px;
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.wpwps-progress-bar {
+    height: 100%;
+    background-color: #007cba;
+    border-radius: 4px;
+    color: #fff;
+    text-align: center;
+    font-size: 12px;
+    line-height: 20px;
+    min-width: 20px;
+}
+
+.wpwps-queue-details {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.wpwps-queue-detail {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+}
+
+.wpwps-detail-label {
+    color: #757575;
+}
+
+.wpwps-detail-value {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Tables */
+.wpwps-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+}
+
+.wpwps-table th, 
+.wpwps-table td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #e2e4e7;
+}
+
+.wpwps-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.wpwps-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.wpwps-order-meta {
+    font-size: 12px;
+    color: #757575;
+    margin-top: 2px;
+}
+
+.wpwps-action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+/* Table container with search and pagination */
+.wpwps-table-container {
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.wpwps-table-tools {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.wpwps-search input {
+    width: 250px;
+}
+
+.wpwps-table-pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wpwps-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wpwps-pagination-pages {
+    margin: 0 5px;
+}
+
+/* Loading state */
+.wpwps-loading {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.wpwps-loading .spinner {
+    float: none;
+    margin-top: 0;
+    margin-right: 5px;
+}
+
+/* View all link */
+.wpwps-view-all {
+    margin-top: 15px;
+    text-align: right;
+}
+
+/* No data message */
+.wpwps-no-data {
+    text-align: center;
+    padding: 20px;
+    color: #757575;
+}
+
+/* Error message */
+.wpwps-error {
+    color: #d63638;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Custom styles for buttons with icons */
+.wpwps-sync-actions .button .dashicons {
+    margin-right: 4px;
+    margin-top: 3px;
+}
+
+/* Custom styles for order actions */
+.wpwps-send-to-printify {
+    margin-top: 10px !important;
+}
+
+/**
+ * Order Sync Page Styles
+ */
+
+/* Order Cards */
+.wpwps-order-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.wpwps-order-card {
+    background: var(--wpwps-surface);
+    border-radius: var(--wpwps-radius);
+    box-shadow: var(--wpwps-shadow-sm);
+    transition: all 0.2s ease;
+    border: 1px solid var(--wpwps-border);
+}
+
+.wpwps-order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--wpwps-shadow);
+}
+
+.wpwps-order-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--wpwps-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wpwps-order-number {
+    font-weight: 600;
+    color: var(--wpwps-text);
+}
+
+.wpwps-order-date {
+    font-size: 0.875rem;
+    color: var(--wpwps-text-secondary);
+}
+
+.wpwps-order-content {
+    padding: 1rem;
+}
+
+.wpwps-order-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--wpwps-radius-full);
+    margin-bottom: 1rem;
+}
+
+/* Order Status Colors */
+.wpwps-status-processing {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--wpwps-primary);
+}
+
+.wpwps-status-completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--wpwps-success);
+}
+
+.wpwps-status-pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--wpwps-warning);
+}
+
+.wpwps-status-failed {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--wpwps-error);
+}

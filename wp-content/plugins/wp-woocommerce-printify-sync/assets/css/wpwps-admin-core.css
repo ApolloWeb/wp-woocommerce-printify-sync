@@ -1,0 +1,197 @@
+:root {
+    /* Brand Colors */
+    --wpwps-primary: #6366f1;
+    --wpwps-primary-dark: #4f46e5;
+    --wpwps-primary-light: #818cf8;
+    --wpwps-secondary: #14b8a6;
+    
+    /* UI Colors */
+    --wpwps-surface: #ffffff;
+    --wpwps-surface-hover: #f8fafc;
+    --wpwps-border: #e2e8f0;
+    
+    /* Text Colors */
+    --wpwps-text: #0f172a;
+    --wpwps-text-secondary: #64748b;
+    
+    /* Status Colors */
+    --wpwps-success: #10b981;
+    --wpwps-warning: #f59e0b;
+    --wpwps-error: #ef4444;
+    --wpwps-info: #3b82f6;
+    
+    /* Effects */
+    --wpwps-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --wpwps-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --wpwps-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --wpwps-radius-sm: 0.375rem;
+    --wpwps-radius: 0.5rem;
+    --wpwps-radius-lg: 0.75rem;
+    --wpwps-radius-full: 9999px;
+    
+    /* Animation */
+    --wpwps-transition: all 0.2s ease;
+}
+
+/* Base Resets */
+.wpwps-admin {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+/* Base layout */
+.wpwps-wrap {
+    position: relative;
+    margin: 20px 20px 0 2px;
+}
+
+/* Navbar */
+.wpwps-navbar {
+    backdrop-filter: var(--wpwps-blur);
+    background: var(--wpwps-glass);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 32px; /* WP Admin bar offset */
+    z-index: 100;
+    padding: 1rem;
+}
+
+/* Page header */
+.wpwps-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem;
+    background: var(--wpwps-surface);
+    border-radius: var(--wpwps-radius);
+    box-shadow: var(--wpwps-shadow-sm);
+    margin-bottom: 2rem;
+}
+
+.wpwps-header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--wpwps-text);
+}
+
+.wpwps-header-title i {
+    color: var(--wpwps-primary);
+    font-size: 1.5rem;
+}
+
+/* Cards */
+.wpwps-card {
+    background: var(--wpwps-surface);
+    border-radius: var(--wpwps-radius);
+    box-shadow: var(--wpwps-shadow-sm);
+    border: 1px solid var(--wpwps-border);
+    transition: all 0.2s ease;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.wpwps-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--wpwps-shadow);
+}
+
+/* Buttons */
+.wpwps-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--wpwps-radius);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.wpwps-btn-primary {
+    background: var(--wpwps-primary);
+    color: white;
+    border: none;
+}
+
+.wpwps-btn-primary:hover {
+    background: var(--wpwps-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(150, 88, 138, 0.2);
+}
+
+/* Loading states */
+.wpwps-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wpwps-spinner {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--wpwps-primary-light);
+    border-top-color: var(--wpwps-primary);
+    border-radius: 50%;
+    animation: wpwps-spin 0.6s linear infinite;
+}
+
+@keyframes wpwps-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Charts container */
+.wpwps-chart-container {
+    padding: 1.5rem;
+    border-radius: var(--wpwps-radius);
+    background: white;
+    box-shadow: var(--wpwps-shadow-sm);
+}
+
+/* Toast Notifications */
+.wpwps-toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+}
+
+.wpwps-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--wpwps-surface);
+    border-radius: var(--wpwps-radius);
+    box-shadow: var(--wpwps-shadow-lg);
+    margin-bottom: 0.75rem;
+    max-width: 24rem;
+    animation: wpwps-slide-in 0.2s ease;
+}
+
+@keyframes wpwps-slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Transitions */
+.wpwps-fade-enter {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.wpwps-fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}

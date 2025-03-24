@@ -1,0 +1,549 @@
+/**
+ * Dashboard specific CSS
+ */
+
+.wpwps-dashboard {
+    position: relative;
+}
+
+.wpwps-dashboard-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Background gradient */
+.wpwps-dashboard::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(circle at top right, 
+        rgba(150, 88, 138, 0.08) 0%, 
+        rgba(52, 46, 92, 0.05) 40%, 
+        rgba(255, 255, 255, 0) 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Header styling */
+.wpwps-dashboard .wp-heading-inline {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.wpwps-dashboard .wp-heading-inline i {
+    color: var(--wpwps-primary);
+    opacity: 0.8;
+}
+
+/* Enhanced cards */
+.wpwps-dashboard .wpwps-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.wpwps-dashboard .wpwps-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.wpwps-dashboard .wpwps-actions {
+    margin-top: auto;
+}
+
+/* API Health status indicators with animation */
+.wpwps-dashboard .wpwps-status-healthy i {
+    animation: pulse-green 2s infinite;
+}
+
+.wpwps-dashboard .wpwps-status-warning i {
+    animation: pulse-yellow 2s infinite;
+}
+
+.wpwps-dashboard .wpwps-status-error i {
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes pulse-yellow {
+    0% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes pulse-red {
+    0% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.7;
+    }
+}
+
+/* Stats with hover effects */
+.wpwps-dashboard .wpwps-stat-item {
+    transition: transform 0.3s ease;
+    padding: 0.75rem;
+    border-radius: var(--wpwps-border-radius);
+}
+
+.wpwps-dashboard .wpwps-stat-item:hover {
+    transform: translateY(-5px);
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Queue progress animations */
+.wpwps-dashboard .wpwps-progress-bar {
+    background-image: linear-gradient(90deg, 
+        rgba(52, 195, 181, 0.8) 0%, 
+        rgba(52, 195, 181, 1) 100%
+    );
+    animation: shimmer 2s infinite linear;
+    background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Enhanced ticket items */
+.wpwps-dashboard .wpwps-ticket-item {
+    transition: all 0.3s ease;
+    border-radius: var(--wpwps-border-radius);
+    margin-bottom: 0.5rem;
+}
+
+.wpwps-dashboard .wpwps-ticket-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Logs table hover effect */
+.wpwps-dashboard .wpwps-logs-table tr {
+    transition: all 0.2s ease;
+}
+
+.wpwps-dashboard .wpwps-logs-table tr:hover {
+    background-color: rgba(150, 88, 138, 0.05);
+}
+
+/* Action buttons */
+.wpwps-dashboard .wpwps-actions .button {
+    min-width: 110px;
+    justify-content: center;
+}
+
+.wpwps-dashboard .wpwps-actions .button i {
+    transition: transform 0.3s ease;
+}
+
+.wpwps-dashboard .wpwps-actions .button:hover i {
+    transform: rotate(15deg);
+}
+
+/* Setup prompt animation */
+.wpwps-setup-prompt {
+    text-align: center;
+    max-width: 600px;
+    margin: 4rem auto;
+    padding: 2rem;
+    border-radius: var(--wpwps-border-radius);
+    background-color: white;
+    box-shadow: var(--wpwps-card-shadow);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wpwps-setup-prompt h2 {
+    color: var(--wpwps-primary);
+    margin-bottom: 1.5rem;
+}
+
+.wpwps-setup-prompt p {
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    color: var(--wpwps-dark-gray);
+    opacity: 0.8;
+}
+
+.wpwps-setup-prompt .button {
+    font-size: 1rem;
+    padding: 0.5rem 1.5rem;
+}
+
+/* Chart container */
+.wpwps-chart-container {
+    position: relative;
+    height: 250px;
+    margin: 1rem 0;
+}
+
+/* Notification badge with animation */
+.wpwps-notification-badge {
+    animation: pulse 2s infinite;
+}
+
+/* Custom scrollbar */
+.wpwps-dashboard ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.wpwps-dashboard ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.wpwps-dashboard ::-webkit-scrollbar-thumb {
+    background: rgba(150, 88, 138, 0.2);
+    border-radius: 10px;
+}
+
+.wpwps-dashboard ::-webkit-scrollbar-thumb:hover {
+    background: rgba(150, 88, 138, 0.3);
+}
+
+/* Add navbar to dashboard */
+.wpwps-navbar-dashboard {
+    margin-bottom: 2rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--wpwps-border-radius);
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wpwps-navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.wpwps-navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.wpwps-search-bar {
+    position: relative;
+}
+
+.wpwps-search-bar input {
+    border-radius: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.4rem 1rem 0.4rem 2rem;
+    font-size: 0.875rem;
+    width: 200px;
+    transition: all 0.3s ease;
+}
+
+.wpwps-search-bar input:focus {
+    width: 250px;
+    box-shadow: 0 0 0 3px rgba(150, 88, 138, 0.1);
+    border-color: rgba(150, 88, 138, 0.3);
+}
+
+.wpwps-search-bar i {
+    position: absolute;
+    left: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--wpwps-dark-gray);
+    opacity: 0.5;
+    font-size: 0.875rem;
+}
+
+.wpwps-user-menu {
+    position: relative;
+}
+
+.wpwps-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--wpwps-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wpwps-user-avatar:hover {
+    background-color: var(--wpwps-indigo);
+}
+
+/* Dark mode toggle */
+.wpwps-dark-mode-toggle {
+    background: none;
+    border: none;
+    color: var(--wpwps-dark-gray);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.3rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.wpwps-dark-mode-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--wpwps-primary);
+}
+
+/* Quick action buttons */
+.wpwps-quick-actions {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 100;
+}
+
+.wpwps-action-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--wpwps-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(150, 88, 138, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.wpwps-action-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(150, 88, 138, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .wpwps-dashboard::before {
+        opacity: 0.5;
+    }
+    
+    .wpwps-navbar-dashboard {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .wpwps-search-bar input, 
+    .wpwps-search-bar input:focus {
+        width: 100%;
+    }
+}
+
+/**
+ * Dashboard specific styles
+ */
+
+.wpwps-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.wpwps-stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.wpwps-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, var(--wpwps-primary-light), var(--wpwps-primary));
+}
+
+.wpwps-stat-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--wpwps-text);
+    margin: 1rem 0 0.5rem;
+}
+
+.wpwps-stat-label {
+    color: var(--wpwps-text-secondary);
+    font-size: 0.875rem;
+}
+
+.wpwps-stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+}
+
+.wpwps-trend-up {
+    color: var(--wpwps-success);
+}
+
+.wpwps-trend-down {
+    color: var(--wpwps-error);
+}
+
+/* Activity Feed */
+.wpwps-activity-feed {
+    margin-top: 2rem;
+}
+
+.wpwps-activity-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--wpwps-border);
+}
+
+.wpwps-activity-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--wpwps-primary-light);
+    color: var(--wpwps-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Charts */
+.wpwps-chart-container {
+    position: relative;
+    height: 300px;
+    margin-top: 1rem;
+}
+
+/* Grid Layout */
+.wpwps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Stats Cards */
+.wpwps-stat-card {
+    padding: 1.5rem;
+}
+
+.wpwps-stat-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.wpwps-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--wpwps-primary-light);
+    color: var(--wpwps-primary-dark);
+    border-radius: var(--wpwps-radius);
+}
+
+.wpwps-stat-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--wpwps-text);
+    margin-bottom: 0.25rem;
+}
+
+.wpwps-stat-label {
+    font-size: 0.875rem;
+    color: var(--wpwps-text-secondary);
+}
+
+/* Activity Feed */
+.wpwps-activity {
+    background: var(--wpwps-surface);
+    border-radius: var(--wpwps-radius);
+    box-shadow: var(--wpwps-shadow-sm);
+    margin-top: 2rem;
+}
+
+.wpwps-activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--wpwps-border);
+}
+
+.wpwps-activity-icon {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--wpwps-primary-light);
+    color: var(--wpwps-primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Charts */
+.wpwps-chart-container {
+    padding: 1.5rem;
+    background: var(--wpwps-surface);
+    border-radius: var(--wpwps-radius);
+    box-shadow: var(--wpwps-shadow-sm);
+    height: 300px;
+}
