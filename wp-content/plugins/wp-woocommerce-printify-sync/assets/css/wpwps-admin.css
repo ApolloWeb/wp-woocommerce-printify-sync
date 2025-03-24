@@ -1,0 +1,513 @@
+/* Design System Variables */
+:root {
+    /* Colors */
+    --wpwps-primary: #96588a;
+    --wpwps-indigo: #4B4DED;
+    --wpwps-blue: #2D9CDB;
+    --wpwps-teal: #38B2AC;
+    --wpwps-gray: #6B7280;
+    
+    /* Shadows */
+    --wpwps-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --wpwps-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --wpwps-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    
+    /* Transitions */
+    --wpwps-transition: all 0.2s ease;
+    --wpwps-transition-slow: all 0.3s ease;
+    
+    /* Glass Effect */
+    --wpwps-glass: rgba(255, 255, 255, 0.95);
+    --wpwps-glass-blur: blur(10px);
+}
+
+/* Global Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+    color: #1F2937;
+    line-height: 1.6;
+}
+
+/* Navbar Styles */
+.wpwps-navbar {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.wpwps-search input {
+    border-radius: 20px;
+    padding-left: 2.5rem;
+    background: rgba(0, 0, 0, 0.03);
+    border: none;
+}
+
+.wpwps-search .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+/* Sidebar Styles */
+.wpwps-sidebar {
+    width: 250px;
+    transition: all 0.3s ease;
+}
+
+.wpwps-sidebar.collapsed {
+    width: 70px;
+}
+
+.wpwps-sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: #495057;
+    border-radius: 8px;
+    margin: 2px 0;
+}
+
+.wpwps-sidebar .nav-link:hover {
+    background: rgba(150, 88, 138, 0.05);
+}
+
+.wpwps-sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+/* Widget Base Styles */
+.wpwps-widget.card {
+    background: var(--wpwps-glass);
+    backdrop-filter: var(--wpwps-glass-blur);
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--wpwps-shadow);
+    transition: var(--wpwps-transition);
+}
+
+.wpwps-widget.card:hover {
+    box-shadow: var(--wpwps-shadow-lg);
+}
+
+/* Widget Headers */
+.wpwps-widget .card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: transparent;
+}
+
+/* Progress Bars */
+.wpwps-widget .progress {
+    background-color: rgba(150, 88, 138, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.wpwps-widget .progress-bar {
+    background-color: #96588a;
+}
+
+/* Status Indicators */
+.wpwps-widget .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Charts */
+.wpwps-sales-chart {
+    min-height: 400px;
+}
+
+/* Buttons and Controls */
+.wpwps-widget .btn-group .btn {
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+}
+
+.wpwps-widget .btn-outline-secondary {
+    color: #96588a;
+    border-color: #96588a;
+}
+
+.wpwps-widget .btn-outline-secondary:hover,
+.wpwps-widget .btn-outline-secondary.active {
+    background-color: #96588a;
+    border-color: #96588a;
+    color: white;
+}
+
+/* Stats and Numbers */
+.wpwps-widget .stats-number {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #96588a;
+}
+
+/* Alerts and Notifications */
+.wpwps-widget .alert {
+    border-radius: 8px;
+    border: none;
+}
+
+/* Badge Customization */
+.wpwps-widget .badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}
+
+/* Custom Scrollbars */
+.wpwps-widget ::-webkit-scrollbar {
+    width: 6px;
+}
+
+.wpwps-widget ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.wpwps-widget ::-webkit-scrollbar-thumb {
+    background: rgba(150, 88, 138, 0.5);
+    border-radius: 3px;
+}
+
+/* Toast Notifications */
+.wpwps-toast-container {
+    z-index: 1060;
+}
+
+.wpwps-toast {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Tables */
+.wpwps-table {
+    --bs-table-hover-bg: rgba(150, 88, 138, 0.05);
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.wpwps-table thead th {
+    border-top: none;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}
+
+.wpwps-table th {
+    font-weight: 600;
+    color: var(--wpwps-gray);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+}
+
+.wpwps-table td {
+    vertical-align: middle;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Buttons */
+.wpwps-btn {
+    border-radius: 50rem;
+    padding: 0.5rem 1.5rem;
+    transition: var(--wpwps-transition);
+    font-weight: 500;
+}
+
+.wpwps-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(150, 88, 138, 0.15);
+}
+
+.wpwps-btn-primary {
+    background: var(--wpwps-primary);
+    border: none;
+    color: white;
+}
+
+.wpwps-btn-primary:hover {
+    background: var(--wpwps-indigo);
+    transform: translateY(-1px);
+    box-shadow: var(--wpwps-shadow);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+}
+
+.wpwps-heading-xl {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.wpwps-heading-lg {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.wpwps-text-muted {
+    color: var(--wpwps-gray);
+}
+
+/* Card & Container Effects */
+.wpwps-glass {
+    background: var(--wpwps-glass);
+    backdrop-filter: var(--wpwps-glass-blur);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wpwps-hover-lift {
+    transition: var(--wpwps-transition);
+}
+
+.wpwps-hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--wpwps-shadow-lg);
+}
+
+/* Animations */
+@keyframes wpwps-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes wpwps-slide-up {
+    from { 
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wpwps-animate-fade {
+    animation: wpwps-fade-in 0.3s ease;
+}
+
+.wpwps-animate-slide {
+    animation: wpwps-slide-up 0.3s ease;
+}
+
+/* Loading States */
+.wpwps-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.wpwps-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    animation: wpwps-loading 1.5s infinite;
+}
+
+@keyframes wpwps-loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Widget Refresh Animation */
+.wpwps-animate-refresh {
+    animation: wpwps-refresh 0.5s ease-in-out;
+}
+
+@keyframes wpwps-refresh {
+    0% { transform: scale(0.98); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Fade Out Animation */
+.wpwps-animate-fade-out {
+    animation: wpwps-fade-out 0.3s ease forwards;
+}
+
+@keyframes wpwps-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Status Indicators */
+.wpwps-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.wpwps-status-success { background: var(--wpwps-teal); }
+.wpwps-status-warning { background: #F59E0B; }
+.wpwps-status-error { background: #EF4444; }
+
+/* Premium Effects */
+.wpwps-particle-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.5;
+}
+
+.wpwps-btn-morphing {
+    animation: btnMorph 0.5s ease-in-out;
+    background: linear-gradient(90deg, var(--wpwps-primary), var(--wpwps-indigo));
+    background-size: 200% 100%;
+}
+
+@keyframes btnMorph {
+    0% { background-position: 100% 0; }
+    100% { background-position: 0 0; }
+}
+
+.wpwps-blur {
+    filter: blur(3px);
+    transition: filter 0.3s ease;
+}
+
+/* Loading Overlay */
+.wpwps-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wpwps-loading-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.wpwps-loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--wpwps-primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Enhanced Card Effects */
+.wpwps-widget {
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+}
+
+.wpwps-widget:hover {
+    transform: translateY(-5px) scale3d(1.02, 1.02, 1.02);
+}
+
+.wpwps-widget::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.wpwps-widget:hover::before {
+    opacity: 1;
+}
+
+/* Accessibility Styles */
+.wpwps-skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--wpwps-primary);
+    color: white;
+    padding: 8px;
+    z-index: 1070;
+    transition: top 0.2s ease;
+}
+
+.wpwps-skip-link:focus {
+    top: 0;
+}
+
+/* Focus Indicators */
+.wpwps-btn:focus,
+.wpwps-widget:focus-within,
+.nav-link:focus,
+.dropdown-item:focus {
+    outline: 2px solid var(--wpwps-primary);
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (forced-colors: active) {
+    .wpwps-widget {
+        border: 1px solid CanvasText;
+    }
+    
+    .wpwps-btn {
+        border: 1px solid CanvasText;
+    }
+}
+
+/* Reduce Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Text Spacing */
+.wpwps-widget {
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    word-spacing: 0.16em;
+}
+
+/* Enhanced Focus Management */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 3px solid var(--wpwps-primary);
+    outline-offset: 2px;
+}
