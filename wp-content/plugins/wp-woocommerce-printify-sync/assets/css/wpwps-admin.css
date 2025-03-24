@@ -1,0 +1,723 @@
+/* Base Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.wrap {
+    margin: 20px;
+}
+
+/* Card Styles with Glassmorphism */
+.card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    background: rgba(150, 88, 138, 0.05);
+    border-bottom: 1px solid rgba(150, 88, 138, 0.1);
+    padding: 1.25rem;
+    border-radius: 12px 12px 0 0;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    color: #2c3338;
+    font-weight: 600;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Form Elements */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid rgba(150, 88, 138, 0.2);
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #96588a;
+    box-shadow: 0 0 0 0.25rem rgba(150, 88, 138, 0.25);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #96588a;
+    border-color: #96588a;
+}
+
+.btn-primary:hover {
+    background-color: #7d4675;
+    border-color: #7d4675;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: #4f5b93;
+    border-color: #4f5b93;
+}
+
+.btn-secondary:hover {
+    background-color: #3f487a;
+    border-color: #3f487a;
+}
+
+/* Custom Elements */
+#temperatureValue {
+    font-weight: 600;
+    color: #96588a;
+}
+
+.input-group {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.toggle-password {
+    border-top-right-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+}
+
+/* Alerts and Notifications */
+.alert {
+    border-radius: 12px;
+    border: none;
+    padding: 1rem 1.25rem;
+}
+
+.alert-info {
+    background: rgba(13, 202, 240, 0.1);
+    color: #055160;
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #842029;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Dashboard Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.settings-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #96588a, #4f5b93);
+}
+
+.notification-bell {
+    font-size: 1.25rem;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.notification-bell.pulse {
+    animation: pulse 2s infinite;
+    color: #dc3545;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background-color: #dc3545;
+    border-radius: 50%;
+}
+
+.user-avatar {
+    position: relative;
+}
+
+.user-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background-color: #28a745;
+    border: 2px solid #fff;
+    border-radius: 50%;
+}
+
+.dashboard-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Premium Dashboard Styles */
+.wpwps-dashboard {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    grid-column: span 12;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+}
+
+.stats-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #96588a 0%, #4f5b93 100%);
+    color: white;
+}
+
+.stats-content {
+    flex: 1;
+}
+
+.stats-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #96588a 0%, #4f5b93 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stats-label {
+    color: #6c757d;
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.stats-trend {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.stats-trend.up {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.stats-trend.down {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* Card Improvements */
+.settings-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #96588a, #4f5b93);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.settings-card:hover::before {
+    opacity: 1;
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.loading .loading-overlay {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #96588a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Accessibility Improvements */
+:focus-visible {
+    outline: 2px solid #96588a;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.screen-reader-text {
+    border: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    word-wrap: normal !important;
+}
+
+.btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(150, 88, 138, 0.4);
+}
+
+[role="alert"] {
+    position: relative;
+    padding-left: 2.5rem;
+}
+
+[role="alert"]::before {
+    font-family: "Font Awesome 5 Free";
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.alert-info[role="alert"]::before {
+    content: "\f05a";
+}
+
+.alert-danger[role="alert"]::before {
+    content: "\f06a";
+}
+
+/* Enhanced Focus States */
+.form-control:focus,
+.form-select:focus {
+    border-color: #96588a;
+    box-shadow: 0 0 0 3px rgba(150, 88, 138, 0.25);
+    outline: none;
+}
+
+/* High Contrast Mode Support */
+@media (forced-colors: active) {
+    .btn,
+    .card,
+    .alert {
+        border: 1px solid currentColor;
+    }
+}
+
+/* User Profile Dropdown */
+.user-profile .dropdown-toggle::after {
+    margin-left: 0.5rem;
+}
+
+.user-profile .dropdown-menu {
+    min-width: 200px;
+    margin-top: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.user-profile .dropdown-item {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.user-profile .dropdown-item i {
+    width: 1.25rem;
+    color: #6c757d;
+}
+
+/* Layout Improvements */
+.wpwps-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.wpwps-admin .navbar {
+    max-width: 1400px;
+    margin: 1rem auto;
+}
+
+/* User Profile */
+.user-avatar img {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.wpwps-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Content Layout */
+.wpwps-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem 2rem;
+}
+
+.wpwps-admin .navbar {
+    max-width: 1400px;
+    margin: 1rem auto;
+}
+
+/* User Profile in Navbar */
+.user-profile .dropdown-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.user-profile .dropdown-toggle img {
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-right: 0.5rem;
+}
+
+.user-profile .dropdown-menu {
+    padding: 0.5rem;
+    min-width: 200px;
+}
+
+/* Fix for dropdown on mobile */
+@media (max-width: 768px) {
+    .user-profile .dropdown-menu {
+        position: absolute;
+        right: 0;
+        left: auto;
+    }
+}
+
+/* Fix chart container heights */
+.card canvas {
+    max-height: 300px;
+    width: 100% !important;
+}
+
+/* Global Page Layout */
+.wpwps-admin {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: calc(100vh - 32px); /* Account for WP admin bar */
+    padding: 20px;
+}
+
+.wpwps-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 15px 30px;
+}
+
+.wpwps-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.wpwps-page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+.wpwps-page-title i {
+    margin-right: 0.75rem;
+    color: #96588a;
+}
+
+.wpwps-page-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* User Profile Dropdown Styling */
+.wpwps-user-profile {
+    display: flex;
+    align-items: center;
+}
+
+.wpwps-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.wpwps-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.wpwps-user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.wpwps-user-role {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* Chart container fixes */
+.wpwps-chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .wpwps-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .wpwps-user-profile {
+        margin-top: 1rem;
+    }
+}
+
+/* User profile link styles */
+.wpwps-user-name a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.wpwps-user-name a:hover {
+    color: #96588a;
+    text-decoration: underline;
+}
+
+/* Admin bar icon styling */
+#wpadminbar #wp-admin-bar-printify-menu .ab-icon:before {
+    content: "\f174";
+    top: 2px;
+    color: #a7aaad; /* Standard admin bar icon color */
+}
+
+#wpadminbar #wp-admin-bar-printify-menu:hover .ab-icon:before {
+    color: #72aee6; /* Hover color to match WP admin */
+}
+
+/* Fix positioning of the icon in the admin bar */
+#wpadminbar .ab-top-menu > li#wp-admin-bar-printify-menu > .ab-item {
+    padding-left: 30px;
+}
+
+#wpadminbar .ab-top-menu > li#wp-admin-bar-printify-menu > .ab-item .ab-icon {
+    position: absolute;
+    left: 8px;
+    top: 0;
+}
+
+/* Ensure separator is visible */
+#wpadminbar .ab-sub-secondary {
+    border-top: 1px solid rgba(240, 240, 240, 0.2);
+    padding-top: 5px;
+    margin-top: 5px;
+}
+
+/* Toast Notifications */
+#wpwps-toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wpwps-toast {
+    min-width: 250px;
+    max-width: 350px;
+    padding: 15px 45px 15px 15px;
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    line-height: 1.4;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wpwps-toast-show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.wpwps-toast i {
+    font-size: 18px;
+}
+
+.wpwps-toast-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.wpwps-toast-error {
+    background: linear-gradient(135deg, #dc3545, #f86a6a);
+}
+
+.wpwps-toast-warning {
+    background: linear-gradient(135deg, #ffc107, #ffce3a);
+    color: #333;
+}
+
+.wpwps-toast-info {
+    background: linear-gradient(135deg, #17a2b8, #4cc0d9);
+}
+
+.wpwps-toast-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.wpwps-toast-close:hover {
+    opacity: 1;
+}
+
+/* Responsive adjustments for toasts */
+@media (max-width: 768px) {
+    #wpwps-toast-container {
+        left: 20px;
+        right: 20px;
+    }
+    
+    .wpwps-toast {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+}
