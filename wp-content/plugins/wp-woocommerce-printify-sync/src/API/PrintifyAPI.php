@@ -8,6 +8,8 @@
 namespace ApolloWeb\WPWooCommercePrintifySync\API;
 
 use ApolloWeb\WPWooCommercePrintifySync\Admin\Settings;
+use ApolloWeb\WPWooCommercePrintifySync\Services\LoggerService;
+use ApolloWeb\WPWooCommercePrintifySync\Services\CacheManager;
 
 /**
  * PrintifyAPI class.
@@ -35,6 +37,13 @@ class PrintifyAPI {
     private $cache_manager;
 
     /**
+     * The logger instance.
+     *
+     * @var LoggerService
+     */
+    private LoggerService $logger;
+
+    /**
      * The retry count.
      *
      * @var int
@@ -51,6 +60,7 @@ class PrintifyAPI {
      */
     public function __construct(LoggerService $logger, CacheManager $cache_manager) {
         $this->settings = new Settings();
+        $this->logger = $logger;
         $this->cache_manager = $cache_manager;
     }
 

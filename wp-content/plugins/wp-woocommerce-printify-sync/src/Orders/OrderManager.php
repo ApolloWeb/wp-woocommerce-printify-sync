@@ -1613,6 +1613,8 @@ class OrderManager
     {
         // If CURCY plugin is active, use its conversion
         if (function_exists('wmc_get_price')) {
+            // Conversion logic here
+        }
     }
 
     public function submitReturnRequest(\WC_Order $order, array $return_data): bool {
@@ -1676,10 +1678,22 @@ class OrderManager
         ];
     }
 
-    public function getOrderNotes($order_id)
+    /**
+     * Get order notes
+     *
+     * @param int $order_id Order ID
+     * @return array
+     */
+    public function getOrderNotes($order_id): array
     {
-        // Method implementation
-    }
+        $order = wc_get_order($order_id);
+        if (!$order) {
+            return [];
+        }
 
-    // Make sure class is properly closed
-}
+        return wc_get_order_notes([
+            'order_id' => $order_id,
+            'order_by' => 'date_created_gmt',
+        ]);
+    }
+} // End of class

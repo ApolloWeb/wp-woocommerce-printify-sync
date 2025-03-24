@@ -18,6 +18,7 @@ use ApolloWeb\WPWooCommercePrintifySync\Admin\Pages\ProductsPage;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\Pages\OrdersPage;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\Pages\ShippingPage;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\Pages\TicketsPage;
+use ApolloWeb\WPWooCommercePrintifySync\Admin\Pages\LogsPage;
 
 /**
  * Class AdminLoader
@@ -111,6 +112,7 @@ class AdminLoader
         $this->pages['orders'] = new OrdersPage($this->container);
         $this->pages['shipping'] = new ShippingPage($this->container);
         $this->pages['tickets'] = new TicketsPage($this->container);
+        $this->pages['logs'] = new LogsPage($this->container);
     }
 
     /**
@@ -120,76 +122,89 @@ class AdminLoader
      */
     public function addAdminMenu(): void
     {
-        // Primary menu
+        // Primary menu with custom FA icon
+        $icon_url = 'data:image/svg+xml;base64,' . base64_encode('<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M631.2 96.5L436.5 0C416.4 27.8 371.9 47.2 320 47.2S223.6 27.8 203.5 0L8.8 96.5c-7.9 4-11.1 13.6-7.2 21.5l57.2 114.5c4 7.9 13.6 11.1 21.5 7.2l56.6-27.7c10.6-5.2 23 2.5 23 14.4V480c0 17.7 14.3 32 32 32h256c17.7 0 32-14.3 32-32V226.3c0-11.8 12.4-19.6 23-14.4l56.6 27.7c7.9 4 17.5.8 21.5-7.2L638.3 118c4-7.9.8-17.6-7.1-21.5z"/></svg>');
+
         add_menu_page(
             __('Printify Sync', 'wp-woocommerce-printify-sync'),
             __('Printify Sync', 'wp-woocommerce-printify-sync'),
             'manage_woocommerce',
             'wpwps-dashboard',
             [$this->pages['dashboard'], 'render'],
-            'dashicons-admin-generic', // We'll replace this with custom icon
+            $icon_url,
             58
         );
-        
-        // Dashboard submenu
-        add_submenu_page(
-            'wpwps-dashboard',
-            __('Dashboard', 'wp-woocommerce-printify-sync'),
-            __('Dashboard', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
-            'wpwps-dashboard',
-            [$this->pages['dashboard'], 'render']
-        );
-        
-        // Products submenu
-        add_submenu_page(
-            'wpwps-dashboard',
-            __('Products', 'wp-woocommerce-printify-sync'),
-            __('Products', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
-            'wpwps-products',
-            [$this->pages['products'], 'render']
-        );
-        
-        // Orders submenu
-        add_submenu_page(
-            'wpwps-dashboard',
-            __('Orders', 'wp-woocommerce-printify-sync'),
-            __('Orders', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
-            'wpwps-orders',
-            [$this->pages['orders'], 'render']
-        );
-        
-        // Shipping submenu
-        add_submenu_page(
-            'wpwps-dashboard',
-            __('Shipping', 'wp-woocommerce-printify-sync'),
-            __('Shipping', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
-            'wpwps-shipping',
-            [$this->pages['shipping'], 'render']
-        );
-        
-        // Support tickets submenu
-        add_submenu_page(
-            'wpwps-dashboard',
-            __('Support Tickets', 'wp-woocommerce-printify-sync'),
-            __('Support Tickets', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
-            'wpwps-tickets',
-            [$this->pages['tickets'], 'render']
-        );
-        
-        // Settings submenu
-        add_submenu_page(
-            'wpwps-dashboard',
-            __('Settings', 'wp-woocommerce-printify-sync'),
-            __('Settings', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
-            'wpwps-settings',
-            [$this->pages['settings'], 'render']
-        );
+
+        // Submenus in desired order
+        $submenus = [
+            [
+                'parent' => 'wpwps-dashboard',
+                'page_title' => __('Dashboard', 'wp-woocommerce-printify-sync'),
+                'menu_title' => __('Dashboard', 'wp-woocommerce-printify-sync'),
+                'capability' => 'manage_woocommerce',
+                'menu_slug' => 'wpwps-dashboard',
+                'callback' => [$this->pages['dashboard'], 'render']
+            ],
+            [
+                'parent' => 'wpwps-dashboard',
+                'page_title' => __('Products', 'wp-woocommerce-printify-sync'),
+                'menu_title' => __('Products', 'wp-woocommerce-printify-sync'),
+                'capability' => 'manage_woocommerce',
+                'menu_slug' => 'wpwps-products',
+                'callback' => [$this->pages['products'], 'render']
+            ],
+            [
+                'parent' => 'wpwps-dashboard',
+                'page_title' => __('Orders', 'wp-woocommerce-printify-sync'),
+                'menu_title' => __('Orders', 'wp-woocommerce-printify-sync'),
+                'capability' => 'manage_woocommerce',
+                'menu_slug' => 'wpwps-orders',
+                'callback' => [$this->pages['orders'], 'render']
+            ],
+            [
+                'parent' => 'wpwps-dashboard',
+                'page_title' => __('Shipping', 'wp-woocommerce-printify-sync'),
+                'menu_title' => __('Shipping', 'wp-woocommerce-printify-sync'),
+                'capability' => 'manage_woocommerce',
+                'menu_slug' => 'wpwps-shipping',
+                'callback' => [$this->pages['shipping'], 'render']
+            ],
+            [
+                'parent' => 'wpwps-dashboard',
+                'page_title' => __('Support Tickets', 'wp-woocommerce-printify-sync'),
+                'menu_title' => __('Support Tickets', 'wp-woocommerce-printify-sync'),
+                'capability' => 'manage_woocommerce',
+                'menu_slug' => 'wpwps-tickets',
+                'callback' => [$this->pages['tickets'], 'render']
+            ],
+            [
+                'parent' => 'wpwps-dashboard',
+                'page_title' => __('System Logs', 'wp-woocommerce-printify-sync'),
+                'menu_title' => __('System Logs', 'wp-woocommerce-printify-sync'),
+                'capability' => 'manage_woocommerce',
+                'menu_slug' => 'wpwps-logs',
+                'callback' => [$this->pages['logs'], 'render']
+            ],
+            [
+                'parent' => 'wpwps-dashboard',
+                'page_title' => __('Settings', 'wp-woocommerce-printify-sync'),
+                'menu_title' => __('Settings', 'wp-woocommerce-printify-sync'),
+                'capability' => 'manage_woocommerce',
+                'menu_slug' => 'wpwps-settings',
+                'callback' => [$this->pages['settings'], 'render']
+            ]
+        ];
+
+        foreach ($submenus as $submenu) {
+            add_submenu_page(
+                $submenu['parent'],
+                $submenu['page_title'],
+                $submenu['menu_title'],
+                $submenu['capability'],
+                $submenu['menu_slug'],
+                $submenu['callback']
+            );
+        }
     }
 
     /**

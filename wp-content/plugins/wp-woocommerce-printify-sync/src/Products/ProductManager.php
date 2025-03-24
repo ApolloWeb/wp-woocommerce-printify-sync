@@ -580,7 +580,6 @@ class ProductManager
             }
         }
 
-        return $product_id;
     }
 
     /**
@@ -675,122 +674,8 @@ class ProductManager
         if (!empty($print_areas)) {
             update_post_meta($product_id, '_printify_print_areas', $print_areas);
         }
-        
-        return $product_id;
     }
 
-    /**
-     * Create product variations
-     *
-     * @param int   $product_id Product ID
-     * @param array $variants   Variants data
-     * @param array $options    Product options/attributes
-     * @return void
-     */
-    private function createProductVariations(int $product_id, array $variants, array $options): void
-    {
-        // Get product
-        $product = wc_get_product($product_id);
-        
-        if (!$product || !is_a($product, 'WC_Product_Variable')) {
-            $this->logger->error('Invalid product for variations', ['product_id' => $product_id]);
-            return;
-        }
-        
-        // Build a map of option values to attribute terms
-        $attribute_value_map = [];
-        
-        foreach ($options as $option) {
-            if (empty($option['name']) || empty($option['values'])) {
-                continue;
-            }
-            
-            $attribute_name = 'pa_' . wc_sanitize_taxonomy_name($option['name']);
-            $attribute_value_map[$option['id']] = [
-                'name' => $attribute_name,
-                'values' => [],
-            ];
-            
-            foreach ($option['values'] as $value) {
-                if (empty($value['id']) || empty($value['name'])) {
-                    continue;
-                }
-                
-                $attribute_value_map[$option['id']]['values'][$value['id']] = $value['name'];
-            }
-        }
-        
-        // Create variations
-        foreach ($variants as $variant) {
-            if (empty($variant['id'])) {
-                continue;
-            }
-            
-            // Create variation
-            $variation = new \WC_Product_Variation();
-            $variation->set_parent_id($product_id);
-            
-            // Set SKU
-            if (!empty($variant['sku'])) {
-                $variation->set_sku($variant['sku']);
-            }
-            
-            // Set price
-            if (isset($variant['price'])) {
-                $price = (float) $variant['price'];
-                $variation->set_regular_price($price);
-                $variation->set_price($price);
-            }
-            
-            // Set cost price as meta
-            if (isset($variant['cost'])) {
-                $variation->update_meta_data('_printify_cost_price', (float) $variant['cost']);
-            }
-            
-            // Set weight if available
-            if (isset($variant['weight'])) {
-                $variation->set_weight($variant['weight']);
-            }
-            
-            // Set stock status
-            if (isset($variant['is_enabled']) && !$variant['is_enabled']) {
-                $variation->set_status('private');
-                $variation->set_stock_status('outofstock');
-            } else {
-                $variation->set_stock_status('instock');
-            }
-            
-            // Set attributes
-            $variation_attributes = [];
-            
-            if (!empty($variant['options'])) {
-                foreach ($variant['options'] as $option_id => $value_id) {
-                    if (isset($attribute_value_map[$option_id])) {
-                        $attribute_name = $attribute_value_map[$option_id]['name'];
-                        $attribute_value = $attribute_value_map[$option_id]['values'][$value_id] ?? '';
-                        
-                        if ($attribute_value) {
-                            $variation_attributes[$attribute_name] = $attribute_value;
-                        }
-                    }
-                }
-            }
-            
-            $variation->set_attributes($variation_attributes);
-            
-            // Save variation
-            $variation->save();
-            $variation_id = $variation->get_id();
-            
-            // Store Printify variant ID
-            if ($variation_id) {
-                update_post_meta($variation_id, '_printify_variant_id', $variant['id']);
-            }
-        }
-        
-        // Update product price based on cheapest variant
-        $this->updateProductPriceFromVariations($product_id);
-    }
 
     /**
      * Update product price based on cheapest variation

@@ -2,6 +2,8 @@
 
 namespace ApolloWeb\WPWooCommercePrintifySync\Dashboard;
 
+use ApolloWeb\WPWooCommercePrintifySync\Services\StockSync;
+
 class StockSyncWidget {
     private $stock_sync;
     

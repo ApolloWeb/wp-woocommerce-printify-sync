@@ -8,8 +8,8 @@
 
 .wpwps-card {
     background: #fff;
-    border: 1px solid #e2e4e7;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    border: 1px solid #ddd;
+    border-radius: 4px;
     padding: 20px;
     margin-bottom: 20px;
 }
@@ -101,4 +101,95 @@
 .wpwps-stat-label {
     color: #646970;
     font-size: 13px;
+}
+
+/* Admin styling */
+.wpwps-wrap {
+    margin: 20px 20px 0 2px;
+}
+
+.wpwps-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.wpwps-header h1 {
+    margin: 0;
+    padding: 0;
+}
+
+.wpwps-content {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.wpwps-card-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+/* Forms */
+.wpwps-form {
+    max-width: 600px;
+}
+
+.wpwps-form-field {
+    margin-bottom: 15px;
+}
+
+.wpwps-form-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+/* Tables */
+.wpwps-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.wpwps-table th,
+.wpwps-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.wpwps-table th {
+    background: #f8f9fa;
+}
+
+/* Status badges */
+.wpwps-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.wpwps-status-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.wpwps-status-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.wpwps-status-error {
+    background: #f8d7da;
+    color: #721c24;
 }

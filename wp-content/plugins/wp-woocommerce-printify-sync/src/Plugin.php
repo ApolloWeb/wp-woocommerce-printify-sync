@@ -12,6 +12,9 @@ use ApolloWeb\WPWooCommercePrintifySync\API\PrintifyAPI;
 use ApolloWeb\WPWooCommercePrintifySync\Core\ProductSync;
 use ApolloWeb\WPWooCommercePrintifySync\Services\LoggerService;
 use ApolloWeb\WPWooCommercePrintifySync\Services\CacheManager;
+use ApolloWeb\WPWooCommercePrintifySync\Services\StockSync;
+use ApolloWeb\WPWooCommercePrintifySync\Services\ApiService;
+use ApolloWeb\WPWooCommercePrintifySync\Services\RateLimiter;
 
 /**
  * Plugin class.
@@ -60,6 +63,20 @@ class Plugin {
     private $cache_manager;
 
     /**
+     * The API service instance.
+     *
+     * @var ApiService
+     */
+    private $api_service;
+
+    /**
+     * The rate limiter instance.
+     *
+     * @var RateLimiter
+     */
+    private $rate_limiter;
+
+    /**
      * Get the singleton instance.
      *
      * @return Plugin
@@ -79,9 +96,11 @@ class Plugin {
         // Initialize core services first
         $this->logger = new LoggerService();
         $this->cache_manager = new CacheManager();
+        $this->rate_limiter = new RateLimiter();
         
         // Initialize API with dependencies
         $this->api = new PrintifyAPI($this->logger, $this->cache_manager);
+        $this->api_service = new ApiService($this->logger, $this->rate_limiter);
 
         $this->settings = new Settings();
         $this->product_sync = new ProductSync($this->api);
@@ -103,11 +122,7 @@ class Plugin {
         add_action('init', [$this, 'init']);
         
         // Initialize stock sync
-        $stock_sync = new StockSync(
-            $this->container->get('api_service'),
-            $this->container->get('rate_limiter'),
-            $this->container->get('logger')
-        );
+        $stock_sync = new StockSync($this->api_service, $this->rate_limiter, $this->logger);
         $stock_sync->scheduleCron();
         
         // Register dashboard widgets
