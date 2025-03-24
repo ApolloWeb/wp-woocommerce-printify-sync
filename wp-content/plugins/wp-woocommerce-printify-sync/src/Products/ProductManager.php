@@ -657,7 +657,7 @@ class ProductManager
         
         if (!$product_id) {
             $this->logger->error('Failed to save product');
-            return false;
+            return;
         }
         
         // Add variations
@@ -1821,5 +1821,25 @@ class ProductManager
             'price' => $product->get_price(),
             'sku' => $product->get_sku(),
         ];
+    }
+
+    public function processProduct(array $data): bool
+    {
+        if (empty($data)) {
+            $this->logger->error('Empty product data provided');
+            return false;
+        }
+        
+        // Process the product
+        try {
+            // Processing logic here
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to process product', [
+                'error' => $e->getMessage(),
+                'data' => $data
+            ]);
+            return false;
+        }
     }
 }

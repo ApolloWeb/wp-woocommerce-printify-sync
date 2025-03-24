@@ -90,9 +90,9 @@ class AdminLoader
         // Enqueue admin scripts and styles
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
         
-        // Register Ajax endpoints
+        // Register Ajax endpoints 
         add_action('wp_ajax_wpwps_test_printify_api', [$this, 'ajaxTestPrintifyAPI']);
-        add_action('wp_ajax_wpwps_test_openai_api', [$this, 'ajaxTestOpenAIAPI']);
+        add_action('wp_ajax_wpwps_test_openai', [$this, 'ajaxTestOpenAI']); // Changed action name
         
         // Add shop info to admin header
         add_action('admin_notices', [$this, 'displayShopInfo']);
@@ -205,46 +205,34 @@ class AdminLoader
             return;
         }
 
-        // Register common assets
-        $this->registerCommonAssets();
-        
+        // Register styles
+        wp_register_style('wpwps-fontawesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', [], '6.4.0');
+        wp_register_style('wpwps-admin-core', WPWPS_PLUGIN_URL . 'assets/css/wpwps-admin-core.css', ['wpwps-fontawesome'], WPWPS_VERSION);
+
+        // Register scripts
+        wp_register_script('wpwps-common', WPWPS_PLUGIN_URL . 'assets/js/wpwps-common.js', ['jquery'], WPWPS_VERSION, true);
+
+        // Load core assets
+        wp_enqueue_style('wpwps-admin-core');
+        wp_enqueue_script('wpwps-common');
+
+        // Load Bootstrap only on settings page
+        if (strpos($hook_suffix, 'settings') !== false) {
+            wp_enqueue_style('wpwps-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css', [], '5.3.0');
+            wp_enqueue_script('wpwps-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js', [], '5.3.0', true);
+        }
+
+        // Load Chart.js only on dashboard
+        if (strpos($hook_suffix, 'dashboard') !== false) {
+            wp_enqueue_script('wpwps-chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js', [], '4.3.0', true);
+        }
+
         // Load page specific assets
-        $this->loadPageAssets($hook_suffix);
-        
+        $page = str_replace('wpwps-', '', $hook_suffix);
+        $this->loadPageAssets($page);
+
         // Add admin data
         $this->localizeAdminData();
-    }
-
-    /**
-     * Register common CSS/JS assets
-     */
-    private function registerCommonAssets(): void
-    {
-        wp_register_style(
-            'wpwps-fontawesome',
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-            [],
-            '6.4.0'
-        );
-
-        wp_register_style('wpwps-common', WPWPS_PLUGIN_URL . 'assets/css/wpwps-common.css', ['wpwps-fontawesome'], WPWPS_VERSION);
-        wp_register_script('wpwps-common', WPWPS_PLUGIN_URL . 'assets/js/wpwps-common.js', ['jquery'], WPWPS_VERSION, true);
-    }
-
-    /**
-     * Load page specific assets
-     */
-    private function loadPageAssets(string $hook_suffix): void 
-    {
-        $page = str_replace('wpwps-', '', $hook_suffix);
-        
-        if (file_exists(WPWPS_PLUGIN_DIR . "assets/css/wpwps-{$page}.css")) {
-            wp_enqueue_style("wpwps-{$page}", WPWPS_PLUGIN_URL . "assets/css/wpwps-{$page}.css", ['wpwps-common'], WPWPS_VERSION);
-        }
-
-        if (file_exists(WPWPS_PLUGIN_DIR . "assets/js/wpwps-{$page}.js")) {
-            wp_enqueue_script("wpwps-{$page}", WPWPS_PLUGIN_URL . "assets/js/wpwps-{$page}.js", ['wpwps-common'], WPWPS_VERSION, true);
-        }
     }
 
     /**
@@ -353,51 +341,6 @@ class AdminLoader
      *
      * @return void
      */
-    public function ajaxTestOpenAIAPI(): void
-    {
-        // Check permissions
-        if (!current_user_can('manage_woocommerce')) {
-            wp_send_json_error(['message' => __('Insufficient permissions', 'wp-woocommerce-printify-sync')]);
-            return;
-        }
-        
-        // Verify nonce
-        check_ajax_referer('wpwps-admin-ajax-nonce', 'nonce');
-        
-        // Get API key
-        $api_key = isset($_POST['api_key']) ? sanitize_text_field($_POST['api_key']) : '';
-        
-        if (empty($api_key)) {
-            wp_send_json_error(['message' => __('API key is required', 'wp-woocommerce-printify-sync')]);
-            return;
-        }
-        
-        // Save API key (encrypted)
-        $api_service = new ApiService($this->logger);
-        $encrypted_key = $api_service->encrypt($api_key);
-        update_option('wpwps_openai_api_key', $encrypted_key);
-        
-        // Test connection
-        $openai_service = new OpenAIService($this->logger);
-        $result = $openai_service->testConnection();
-        
-        if ($result['success']) {
-            wp_send_json_success([
-                'message' => $result['message'],
-                'response' => $result['data']['response'] ?? '',
-            ]);
-        } else {
-            wp_send_json_error([
-                'message' => $result['message'],
-            ]);
-        }
-    }
-
-    /**
-     * AJAX handler for testing OpenAI API
-     *
-     * @return void
-     */
     public function ajaxTestOpenAI(): void
     {
         // Check permissions
@@ -406,34 +349,20 @@ class AdminLoader
             return;
         }
         
-        // Verify nonce
         check_ajax_referer('wpwps-admin-ajax-nonce', 'nonce');
         
-        // Get API key
+        // Get API settings
         $api_key = isset($_POST['api_key']) ? sanitize_text_field($_POST['api_key']) : '';
         $model = isset($_POST['model']) ? sanitize_text_field($_POST['model']) : 'gpt-3.5-turbo';
         $temperature = isset($_POST['temperature']) ? (float) $_POST['temperature'] : 0.7;
-        
-        if (empty($api_key)) {
-            // Try to use the stored API key
-            $encrypted_key = get_option('wpwps_openai_api_key', '');
-            if (empty($encrypted_key)) {
-                wp_send_json_error(['message' => __('API key is required', 'wp-woocommerce-printify-sync')]);
-                return;
-            }
-        } else {
-            // Encrypt and store the API key
-            $api_service = new ApiService($this->logger);
-            $encrypted_key = $api_service->encrypt($api_key);
-            update_option('wpwps_openai_api_key', $encrypted_key);
-            
-            // Also update model and temperature if provided
-            if (!empty($model)) {
-                update_option('wpwps_openai_model', $model);
-            }
-            
-            update_option('wpwps_openai_temperature', $temperature);
+
+        // Save the settings
+        $api_service = new ApiService($this->logger);
+        if (!empty($api_key)) {
+            update_option('wpwps_openai_api_key', $api_service->encrypt($api_key));
         }
+        update_option('wpwps_openai_model', $model);
+        update_option('wpwps_openai_temperature', $temperature);
         
         // Test connection
         $openai_service = new OpenAIService($this->logger);
@@ -442,11 +371,11 @@ class AdminLoader
         if ($result['success']) {
             wp_send_json_success([
                 'message' => $result['message'],
-                'data' => $result['data'] ?? [],
+                'data' => $result['data']
             ]);
         } else {
             wp_send_json_error([
-                'message' => $result['message'],
+                'message' => $result['message']
             ]);
         }
     }

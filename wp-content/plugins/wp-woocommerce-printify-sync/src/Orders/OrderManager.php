@@ -1651,7 +1651,7 @@ class OrderManager
     /**
      * Process shipping packages
      */
-    private function processShippingPackages(array $packages): array
+    public function processShippingPackages(array $packages): array
     {
         $processed = [];
         
@@ -1675,4 +1675,11 @@ class OrderManager
             'cost' => $package['cost'] ?? 0,
         ];
     }
+
+    public function getOrderNotes($order_id)
+    {
+        // Method implementation
+    }
+
+    // Make sure class is properly closed
 }
