@@ -10,6 +10,8 @@ namespace ApolloWeb\WPWooCommercePrintifySync;
 use ApolloWeb\WPWooCommercePrintifySync\Admin\Settings;
 use ApolloWeb\WPWooCommercePrintifySync\API\PrintifyAPI;
 use ApolloWeb\WPWooCommercePrintifySync\Core\ProductSync;
+use ApolloWeb\WPWooCommercePrintifySync\Services\LoggerService;
+use ApolloWeb\WPWooCommercePrintifySync\Services\CacheManager;
 
 /**
  * Plugin class.
@@ -44,6 +46,20 @@ class Plugin {
     private $product_sync;
 
     /**
+     * The logger instance.
+     *
+     * @var LoggerService
+     */
+    private $logger;
+
+    /**
+     * The cache manager instance.
+     *
+     * @var CacheManager
+     */
+    private $cache_manager;
+
+    /**
      * Get the singleton instance.
      *
      * @return Plugin
@@ -60,8 +76,14 @@ class Plugin {
      * Constructor.
      */
     private function __construct() {
+        // Initialize core services first
+        $this->logger = new LoggerService();
+        $this->cache_manager = new CacheManager();
+        
+        // Initialize API with dependencies
+        $this->api = new PrintifyAPI($this->logger, $this->cache_manager);
+
         $this->settings = new Settings();
-        $this->api = new PrintifyAPI();
         $this->product_sync = new ProductSync($this->api);
     }
 
