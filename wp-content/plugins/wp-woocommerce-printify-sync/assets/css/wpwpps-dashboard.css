@@ -1,0 +1,101 @@
+.wpwpps-widgets {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.wpwpps-widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.wpwpps-stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: 0 8px 32px rgba(150, 88, 138, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.wpwpps-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 48px rgba(150, 88, 138, 0.2);
+}
+
+.wpwpps-stat-icon {
+    background: linear-gradient(135deg, #96588a 0%, #844d7a 100%);
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(150, 88, 138, 0.3);
+}
+
+.wpwpps-stat-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    color: #666;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wpwpps-stat-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.2;
+}
+
+.wpwpps-widget-chart {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.wpwpps-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.wpwpps-chart-container {
+    height: 300px;
+}
+
+.wpwpps-loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #96588a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.wpwpps-dashboard {
+    margin: 20px;
+    position: relative;
+}
+
+.wpbody-content {
+    padding: 0;
+}
