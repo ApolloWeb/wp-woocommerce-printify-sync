@@ -1,0 +1,112 @@
+/* Settings Page Styles */
+.wrap {
+    margin: 20px;
+}
+
+/* Card styling */
+.card {
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    border-bottom: none;
+    background-color: #96588a !important;
+}
+
+/* Form controls */
+.form-control:focus, .form-select:focus {
+    border-color: #96588a;
+    box-shadow: 0 0 0 0.2rem rgba(150, 88, 138, 0.25);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #96588a;
+    border-color: #96588a;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #864c7b;
+    border-color: #864c7b;
+}
+
+.btn-success {
+    background-color: #5c8d89;
+    border-color: #5c8d89;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: #4e7a77;
+    border-color: #4e7a77;
+}
+
+/* Toast notifications */
+.toast {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.toast.bg-success {
+    background-color: rgba(40, 167, 69, 0.95) !important;
+    color: white;
+}
+
+.toast.bg-danger {
+    background-color: rgba(220, 53, 69, 0.95) !important;
+    color: white;
+}
+
+/* Range slider styling */
+.form-range::-webkit-slider-thumb {
+    background-color: #96588a;
+}
+
+.form-range::-moz-range-thumb {
+    background-color: #96588a;
+}
+
+.form-range::-webkit-slider-runnable-track {
+    background-color: rgba(150, 88, 138, 0.1);
+}
+
+.form-range::-moz-range-track {
+    background-color: rgba(150, 88, 138, 0.1);
+}
+
+/* Shop selector */
+#shop-selector {
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+#shop-selector:not([style*="display: none"]) {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading state */
+.btn .fa-spinner {
+    margin-right: 0.5rem;
+}
+
+/* Current Shop ID display */
+.alert-info {
+    background-color: rgba(150, 88, 138, 0.1);
+    border-color: rgba(150, 88, 138, 0.2);
+    color: #96588a;
+}
