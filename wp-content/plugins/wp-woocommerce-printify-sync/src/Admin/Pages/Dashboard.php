@@ -38,50 +38,15 @@ class Dashboard {
             return;
         }
 
-        // Enqueue Google Fonts - Inter
-        wp_enqueue_style(
-            'google-fonts-inter',
-            'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
-        );
+        // Enqueue shared assets
+        wp_enqueue_style('google-fonts-inter');
+        wp_enqueue_style('bootstrap');
+        wp_enqueue_script('bootstrap');
+        wp_enqueue_style('font-awesome');
+        wp_enqueue_script('chartjs');
+        wp_enqueue_script('wpwps-toast');
 
-        // Enqueue Bootstrap with utilities
-        wp_enqueue_style(
-            'bootstrap',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css'
-        );
-        wp_enqueue_script(
-            'bootstrap',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
-            ['jquery'],
-            null,
-            true
-        );
-
-        // Enqueue Font Awesome 6
-        wp_enqueue_style(
-            'font-awesome',
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
-        );
-
-        // Enqueue Chart.js with animations plugin
-        wp_enqueue_script(
-            'chartjs',
-            'https://cdn.jsdelivr.net/npm/chart.js',
-            [],
-            null,
-            true
-        );
-
-        // Our custom shared assets
-        wp_enqueue_script(
-            'wpwps-toast',
-            WPWPS_URL . 'assets/js/shared/toast.js',
-            ['jquery', 'bootstrap'],
-            WPWPS_VERSION,
-            true
-        );
-
-        // Our custom assets
+        // Our custom page assets
         wp_enqueue_style(
             'wpwps-dashboard',
             WPWPS_URL . 'assets/css/wpwps-dashboard.css',
@@ -198,38 +163,41 @@ class Dashboard {
     }
 
     private function getSalesData(): array {
-        global $wpdb;
+        return $this->getOrderStats(); // Reuse the HPOS-compatible method
+    }
 
-        // Get sales data for the last 30 days
-        $results = $wpdb->get_results("
-            SELECT 
-                DATE(post_date) as date,
-                COUNT(*) as orders,
-                SUM(meta_value) as revenue
-            FROM {$wpdb->posts} p
-            JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-            WHERE 
-                p.post_type = 'shop_order'
-                AND p.post_status IN ('wc-completed', 'wc-processing')
-                AND pm.meta_key = '_order_total'
-                AND p.post_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-            GROUP BY DATE(post_date)
-            ORDER BY date ASC
-        ");
+    private function getOrderStats(): array {
+        $orders = wc_get_orders([
+            'date_created' => '>' . strtotime('-30 days'),
+            'status' => ['wc-completed', 'wc-processing'],
+            'orderby' => 'date_created',
+            'order' => 'ASC',
+            'limit' => -1,
+        ]);
+
+        $stats = [];
+        foreach ($orders as $order) {
+            $date = $order->get_date_created()->format('Y-m-d');
+            if (!isset($stats[$date])) {
+                $stats[$date] = ['orders' => 0, 'revenue' => 0];
+            }
+            $stats[$date]['orders']++;
+            $stats[$date]['revenue'] += $order->get_total();
+        }
 
         $dates = [];
-        $orders = [];
+        $order_counts = [];
         $revenue = [];
 
-        foreach ($results as $row) {
-            $dates[] = $row->date;
-            $orders[] = (int) $row->orders;
-            $revenue[] = (float) $row->revenue;
+        foreach ($stats as $date => $data) {
+            $dates[] = $date;
+            $order_counts[] = $data['orders'];
+            $revenue[] = $data['revenue'];
         }
 
         return [
             'dates' => $dates,
-            'orders' => $orders,
+            'orders' => $order_counts,
             'revenue' => $revenue,
         ];
     }

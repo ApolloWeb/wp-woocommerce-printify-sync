@@ -1,0 +1,113 @@
+/* Product table styles */
+.table img {
+    object-fit: cover;
+}
+
+/* Status badges */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.6em;
+}
+
+.badge + .badge {
+    margin-left: 0.3rem;
+}
+
+/* Dropdown menu */
+.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown-menu {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(150, 88, 138, 0.1);
+}
+
+.dropdown-item i {
+    width: 1rem;
+    text-align: center;
+}
+
+/* Table loading state */
+.table-loading tbody {
+    position: relative;
+}
+
+.table-loading tbody::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(2px);
+}
+
+/* Empty state */
+.text-muted i {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Filters animation */
+.form-select {
+    transition: all 0.2s ease-in-out;
+}
+
+.form-select:focus {
+    border-color: #96588a;
+    box-shadow: 0 0 0 0.2rem rgba(150, 88, 138, 0.25);
+}
+
+/* Search input */
+.input-group-text {
+    border-color: #dee2e6;
+}
+
+.input-group .form-control:focus {
+    border-color: #96588a;
+    box-shadow: 0 0 0 0.2rem rgba(150, 88, 138, 0.25);
+}
+
+.input-group .form-control:focus + .input-group-text {
+    border-color: #96588a;
+}
+
+/* Pagination */
+.pagination .page-link {
+    color: #96588a;
+    padding: 0.375rem 0.75rem;
+}
+
+.pagination .page-link:hover {
+    color: #733f69;
+    background-color: #f8f9fa;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #96588a;
+    border-color: #96588a;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+}
+
+/* Modal animations */
+.modal.fade .modal-dialog {
+    transform: scale(0.95);
+    transition: transform 0.2s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}

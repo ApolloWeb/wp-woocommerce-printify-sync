@@ -67,39 +67,12 @@ class Settings {
             return;
         }
 
-        // Enqueue Google Fonts - Inter
-        wp_enqueue_style(
-            'google-fonts-inter',
-            'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
-        );
-
-        // Enqueue Bootstrap
-        wp_enqueue_style(
-            'bootstrap',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css'
-        );
-        wp_enqueue_script(
-            'bootstrap',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
-            ['jquery'],
-            null,
-            true
-        );
-
-        // Enqueue Font Awesome 6
-        wp_enqueue_style(
-            'font-awesome',
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
-        );
-
-        // Our custom shared assets
-        wp_enqueue_script(
-            'wpwps-toast',
-            WPWPS_URL . 'assets/js/shared/toast.js',
-            ['jquery', 'bootstrap'],
-            WPWPS_VERSION,
-            true
-        );
+        // Enqueue shared assets
+        wp_enqueue_style('google-fonts-inter');
+        wp_enqueue_style('bootstrap');
+        wp_enqueue_script('bootstrap');
+        wp_enqueue_style('font-awesome');
+        wp_enqueue_script('wpwps-toast');
 
         // Our custom page assets
         wp_enqueue_style(

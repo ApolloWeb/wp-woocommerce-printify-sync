@@ -53,9 +53,6 @@ class Plugin {
 
         // Initialize webhooks
         add_action('rest_api_init', [$this, 'initWebhooks']);
-
-        // Initialize Action Scheduler tasks
-        ActionScheduler::init();
     }
 
     /**
@@ -70,6 +67,9 @@ class Plugin {
         
         // Initialize assets
         new AdminAssets();
+
+        // Initialize Action Scheduler
+        new ActionScheduler();
     }
 
     /**
