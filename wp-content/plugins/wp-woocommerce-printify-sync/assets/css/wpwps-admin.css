@@ -1,0 +1,277 @@
+/* Main Admin Styles */
+:root {
+    --wpwps-primary: #96588a;
+    --wpwps-indigo: #4B0082;
+    --wpwps-blue: #007FFF;
+    --wpwps-teal: #008080;
+    --wpwps-gray: #6c757d;
+}
+
+body.toplevel_page_wpwps-dashboard,
+body.printify-sync_page_wpwps-products,
+body.printify-sync_page_wpwps-orders,
+body.printify-sync_page_wpwps-tickets,
+body.printify-sync_page_wpwps-shipping,
+body.printify-sync_page_wpwps-settings {
+    background-color: #f8f9fa;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Layout */
+.wpwps-container {
+    max-width: 1200px;
+    margin: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.wpwps-container h1 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Cards */
+.wpwps-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.wpwps-card:hover {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.wpwps-container .card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.wpwps-container .card-body {
+    padding: 20px;
+}
+
+/* Navbar */
+.wpwps-navbar {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+/* Custom Button Styles */
+.wpwps-btn {
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.wpwps-btn-primary {
+    background-color: #96588a;
+    border-color: #96588a;
+    color: #fff;
+}
+
+.wpwps-btn-primary:hover {
+    background-color: #864c7b;
+    border-color: #864c7b;
+    color: #fff;
+}
+
+.wpwps-btn-secondary {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.wpwps-btn-secondary:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+/* Tables */
+.wpwps-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.wpwps-table th {
+    border: none;
+    background: rgba(248, 249, 250, 0.5);
+    font-weight: 600;
+}
+
+.wpwps-table td {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Toast Notifications */
+.toast-container {
+    z-index: 1050;
+}
+
+.wpwps-toast {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1rem;
+    max-width: 350px;
+    opacity: 0;
+    padding: 1rem;
+    position: fixed;
+    right: 1rem;
+    top: 1rem;
+    transform: translateY(-100%);
+    transition: all 0.3s ease;
+    z-index: 1050;
+}
+
+.wpwps-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.wpwps-toast.success {
+    border-left: 4px solid #198754;
+}
+
+.wpwps-toast.error {
+    border-left: 4px solid #dc3545;
+}
+
+.wpwps-toast.info {
+    border-left: 4px solid #0dcaf0;
+}
+
+/* Toast Container */
+#wpwpsToasts {
+    position: fixed;
+    top: 32px; /* Adjust for WP admin bar */
+    right: 20px;
+    z-index: 9999;
+}
+
+.wpwps-toast {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1rem;
+    max-width: 350px;
+    padding: 1rem;
+    pointer-events: auto;
+}
+
+.wpwps-toast.bg-success {
+    background-color: #198754 !important;
+}
+
+.wpwps-toast.bg-error,
+.wpwps-toast.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.wpwps-toast.bg-info {
+    background-color: #0dcaf0 !important;
+}
+
+/* Charts */
+.wpwps-chart-container {
+    position: relative;
+    margin: auto;
+    height: 300px;
+    width: 100%;
+}
+
+/* Utilities */
+.wpwps-shadow-sm {
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+}
+
+.wpwps-shadow {
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+}
+
+/* Loading States */
+.wpwps-loading {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wpwps-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--wpwps-primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: wpwps-spin 1s linear infinite;
+}
+
+@keyframes wpwps-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+    max-width: 500px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #96588a;
+    box-shadow: 0 0 0 0.25rem rgba(150, 88, 138, 0.25);
+}
+
+/* Card Title */
+.card-title {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+/* API Health */
+#apiHealth .fa-check-circle {
+    color: #198754;
+}
+
+#apiHealth .fa-exclamation-circle {
+    color: #dc3545;
+}
+
+/* Cost Estimate */
+#costEstimate {
+    transition: all 0.3s ease;
+}
+
+/* Input Group */
+.input-group .btn-outline-secondary {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Ensure content is visible */
+.wrap {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Dark mode support for future implementation */
+@media (prefers-color-scheme: dark) {
+    /* Dark mode styles will go here */
+}
