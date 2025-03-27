@@ -1,0 +1,8 @@
+vendor/
+lib/
+logs/
+templates/cache/
+languages/*.mo
+.DS_Store
+*.log
+*.sh
