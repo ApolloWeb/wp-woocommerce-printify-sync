@@ -1,0 +1,7 @@
+{
+    "editor.suggestSelection": "recentlyUsed",
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggest.showKeywords": true,
+    "editor.suggest.showCopilot": true,
+    "editor.suggest.showSnippets": true,
+}

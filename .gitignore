@@ -1,25 +1,2 @@
-# Ignore all in wp-content/plugins except our plugin
-wp-content/plugins/*
-!wp-content/plugins/wp-woocommerce-printify-sync/
-
-# WordPress core files and directories
-wp-admin/
-wp-includes/
-index.php
-license.txt
-readme.html
-wp-*.php
-xmlrpc.php
-
-# Development files
-node_modules/
-vendor/
-.env*
-*.log
-.DS_Store
-Thumbs.db
-
-# IDE files 
-.idea/
-.vscode/
-*.sublime-*
+templates/cache/*
+lib/
