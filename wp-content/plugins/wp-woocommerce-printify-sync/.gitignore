@@ -6,3 +6,5 @@ languages/*.mo
 .DS_Store
 *.log
 *.sh
+.vscode/
+*.ipynb

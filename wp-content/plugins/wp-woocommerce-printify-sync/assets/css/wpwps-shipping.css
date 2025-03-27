@@ -1,0 +1,26 @@
+/* Prefixing all selectors with wpwps- *//* Prefixing all selectors with wpwps- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+}    /* ...existing code... */.wpwps-shipping-actions {}    /* ...existing code... */.wpwps-shipping-details {}    /* ...existing code... */.wpwps-shipping-method {}    /* ...existing code... */.wpwps-shipping-header {.wpwps-shipping-header {
+    /* ...existing code... */
+}
+.wpwps-shipping-method {
+    /* ...existing code... */
+}
+.wpwps-shipping-details {
+    /* ...existing code... */
+}
+.wpwps-shipping-actions {
+    /* ...existing code... */
+}
