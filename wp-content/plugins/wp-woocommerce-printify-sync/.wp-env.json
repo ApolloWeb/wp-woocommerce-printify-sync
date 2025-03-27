@@ -1,0 +1,22 @@
+{
+    "core": null,
+    "phpVersion": "8.2",
+    "port": 80,
+    "config": {
+      "WP_DEBUG": true,
+      "SCRIPT_DEBUG": true,
+      "WPLANG": "en_GB",
+      "WP_HOME": "https://apolloweb.ngrok.app",
+      "WP_SITEURL": "https://bigfootfashion.ngrok.app/"
+    },
+    "plugins": [
+      "./",
+      "https://downloads.wordpress.org/plugin/wordpress-seo.latest-stable.zip",
+      "https://downloads.wordpress.org/plugin/wp-smushit.latest-stable.zip",
+      "https://downloads.wordpress.org/plugin/classic-editor.latest-stable.zip",
+      "https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip"
+    ],
+    "mappings": {
+      "wp-content/plugins/wp-woocommerce-printify-sync": "./"
+    }
+  }
