@@ -33,18 +33,17 @@ class DashboardProvider extends ServiceProvider
      */
     public function registerAdminMenu()
     {
-        // Main menu with dashboard icon
+        // Main menu with t-shirt icon
         $this->addMenuPage(
             __('Dashboard', 'wp-woocommerce-printify-sync'),
             __('Printify Sync', 'wp-woocommerce-printify-sync'),
             'manage_woocommerce',
             'wpwps-dashboard',
-            null,
-            'dashicons-dashboard', // Dashboard icon
+            'dashicons-admin-customizer', // T-shirt icon in Dashicons
             58
         );
 
-        // Dashboard submenu
+        // Dashboard submenu (first position)
         $this->addSubmenuPage(
             'wpwps-dashboard',
             __('Dashboard', 'wp-woocommerce-printify-sync'),
@@ -60,8 +59,7 @@ class DashboardProvider extends ServiceProvider
             __('Products', 'wp-woocommerce-printify-sync'),
             'manage_woocommerce',
             'wpwps-products',
-            [$this, 'renderProductsPage'],
-            null
+            [$this, 'renderProductsPage']
         );
 
         // Orders submenu
@@ -71,21 +69,9 @@ class DashboardProvider extends ServiceProvider
             __('Orders', 'wp-woocommerce-printify-sync'),
             'manage_woocommerce',
             'wpwps-orders',
-            [$this, 'renderOrdersPage'],
-            null
+            [$this, 'renderOrdersPage']
         );
         
-        // Support Tickets submenu
-        add_submenu_page(
-            'wpwps-dashboard',
-            __('Support Tickets', 'wp-woocommerce-printify-sync'),
-            __('Support Tickets', 'wp-woocommerce-printify-sync'),
-            'manage_woocommerce',
-            'edit.php?post_type=support_ticket',
-            null,
-            null
-        );
-
         // Email Queue submenu
         add_submenu_page(
             'wpwps-dashboard',
@@ -93,8 +79,20 @@ class DashboardProvider extends ServiceProvider
             __('Email Queue', 'wp-woocommerce-printify-sync'),
             'manage_woocommerce',
             'wpwps-email-queue',
-            [$this, 'renderEmailQueuePage'],
-            null
+            [$this, 'renderEmailQueuePage']
+        );
+        
+        // Support Tickets menu will be automatically added here via the custom post type
+        // registration in Plugin.php with show_in_menu = 'wpwps-dashboard'
+        
+        // Shipping Profiles submenu
+        add_submenu_page(
+            'wpwps-dashboard',
+            __('Shipping Profiles', 'wp-woocommerce-printify-sync'),
+            __('Shipping Profiles', 'wp-woocommerce-printify-sync'),
+            'manage_woocommerce',
+            'wpwps-shipping',
+            [$this, 'renderShippingPage']
         );
         
         // Logs submenu
@@ -104,8 +102,7 @@ class DashboardProvider extends ServiceProvider
             __('Logs', 'wp-woocommerce-printify-sync'),
             'manage_woocommerce',
             'wpwps-logs',
-            [$this, 'renderLogsPage'],
-            null
+            [$this, 'renderLogsPage']
         );
 
         // Settings submenu
@@ -115,8 +112,7 @@ class DashboardProvider extends ServiceProvider
             __('Settings', 'wp-woocommerce-printify-sync'),
             'manage_woocommerce',
             'wpwps-settings',
-            [$this, 'renderSettingsPage'],
-            null
+            [$this, 'renderSettingsPage']
         );
     }
 
@@ -180,6 +176,20 @@ class DashboardProvider extends ServiceProvider
         ];
 
         View::render('wpwps-email-queue', $data);
+    }
+
+    /**
+     * Render the shipping profiles page
+     *
+     * @return void
+     */
+    public function renderShippingPage()
+    {
+        $data = [
+            'shipping_profiles' => $this->getShippingProfiles(),
+        ];
+
+        View::render('wpwps-shipping', $data);
     }
 
     /**
@@ -493,6 +503,17 @@ class DashboardProvider extends ServiceProvider
     protected function getEmailQueue()
     {
         // This would be implemented with the actual email queue provider
+        return [];
+    }
+
+    /**
+     * Get shipping profiles data
+     *
+     * @return array
+     */
+    protected function getShippingProfiles()
+    {
+        // This would be implemented with the actual shipping profiles data
         return [];
     }
 

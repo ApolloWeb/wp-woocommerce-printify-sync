@@ -132,10 +132,10 @@ class Plugin
             'show_in_menu'        => 'wpwps-dashboard',
             'supports'            => ['title', 'editor', 'author', 'comments'],
             'has_archive'         => false,
-            'menu_icon'           => 'dashicons-tickets-alt',
+            'menu_icon'           => 'dashicons-admin-users', // Changed to a user icon to represent tickets
             'capability_type'     => 'post',
             'map_meta_cap'        => true,
-            'menu_position'       => 30,
+            'menu_position'       => 25, // Position it after Email Queue but before Shipping Profiles
             'hierarchical'        => false,
             'show_in_rest'        => true,
         ]);
@@ -172,28 +172,18 @@ class Plugin
             return;
         }
         
-        // Core dependencies
-        wp_enqueue_style('wpwps-bootstrap', WPWPS_ASSETS_URL . 'core/css/bootstrap.min.css', [], WPWPS_VERSION);
-        wp_enqueue_style('wpwps-fontawesome', WPWPS_ASSETS_URL . 'core/css/fontawesome.min.css', [], WPWPS_VERSION);
-        wp_enqueue_script('wpwps-bootstrap', WPWPS_ASSETS_URL . 'core/js/bootstrap.bundle.min.js', ['jquery'], WPWPS_VERSION, true);
-        wp_enqueue_script('wpwps-chart', WPWPS_ASSETS_URL . 'core/js/chart.min.js', [], WPWPS_VERSION, true);
+        // Use Asset class to enqueue all necessary assets
+        Asset::enqueueAssets();
         
-        // Plugin styles and scripts
-        wp_enqueue_style('wpwps-admin', WPWPS_ASSETS_URL . 'css/admin.css', ['wpwps-bootstrap', 'wpwps-fontawesome'], WPWPS_VERSION);
-        wp_enqueue_script('wpwps-admin', WPWPS_ASSETS_URL . 'js/admin.js', ['jquery', 'wpwps-bootstrap', 'wpwps-chart'], WPWPS_VERSION, true);
-        
-        // Localize script
-        wp_localize_script('wpwps-admin', 'wpwps', [
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('wpwps-ajax-nonce'),
-            'i18n' => [
-                'confirm_sync' => __('Are you sure you want to sync all products? This may take some time.', 'wp-woocommerce-printify-sync'),
-                'confirm_order_sync' => __('Are you sure you want to sync all orders? This may take some time.', 'wp-woocommerce-printify-sync'),
-                'saving' => __('Saving...', 'wp-woocommerce-printify-sync'),
-                'saved' => __('Saved!', 'wp-woocommerce-printify-sync'),
-                'error' => __('An error occurred. Please try again.', 'wp-woocommerce-printify-sync'),
-            ]
-        ]);
+        // Get current page for script localization
+        $page = str_replace('wpwps_page_', '', $hook);
+        if ($page) {
+            // Localize script for AJAX
+            wp_localize_script("wpwps-{$page}-js", 'wpwps', [
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('wpwps-nonce'),
+            ]);
+        }
     }
 
     /**
