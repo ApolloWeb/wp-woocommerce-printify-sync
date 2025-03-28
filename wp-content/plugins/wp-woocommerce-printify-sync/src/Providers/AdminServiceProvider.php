@@ -3,9 +3,9 @@
 namespace ApolloWeb\WPWooCommercePrintifySync\Providers;
 
 use ApolloWeb\WPWooCommercePrintifySync\Core\BaseServiceProvider;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\SettingsPage;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\SyncPage;
-use ApolloWeb\WPWooCommercePrintifySync\Admin\LogsPage;
+use ApolloWeb\WPWooCommercePrintifySync\Admin\Pages\SettingsPage;
+use ApolloWeb\WPWooCommercePrintifySync\Admin\Pages\SyncPage;
+use ApolloWeb\WPWooCommercePrintifySync\Admin\Pages\LogsPage;
 
 class AdminServiceProvider extends BaseServiceProvider
 {

@@ -21,34 +21,62 @@ class AssetsServiceProvider extends BaseServiceProvider
     }
     
     /**
-     * Enqueue admin scripts and styles.
+     * Enqueue admin assets.
      * 
-     * @param string $hook The current admin page
      * @return void
      */
-    public function enqueueAdminAssets(string $hook): void
+    public function enqueueAdminAssets(): void
     {
-        // Only load on plugin admin pages
-        if (!$this->isPluginPage($hook)) {
+        if (!$this->isPluginPage(get_current_screen()->id)) {
             return;
         }
-        
-        // Admin CSS
+
+        // Core styles
         wp_enqueue_style(
-            'wpwps-admin',
-            WPWPS_ASSETS_URL . 'admin/css/admin.css',
+            'wpwps-bootstrap',
+            WPWPS_ASSETS_URL . 'core/css/bootstrap.min.css',
             [],
             WPWPS_VERSION
         );
-        
+
+        // Admin CSS
+        wp_enqueue_style(
+            'wpwps-admin',
+            WPWPS_ASSETS_URL . 'css/wpwps-dashboard.css',
+            ['wpwps-bootstrap'],
+            WPWPS_VERSION
+        );
+
+        // Page-specific CSS
+        $screen = get_current_screen();
+        if (strpos($screen->id, 'wpwps-settings') !== false) {
+            wp_enqueue_style(
+                'wpwps-settings',
+                WPWPS_ASSETS_URL . 'css/wpwps-settings.css',
+                ['wpwps-admin'],
+                WPWPS_VERSION
+            );
+        }
+
         // Admin JS
         wp_enqueue_script(
             'wpwps-admin',
-            WPWPS_ASSETS_URL . 'admin/js/admin.js',
+            WPWPS_ASSETS_URL . 'js/wpwps-dashboard.js',
             ['jquery'],
             WPWPS_VERSION,
             true
         );
+
+        // Page-specific JS
+        if (strpos($screen->id, 'wpwps-settings') !== false) {
+            wp_enqueue_script(
+                'wpwps-settings',
+                WPWPS_ASSETS_URL . 'js/wpwps-settings.js',
+                ['wpwps-admin'],
+                WPWPS_VERSION,
+                true
+            );
+        }
         
         // Add FontAwesome for icons
         wp_enqueue_style(
@@ -67,9 +95,6 @@ class AssetsServiceProvider extends BaseServiceProvider
                 'testing_connection' => __('Testing connection...', 'wp-woocommerce-printify-sync'),
                 'connection_success' => __('Connection successful!', 'wp-woocommerce-printify-sync'),
                 'connection_error' => __('Connection failed: ', 'wp-woocommerce-printify-sync'),
-                'syncing' => __('Synchronizing...', 'wp-woocommerce-printify-sync'),
-                'sync_complete' => __('Synchronization complete!', 'wp-woocommerce-printify-sync'),
-                'sync_error' => __('Synchronization failed: ', 'wp-woocommerce-printify-sync'),
                 'confirm_sync' => __('Are you sure you want to synchronize all products? This may take some time.', 'wp-woocommerce-printify-sync'),
                 'confirm_order_sync' => __('Are you sure you want to send this order to Printify?', 'wp-woocommerce-printify-sync'),
                 'loading_shops' => __('Loading available shops...', 'wp-woocommerce-printify-sync'),
@@ -77,6 +102,11 @@ class AssetsServiceProvider extends BaseServiceProvider
                 'shop_error' => __('Error loading shops: ', 'wp-woocommerce-printify-sync'),
                 'order_sent' => __('Order sent to Printify!', 'wp-woocommerce-printify-sync'),
                 'order_error' => __('Error sending order: ', 'wp-woocommerce-printify-sync'),
+                'saving' => __('Saving...', 'wp-woocommerce-printify-sync'),
+                'missing_credentials' => __('Please enter both API Key and Shop ID.', 'wp-woocommerce-printify-sync'),
+                'connected' => __('Connected', 'wp-woocommerce-printify-sync'),
+                'not_connected' => __('Not Connected', 'wp-woocommerce-printify-sync'),
+                'auto_sync_disabled' => __('Automatic synchronization has been disabled.', 'wp-woocommerce-printify-sync'),
             ]
         ]);
     }

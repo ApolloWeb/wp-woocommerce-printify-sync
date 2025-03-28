@@ -24,10 +24,13 @@ if (!defined('ABSPATH')) {
 // Define plugin constants
 define('WPWPS_VERSION', '1.0.0');
 define('WPWPS_FILE', __FILE__);
+define('WPWPS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPWPS_PATH', plugin_dir_path(__FILE__));
 define('WPWPS_URL', plugin_dir_url(__FILE__));
 define('WPWPS_BASENAME', plugin_basename(__FILE__));
 define('WPWPS_ASSETS_URL', WPWPS_URL . 'assets/');
+define('WPWPS_TEMPLATES_DIR', WPWPS_PLUGIN_DIR . 'templates/');
+define('WPWPS_CACHE_DIR', WPWPS_TEMPLATES_DIR . 'cache/');
 
 // Declare HPOS compatibility
 add_action('before_woocommerce_init', function() {

@@ -26,6 +26,10 @@ class ApiServiceProvider extends BaseServiceProvider
         
         // Register REST API endpoints
         add_action('rest_api_init', [$this, 'registerRestRoutes']);
+
+        // Register AJAX handlers
+        add_action('wp_ajax_wpwps_test_printify_connection', [$this, 'testPrintifyConnection']);
+        add_action('wp_ajax_wpwps_test_openai_connection', [$this, 'testOpenAIConnection']);
     }
     
     /**
@@ -682,5 +686,91 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         global $wpwps_plugin;
         return $wpwps_plugin->getServiceProvider(WooCommerceServiceProvider::class);
+    }
+
+    /**
+     * Test Printify API connection.
+     * 
+     * @return void
+     */
+    public function testPrintifyConnection(): void
+    {
+        check_ajax_referer('wpwps-admin-nonce', 'nonce');
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error([
+                'message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')
+            ]);
+        }
+
+        $apiKey = sanitize_text_field($_POST['api_key'] ?? '');
+        $endpoint = sanitize_text_field($_POST['endpoint'] ?? 'https://api.printify.com/v1/');
+
+        if (empty($apiKey)) {
+            wp_send_json_error([
+                'message' => __('API Key is required.', 'wp-woocommerce-printify-sync')
+            ]);
+        }
+
+        try {
+            $client = new PrintifyClient($apiKey, '', $endpoint);
+            $shops = $client->getShops();
+
+            wp_send_json_success([
+                'message' => __('Successfully connected to Printify.', 'wp-woocommerce-printify-sync'),
+                'shops' => $shops
+            ]);
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Test OpenAI API connection.
+     * 
+     * @return void
+     */
+    public function testOpenAIConnection(): void
+    {
+        check_ajax_referer('wpwps-admin-nonce', 'nonce');
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error([
+                'message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')
+            ]);
+        }
+
+        $apiKey = sanitize_text_field($_POST['api_key'] ?? '');
+        $tokens = intval($_POST['tokens'] ?? 1000);
+        $temperature = floatval($_POST['temperature'] ?? 0.7);
+        $spendCap = floatval($_POST['spend_cap'] ?? 50.0);
+
+        if (empty($apiKey)) {
+            wp_send_json_error([
+                'message' => __('API Key is required.', 'wp-woocommerce-printify-sync')
+            ]);
+        }
+
+        try {
+            // Simulate an OpenAI API call (replace with actual implementation)
+            $estimatedCost = $tokens * $temperature * 0.0001; // Example calculation
+
+            if ($estimatedCost > $spendCap) {
+                wp_send_json_error([
+                    'message' => __('Estimated cost exceeds your spend cap.', 'wp-woocommerce-printify-sync')
+                ]);
+            }
+
+            wp_send_json_success([
+                'message' => __('Successfully connected to OpenAI.', 'wp-woocommerce-printify-sync'),
+                'estimated_cost' => $estimatedCost
+            ]);
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }

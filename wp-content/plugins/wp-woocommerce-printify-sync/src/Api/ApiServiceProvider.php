@@ -22,6 +22,9 @@ class ApiServiceProvider extends BaseServiceProvider
         
         // Register webhook handlers
         add_action('woocommerce_api_wp_woocommerce_printify_sync', [$this, 'handleWebhook']);
+        
+        // Register AJAX handlers
+        add_action('wp_ajax_wpwps_test_connection', [$this, 'testConnection']);
     }
 
     /**
@@ -430,5 +433,58 @@ class ApiServiceProvider extends BaseServiceProvider
             'printify_order_id' => HPOSCompatibility::getOrderMeta($order, '_wpwps_printify_order_id', true),
             'status' => HPOSCompatibility::getOrderMeta($order, '_wpwps_printify_order_status', true)
         ], 200);
+    }
+
+    /**
+     * Test the Printify API connection
+     * 
+     * @return void
+     */
+    public function testConnection(): void
+    {
+        check_ajax_referer('wpwps-admin-nonce', 'nonce');
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error([
+                'message' => __('You do not have permission to perform this action.', 'wp-woocommerce-printify-sync')
+            ]);
+        }
+
+        $apiKey = sanitize_text_field($_POST['api_key'] ?? '');
+        $shopId = sanitize_text_field($_POST['shop_id'] ?? '');
+
+        if (empty($apiKey) || empty($shopId)) {
+            wp_send_json_error([
+                'message' => __('API Key and Shop ID are required.', 'wp-woocommerce-printify-sync')
+            ]);
+        }
+
+        try {
+            // Create a temporary client for testing
+            $client = new PrintifyClient($apiKey, $shopId);
+            
+            // Attempt to fetch shop details to verify credentials
+            $response = $client->makeRequest("shops/{$shopId}.json");
+            
+            if (!empty($response['id'])) {
+                wp_send_json_success([
+                    'message' => sprintf(
+                        __('Successfully connected to Printify shop: %s', 'wp-woocommerce-printify-sync'),
+                        $response['title'] ?? $shopId
+                    )
+                ]);
+            } else {
+                wp_send_json_error([
+                    'message' => __('Invalid shop ID or unable to access shop details.', 'wp-woocommerce-printify-sync')
+                ]);
+            }
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => sprintf(
+                    __('Connection failed: %s', 'wp-woocommerce-printify-sync'),
+                    $e->getMessage()
+                )
+            ]);
+        }
     }
 }
