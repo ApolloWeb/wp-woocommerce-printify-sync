@@ -5,3 +5,4 @@ templates/cache/
 languages/*.mo
 .DS_Store
 *.log
+wpwps_setup.sh
