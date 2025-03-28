@@ -1,0 +1,185 @@
+/**
+ * Orders page specific styles for WP WooCommerce Printify Sync
+ * Extends dashboard-modern.css core styles
+ */
+
+/* Order status badges */
+.wpwps-orders .badge-pending {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.wpwps-orders .badge-processing {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.wpwps-orders .badge-shipped {
+  background-color: var(--cool-teal);
+  color: white;
+}
+
+.wpwps-orders .badge-completed {
+  background-color: var(--deep-indigo);
+  color: white;
+}
+
+.wpwps-orders .badge-cancelled {
+  background-color: #dc3545;
+  color: white;
+}
+
+.wpwps-orders .badge-failed {
+  background-color: #6c757d;
+  color: white;
+}
+
+.wpwps-orders .badge-refunded {
+  background-color: #fd7e14;
+  color: white;
+}
+
+/* Order filters */
+.wpwps-orders .filters-row {
+  background-color: var(--soft-gray);
+  border-radius: var(--card-border-radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.wpwps-orders .filter-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Orders table */
+.wpwps-orders .order-table th {
+  white-space: nowrap;
+}
+
+.wpwps-orders .order-table td {
+  vertical-align: middle;
+}
+
+.wpwps-orders .order-number {
+  font-weight: 600;
+}
+
+.wpwps-orders .order-customer {
+  font-size: 0.875rem;
+}
+
+.wpwps-orders .order-amount {
+  font-weight: 500;
+}
+
+.wpwps-orders .order-item-count {
+  font-size: 0.875rem;
+  padding: 0.125rem 0.5rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 50rem;
+}
+
+/* Order details accordion */
+.wpwps-orders .order-details-accordion .accordion-button {
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  background-color: var(--soft-gray);
+}
+
+.wpwps-orders .order-details-accordion .accordion-button:not(.collapsed) {
+  color: var(--woo-primary);
+  background-color: rgba(150, 88, 138, 0.05);
+}
+
+.wpwps-orders .order-details-accordion .accordion-button:focus {
+  box-shadow: 0 0 0 0.25rem rgba(150, 88, 138, 0.25);
+}
+
+/* Order detail sections */
+.wpwps-orders .order-detail-section {
+  margin-bottom: 1.5rem;
+}
+
+.wpwps-orders .order-detail-header {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Timeline */
+.wpwps-orders .order-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.wpwps-orders .order-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.wpwps-orders .timeline-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.wpwps-orders .timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.wpwps-orders .timeline-marker {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  left: -1.75rem;
+  top: 0.25rem;
+  background-color: var(--woo-primary);
+  border: 2px solid white;
+}
+
+.wpwps-orders .timeline-content {
+  background-color: var(--soft-gray);
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+}
+
+.wpwps-orders .timeline-title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.wpwps-orders .timeline-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .wpwps-orders .order-table td:first-child {
+    white-space: nowrap;
+  }
+  
+  .wpwps-orders .filters-row .col-auto {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .wpwps-orders .order-table {
+    font-size: 0.875rem;
+  }
+  
+  .wpwps-orders .table-responsive {
+    border-radius: var(--card-border-radius);
+  }
+}

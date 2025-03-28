@@ -57,16 +57,27 @@ class Plugin
      */
     protected function registerProviders()
     {
-        $this->providers = [
-            \ApolloWeb\WPWooCommercePrintifySync\Providers\SettingsProvider::class,
-            \ApolloWeb\WPWooCommercePrintifySync\Providers\DashboardProvider::class,
-            \ApolloWeb\WPWooCommercePrintifySync\Services\PrintifyAPIProvider::class,
-            \ApolloWeb\WPWooCommercePrintifySync\Providers\LogsProvider::class,
-        ];
+        $this->providers = [];
         
-        foreach ($this->providers as $provider) {
-            $this->registerProvider($provider);
+        // Register core service providers
+        $this->registerProvider(new \ApolloWeb\WPWooCommercePrintifySync\Providers\DashboardProvider($this));
+        $this->registerProvider(new \ApolloWeb\WPWooCommercePrintifySync\Providers\SettingsProvider($this));
+    }
+
+    /**
+     * Register a service provider
+     *
+     * @param \ApolloWeb\WPWooCommercePrintifySync\Core\ServiceProvider $provider
+     * @return void
+     */
+    protected function registerProvider($provider)
+    {
+        if (is_string($provider)) {
+            $provider = new $provider();
         }
+        
+        $provider->register();
+        $this->providers[] = $provider;
     }
 
     /**

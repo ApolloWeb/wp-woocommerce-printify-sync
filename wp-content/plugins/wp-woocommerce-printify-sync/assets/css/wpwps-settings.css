@@ -1,0 +1,186 @@
+/**
+ * Settings page specific styles for WP WooCommerce Printify Sync
+ * Extends dashboard-modern.css core styles
+ */
+
+/* Settings tabs */
+.wpwps-settings .nav-tabs {
+  border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+
+.wpwps-settings .nav-tabs .nav-link {
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background-color: transparent;
+  transition: all var(--transition-speed);
+}
+
+.wpwps-settings .nav-tabs .nav-link:hover:not(.active) {
+  color: var(--woo-primary);
+  border-bottom: 2px solid rgba(150, 88, 138, 0.2);
+}
+
+.wpwps-settings .nav-tabs .nav-link.active {
+  color: var(--woo-primary);
+  border-bottom: 2px solid var(--woo-primary);
+}
+
+.wpwps-settings .tab-content {
+  padding-top: 2rem;
+}
+
+/* Form elements with improved styling */
+.wpwps-settings .form-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.wpwps-settings .form-text {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.wpwps-settings .input-group-text {
+  background-color: var(--soft-gray);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.wpwps-settings .form-check-input:checked {
+  background-color: var(--woo-primary);
+  border-color: var(--woo-primary);
+}
+
+.wpwps-settings .form-switch .form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(150, 88, 138, 0.25);
+}
+
+.wpwps-settings section {
+  margin-bottom: 2rem;
+}
+
+.wpwps-settings h5 {
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Toggle password buttons */
+.wpwps-settings .toggle-password {
+  color: var(--text-muted);
+  transition: color var(--transition-speed);
+}
+
+.wpwps-settings .toggle-password:hover {
+  color: var(--woo-primary);
+}
+
+/* API status alerts */
+.wpwps-settings .api-status {
+  padding: 0.75rem 1rem;
+  border-radius: var(--card-border-radius);
+  transition: all var(--transition-speed);
+  margin-top: 1rem;
+}
+
+.wpwps-settings .api-status.success {
+  background-color: rgba(32, 201, 151, 0.1);
+  border: 1px solid rgba(32, 201, 151, 0.2);
+  color: #155f46;
+}
+
+.wpwps-settings .api-status.error {
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  color: #7e2231;
+}
+
+/* Range control with improved styling */
+.wpwps-settings .form-range::-webkit-slider-thumb {
+  background: var(--woo-primary);
+}
+
+.wpwps-settings .form-range:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem rgba(150, 88, 138, 0.25);
+}
+
+.wpwps-settings .range-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.wpwps-settings .range-value {
+  text-align: center;
+  font-weight: 500;
+  color: var(--woo-primary);
+}
+
+/* Cost estimate card */
+.wpwps-settings .cost-estimate-card {
+  background-color: var(--soft-gray);
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--glass-shadow);
+  margin-top: 1rem;
+}
+
+.wpwps-settings .cost-progress {
+  height: 0.5rem;
+}
+
+.wpwps-settings .spend-within-limit .progress-bar {
+  background-color: var(--cool-teal);
+}
+
+.wpwps-settings .spend-over-limit .progress-bar {
+  background-color: #dc3545;
+}
+
+/* Social media inputs */
+.wpwps-settings .social-input .input-group-text {
+  min-width: 40px;
+  justify-content: center;
+}
+
+/* Toast notifications for settings */
+.wpwps-settings-toast-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1050;
+}
+
+.wpwps-settings-toast {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--glass-shadow);
+  min-width: 300px;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+  border-left: 4px solid var(--woo-primary);
+}
+
+.wpwps-settings-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .wpwps-settings .nav-tabs .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .wpwps-settings-toast {
+    min-width: unset;
+    max-width: 90%;
+  }
+}

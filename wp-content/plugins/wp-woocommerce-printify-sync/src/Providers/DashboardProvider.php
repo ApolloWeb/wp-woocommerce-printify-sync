@@ -33,13 +33,14 @@ class DashboardProvider extends ServiceProvider
      */
     public function registerAdminMenu()
     {
-        // Main menu with t-shirt icon
+        // Main menu with dashboard icon
         $this->addMenuPage(
-            __('Printify Sync', 'wp-woocommerce-printify-sync'),
+            __('Dashboard', 'wp-woocommerce-printify-sync'),
             __('Printify Sync', 'wp-woocommerce-printify-sync'),
             'manage_woocommerce',
             'wpwps-dashboard',
-            'dashicons-shirt', // T-shirt icon
+            null,
+            'dashicons-dashboard', // Dashboard icon
             58
         );
 
