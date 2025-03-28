@@ -1,8 +1,8 @@
 vendor/
 lib/
 logs/
-templates/cache/
+templates/cache/*
 languages/*.mo
 .DS_Store
 *.log
-.vscode/*
+.vscode/
