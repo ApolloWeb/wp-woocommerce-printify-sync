@@ -1,0 +1,110 @@
+/**
+ * Modern Dashboard Styles for WP WooCommerce Printify Sync
+ * Core shared styles and components
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* WooCommerce Color Palette */
+  --woo-primary: #96588a;
+  --woo-primary-dark: #7c4672;
+  --woo-primary-light: #ab6c9e;
+  
+  /* Extended Color Palette */
+  --deep-indigo: #3a3a7e;
+  --electric-blue: #0066ff;
+  --cool-teal: #20c997;
+  --soft-gray: #f8f9fa;
+  --text-muted: #6c757d;
+  
+  /* UI Elements */
+  --card-border-radius: 0.75rem;
+  --button-border-radius: 50rem;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --transition-speed: 0.2s;
+}
+
+/* Base styling */
+body.wp-admin .wpwps-admin {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #f9fafb;
+  color: #333;
+}
+
+/* Typography */
+.wpwps-admin h1, .wpwps-admin h2, 
+.wpwps-admin h3, .wpwps-admin h4, 
+.wpwps-admin h5, .wpwps-admin h6 {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Common Components */
+.wpwps-admin .card {
+  background: var(--glass-bg);
+  border: none;
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform var(--transition-speed);
+}
+
+.wpwps-admin .btn {
+  border-radius: var(--button-border-radius);
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  transition: all var(--transition-speed);
+}
+
+.wpwps-admin .btn-primary {
+  background: linear-gradient(135deg, var(--woo-primary) 0%, var(--woo-primary-dark) 100%);
+}
+
+/* Form Elements */
+.wpwps-admin .form-control,
+.wpwps-admin .form-select {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 1rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+}
+
+/* Navigation */
+.wpwps-admin .nav-tabs .nav-link {
+  border: none;
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: color var(--transition-speed);
+}
+
+.wpwps-admin .nav-tabs .nav-link.active {
+  color: var(--woo-primary);
+  background-color: transparent;
+  border-bottom: 2px solid var(--woo-primary);
+}
+
+/* Toasts */
+.wpwps-toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1050;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-left: 4px solid var(--woo-primary);
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  .wpwps-admin .card {
+    margin-bottom: 1rem;
+  }
+}

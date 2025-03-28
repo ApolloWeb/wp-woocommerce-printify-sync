@@ -1,0 +1,127 @@
+/**
+ * Dashboard-specific styles for WP WooCommerce Printify Sync
+ */
+
+/* Stats Cards */
+.wpwps-admin .stats-card {
+  border-radius: var(--card-border-radius);
+  overflow: hidden;
+  padding: 1.5rem;
+  transition: transform var(--transition-speed);
+}
+
+.wpwps-admin .stats-card:hover {
+  transform: translateY(-5px);
+}
+
+.wpwps-admin .stats-number {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.wpwps-admin .stats-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* Chart containers */
+.wpwps-admin .chart-container {
+  position: relative;
+  margin: auto;
+  height: 300px;
+  transition: transform var(--transition-speed);
+}
+
+.wpwps-admin .chart-container:hover {
+  transform: scale(1.02);
+}
+
+/* Recent Activity */
+.wpwps-admin .activity-feed {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wpwps-admin .activity-item {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background-color var(--transition-speed);
+}
+
+.wpwps-admin .activity-item:hover {
+  background-color: var(--soft-gray);
+}
+
+/**
+ * Dashboard Page Styles for WP WooCommerce Printify Sync
+ */
+
+.wpwps-dashboard {
+  /* Dashboard specific styles that extend dashboard-modern.css */
+}
+
+/* Dashboard Overview Section */
+.wpwps-dashboard .overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Dashboard Charts Section */
+.wpwps-dashboard .charts-section {
+  margin: 2rem 0;
+}
+
+/* Recent Activity Section */
+.wpwps-dashboard .recent-activity {
+  margin-top: 2rem;
+}
+
+/* Dashboard specific card styles */
+.wpwps-dashboard .stat-card {
+  height: 100%;
+  min-height: 120px;
+}
+
+/**
+ * Dashboard specific styles for WP WooCommerce Printify Sync
+ */
+
+/* Dashboard specific overrides */
+.wpwps-dashboard-wrapper .stats-card {
+  margin-bottom: 1.5rem;
+}
+
+/* Dashboard specific chart styles */
+.wpwps-dashboard-wrapper .chart-container {
+  min-height: 300px;
+  margin-bottom: 2rem;
+}
+
+/* Dashboard widgets */
+.wpwps-dashboard-wrapper .widget {
+  margin-bottom: 1.5rem;
+}
+
+/* Recent activity feed */
+.wpwps-dashboard-wrapper .activity-feed {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.wpwps-dashboard-wrapper .activity-item {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Quick actions panel */
+.wpwps-dashboard-wrapper .quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
