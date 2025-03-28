@@ -3,6 +3,7 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Providers;
 
 use ApolloWeb\WPWooCommercePrintifySync\Core\ServiceProvider;
 use ApolloWeb\WPWooCommercePrintifySync\Helpers\View;
+use ApolloWeb\WPWooCommercePrintifySync\Services\PrintifyService;
 
 class SettingsProvider extends ServiceProvider {
     public function register(): void {
@@ -62,8 +63,18 @@ class SettingsProvider extends ServiceProvider {
             wp_send_json_error(['message' => __('API key is required', 'wp-woocommerce-printify-sync')]);
         }
 
-        // TODO: Implement actual API test
-        wp_send_json_success(['message' => __('Connection successful', 'wp-woocommerce-printify-sync')]);
+        $printifyService = new PrintifyService();
+        $connected = $printifyService->testConnection();
+        
+        if ($connected) {
+            $shops = $printifyService->getShops();
+            wp_send_json_success([
+                'message' => __('Connection successful', 'wp-woocommerce-printify-sync'),
+                'shops' => $shops
+            ]);
+        } else {
+            wp_send_json_error(['message' => __('Could not connect to Printify API', 'wp-woocommerce-printify-sync')]);
+        }
     }
 
     public function testOpenAIConnection(): void {
