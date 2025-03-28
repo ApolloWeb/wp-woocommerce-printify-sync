@@ -5,6 +5,9 @@ class Plugin {
     private array $providers = [];
 
     public function boot(): void {
+        // Initialize third-party libraries
+        LibraryLoader::initLibraries();
+        
         $this->registerProviders();
         $this->bootProviders();
         $this->initHooks();

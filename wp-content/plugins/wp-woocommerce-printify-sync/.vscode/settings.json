@@ -1,11 +1,11 @@
 {
   // === Copilot Core Features ===
-  "github.copilot.editor.enableAutoCompletions": true,  // Autocomplete in editor
-  "github.copilot.chat.enable": true,                   // Copilot Chat sidebar
-  "github.copilot.status.show": true,                   // Show status icon
+  "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.chat.enable": true,
+  "github.copilot.status.show": true,
 
   // === Inline Suggestions & Editor Tweaks ===
-  "editor.inlineSuggest.enabled": true,                 // Inline completions (ghost text)
+  "editor.inlineSuggest.enabled": true,
   "editor.quickSuggestions": {
     "other": true,
     "comments": false,
@@ -14,13 +14,13 @@
   "editor.suggest.snippetsPreventQuickSuggestions": false,
 
   // === Experimental / Advanced Features ===
-  "github.copilotChat.experimental.remoteIndexing": true, // Helps with context awareness
-  "github.copilot.experimental.inlineChat": true,         // Enables inline chat/edits
-  "github.copilotChat.enableAgent": true,                 // Enables Copilot Agents
-  "github.copilotChat.enableFixes": true,                 // Enables inline fixes (e.g. // copilot: fix this)
+  "github.copilotChat.experimental.remoteIndexing": true,
+  "github.copilot.experimental.inlineChat": true,
+  "github.copilotChat.enableAgent": true,
+  "github.copilotChat.enableFixes": true,
 
   // === Model Preference (if supported) ===
-  "github.copilot.model": "gpt-4",                         // Preferred model (if multiple available)
+  "github.copilot.model": "gpt-4",
 
   // === Restrict Copilot to Specific Languages ===
   "github.copilot.enable": {
@@ -28,5 +28,30 @@
     "php": true,
     "javascript": true,
     "css": true
+  },
+
+  // === Millennium Falcon Terminal Vibes ===
+  "workbench.colorCustomizations": {
+    "terminal.background": "#0d0f11",
+    "terminal.foreground": "#c9d1d9",
+    "terminalCursor.foreground": "#ffcc00",
+
+    "terminal.ansiBlack": "#2c2c2c",
+    "terminal.ansiRed": "#ff3c3c",
+    "terminal.ansiGreen": "#88ff88",
+    "terminal.ansiYellow": "#fcd116",
+    "terminal.ansiBlue": "#61afef",
+    "terminal.ansiMagenta": "#c678dd",
+    "terminal.ansiCyan": "#56b6c2",
+    "terminal.ansiWhite": "#dcdfe4",
+
+    "terminal.ansiBrightBlack": "#3c3c3c",
+    "terminal.ansiBrightRed": "#ff6e6e",
+    "terminal.ansiBrightGreen": "#a8ffb0",
+    "terminal.ansiBrightYellow": "#ffe066",
+    "terminal.ansiBrightBlue": "#79b8ff",
+    "terminal.ansiBrightMagenta": "#da70d6",
+    "terminal.ansiBrightCyan": "#8be9fd",
+    "terminal.ansiBrightWhite": "#ffffff"
   }
 }
