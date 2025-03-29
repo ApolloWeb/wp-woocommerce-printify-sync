@@ -1,0 +1,49 @@
+#ordersTable {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.table-responsive {
+    min-height: 400px;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    margin-right: 0.25rem;
+}
+
+.btn-sm:last-child {
+    margin-right: 0;
+}
+
+.badge {
+    font-size: 0.875rem;
+    padding: 0.35rem 0.65rem;
+}
+
+/* Fix WordPress Admin Conflicts */
+#wpwrap {
+    position: static;
+}
+
+.wrap {
+    margin: 0;
+}
+
+/* Tracking Link */
+.btn-info .fas.fa-truck {
+    margin-right: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-sm {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+    }
+}

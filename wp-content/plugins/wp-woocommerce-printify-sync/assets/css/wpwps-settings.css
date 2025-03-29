@@ -1,0 +1,73 @@
+.wpwps-settings-wrap {
+    margin: 20px 0;
+}
+
+.wpwps-settings-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.wpwps-settings-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.wpwps-form-table {
+    margin-top: 20px;
+}
+
+.wpwps-form-table th {
+    padding: 20px 10px 20px 0;
+    width: 200px;
+}
+
+.wpwps-form-table td {
+    padding: 15px 10px;
+}
+
+.wpwps-field-description {
+    color: #666;
+    font-style: italic;
+    margin: 5px 0;
+}
+
+.wpwps-depends {
+    margin-left: 20px;
+}
+
+.wpwps-test-api-key {
+    margin-left: 10px !important;
+}
+
+.wpwps-tooltip {
+    cursor: help;
+    color: #666;
+}
+
+.wpwps-settings-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.wpwps-api-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.wpwps-api-status.connected {
+    background: #dff0d8;
+    color: #3c763d;
+}
+
+.wpwps-api-status.disconnected {
+    background: #f2dede;
+    color: #a94442;
+}

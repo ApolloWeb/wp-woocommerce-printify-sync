@@ -1,0 +1,35 @@
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.display-4 i {
+    font-size: 2.5rem;
+}
+
+/* Fix WordPress Admin Conflicts */
+#wpwrap {
+    position: static;
+}
+
+.wrap {
+    margin: 0;
+}
+
+/* Chart Container */
+#salesChart {
+    min-height: 300px;
+}
+
+/* Recent Orders List */
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}

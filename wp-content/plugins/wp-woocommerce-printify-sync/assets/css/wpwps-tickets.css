@@ -1,0 +1,70 @@
+#ticketsTable {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.table-responsive {
+    min-height: 400px;
+}
+
+.ticket-thread {
+    max-width: 100%;
+}
+
+.ticket-message,
+.ticket-response {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    background-color: #f8f9fa;
+}
+
+.ticket-response {
+    margin-left: 2rem;
+    background-color: #e9ecef;
+}
+
+.ticket-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.badge {
+    font-size: 0.875rem;
+    padding: 0.35rem 0.65rem;
+}
+
+/* Fix WordPress Admin Conflicts */
+#wpwrap {
+    position: static;
+}
+
+.wrap {
+    margin: 0;
+}
+
+/* Form Styles */
+.form-label {
+    font-weight: 500;
+}
+
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .ticket-response {
+        margin-left: 1rem;
+    }
+
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-sm {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+    }
+}

@@ -1,0 +1,96 @@
+.log-viewer {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.log-controls {
+    padding: 1rem;
+    background-color: #fff;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 4px 4px 0 0;
+}
+
+.log-content {
+    margin: 0;
+    padding: 1rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre;
+    overflow-x: auto;
+    min-height: 500px;
+    max-height: 800px;
+    color: #333;
+}
+
+.wrap-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.hide-timestamps .log-timestamp {
+    display: none;
+}
+
+/* Log Level Colors */
+.log-timestamp {
+    color: #6c757d;
+}
+
+.log-error {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.log-warning {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.log-info {
+    color: #0dcaf0;
+    font-weight: 600;
+}
+
+.log-debug {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+/* Search Highlight */
+mark {
+    background-color: #fff3cd;
+    padding: 0;
+}
+
+mark.current-match {
+    background-color: #ffc107;
+}
+
+/* Table Styles */
+#logsTable {
+    margin-bottom: 0;
+}
+
+.table-responsive {
+    min-height: 400px;
+}
+
+/* Button Styles */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.gap-2 {
+    gap: 0.5rem !important;
+}
+
+/* Fix WordPress Admin Conflicts */
+#wpwrap {
+    position: static;
+}
+
+.wrap {
+    margin: 0;
+}
