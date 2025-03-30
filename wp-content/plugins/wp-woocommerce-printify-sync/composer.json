@@ -1,0 +1,14 @@
+{
+    "name": "apolloweb/wp-woocommerce-printify-sync",
+    "description": "WordPress plugin for WooCommerce and Printify synchronization",
+    "type": "wordpress-plugin",
+    "require": {
+        "guzzlehttp/guzzle": "^7.0",
+        "php": ">=7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "ApolloWeb\\WPWooCommercePrintifySync\\": "src/"
+        }
+    }
+}
