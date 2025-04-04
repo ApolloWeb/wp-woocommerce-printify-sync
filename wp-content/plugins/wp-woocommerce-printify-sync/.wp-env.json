@@ -6,8 +6,21 @@
       "WP_DEBUG": true,
       "SCRIPT_DEBUG": true,
       "WPLANG": "en_GB",
-      "WP_HOME": "https://apolloweb.ngrok.app",
-      "WP_SITEURL": "https://bigfootfashion.ngrok.app/"
+      "WP_HOME": "http://localhost",
+      "WP_SITEURL": "http://localhost",
+      "WP_ENVIRONMENT_TYPE": "local",
+      "WP_DEBUG_LOG": true,
+      "WP_DEBUG_DISPLAY": true,
+      "WP_DISABLE_FATAL_ERROR_HANDLER": true,
+      "WP_ALLOW_REPAIR": true,
+      "WP_ALLOW_MULTISITE": false,
+      "WP_AUTO_UPDATE_CORE": false,
+      "FILEMOD": "0644",
+      "DIRMOD": "0755",
+      "FS_METHOD": "direct",
+      "WP_MEMORY_LIMIT": "256M",
+      "WP_MAX_MEMORY_LIMIT": "512M",
+      "WP_MAX_EXECUTION_TIME": 300
     },
     "plugins": [
       "./",
