@@ -6,8 +6,8 @@
     "WP_DEBUG": true,
     "SCRIPT_DEBUG": true,
     "WPLANG": "en_GB",
-    "WP_HOME": "http://localhost",
-    "WP_SITEURL": "http://localhost"
+    "WP_HOME": "https://bigfootfashion.ngrok.app/",
+    "WP_SITEURL": "https://bigfootfashion.ngrok.app/"
   },
   "plugins": [
     ".",
