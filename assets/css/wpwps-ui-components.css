@@ -1,0 +1,393 @@
+/**
+ * UI Components for WP WooCommerce Printify Sync
+ *
+ * Contains styles for quick actions panel, toast notifications, and other UI elements
+ */
+
+/* Quick Actions Panel Styling with improved design */
+.wpwps-quick-actions {
+    position: fixed;
+    top: 32px;
+    right: 0;
+    width: 340px;
+    background: #fff;
+    border-left: 4px solid #96588a;
+    height: calc(100vh - 32px);
+    box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+    z-index: 999999;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow-y: auto;
+    border-radius: 8px 0 0 0;
+}
+
+.wpwps-quick-actions.active {
+    transform: translateX(0);
+}
+
+/* Enhanced Toast Notifications */
+#wpwps-toast-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999999;
+}
+
+.wpwps-toast {
+    position: relative;
+    min-width: 300px;
+    max-width: 400px;
+    margin: 0 0 15px;
+    padding: 15px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.3s cubic-bezier(0.21, 1.11, 0.58, 1);
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.wpwps-toast-show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.wpwps-toast-hide {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.wpwps-toast-header {
+    display: flex;
+    align-items: flex-start;
+}
+
+.wpwps-toast-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.wpwps-toast-success .wpwps-toast-icon {
+    background: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+}
+
+.wpwps-toast-info .wpwps-toast-icon {
+    background: rgba(0, 123, 255, 0.15);
+    color: #007bff;
+}
+
+.wpwps-toast-warning .wpwps-toast-icon {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+}
+
+.wpwps-toast-danger .wpwps-toast-icon {
+    background: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+}
+
+.wpwps-toast-content {
+    flex: 1;
+}
+
+.wpwps-toast-content h4 {
+    margin: 0 0 5px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.wpwps-toast-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.wpwps-toast-close {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.wpwps-toast-close:hover {
+    color: #333;
+}
+
+.wpwps-toast-progress {
+    position: absolute;
+    height: 3px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.05);
+}
+
+.wpwps-toast-progress-bar {
+    height: 100%;
+    width: 100%;
+}
+
+.wpwps-toast-success .wpwps-toast-progress-bar {
+    background: #28a745;
+}
+
+.wpwps-toast-info .wpwps-toast-progress-bar {
+    background: #007bff;
+}
+
+.wpwps-toast-warning .wpwps-toast-progress-bar {
+    background: #ffc107;
+}
+
+.wpwps-toast-danger .wpwps-toast-progress-bar {
+    background: #dc3545;
+}
+
+/* Quick Actions Panel Header */
+.wpwps-quick-actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    background: linear-gradient(135deg, #96588a 0%, #7e3878 100%);
+    color: white;
+    border-radius: 8px 0 0 0;
+}
+
+.wpwps-quick-actions-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+.wpwps-quick-actions-header h3:before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M17.5,12A1.5,1.5 0 0,1 16,10.5H8A1.5,1.5 0 0,1 6.5,9A1.5,1.5 0 0,1 8,7.5H16A1.5,1.5 0 0,1 17.5,6A1.5,1.5 0 0,1 19,7.5V16.5A1.5,1.5 0 0,1 17.5,18A1.5,1.5 0 0,1 16,16.5V12A1.5,1.5 0 0,1 17.5,12M3,9H4.5V16.5A1.5,1.5 0 0,0 6,18A1.5,1.5 0 0,0 7.5,16.5V9H9A1,1 0 0,0 10,8A1,1 0 0,0 9,7H3A1,1 0 0,0 2,8A1,1 0 0,0 3,9Z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.wpwps-quick-actions-close {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.wpwps-quick-actions-close:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.wpwps-quick-actions-content {
+    padding: 20px;
+}
+
+/* Action Categories */
+.wpwps-action-category {
+    margin-bottom: 20px;
+}
+
+.wpwps-action-category-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    margin: 0 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Action Button Styling */
+.wpwps-action-button {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.wpwps-action-button:hover {
+    background: #f8fafc;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+}
+
+.wpwps-action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.wpwps-action-button .icon {
+    margin-right: 12px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #96588a;
+    border-radius: 8px;
+    color: white;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.wpwps-action-button:hover .icon {
+    transform: scale(1.1);
+}
+
+.wpwps-action-button-content {
+    flex: 1;
+}
+
+.wpwps-action-button-title {
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.wpwps-action-button-desc {
+    font-size: 12px;
+    color: #666;
+    display: block;
+}
+
+/* Special Action Button States */
+.wpwps-action-button.action-primary {
+    background: #f7f0f5;
+    border-color: #e2d0e0;
+}
+
+.wpwps-action-button.action-primary:hover {
+    background: #f0e5ee;
+    border-color: #dbc4d9;
+}
+
+.wpwps-action-button.action-danger .icon {
+    background: #dc3545;
+}
+
+.wpwps-action-button.action-warning .icon {
+    background: #ffc107;
+    color: #333;
+}
+
+.wpwps-action-button.action-success .icon {
+    background: #28a745;
+}
+
+/* Loading Spinner */
+.wpwps-spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: wpwps-spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: -4px;
+}
+
+@keyframes wpwps-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Floating Action Button */
+.wpwps-floating-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #96588a;
+    color: white;
+    border: none;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wpwps-floating-button:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.wpwps-floating-button:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.wpwps-floating-button .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+/* Tooltip Animation */
+.wpwps-floating-button:after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.wpwps-floating-button:hover:after {
+    opacity: 1;
+    transform: translateY(0);
+}

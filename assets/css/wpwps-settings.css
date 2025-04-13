@@ -1,0 +1,23 @@
+.wrap {
+    margin: 20px;
+}
+
+.card {
+    max-width: 800px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-range {
+    width: 100%;
+    max-width: 400px;
+}
+
+#temperature-value {
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    margin-right: 10px;
+}
