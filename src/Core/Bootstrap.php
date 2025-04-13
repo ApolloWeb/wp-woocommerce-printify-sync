@@ -17,7 +17,8 @@ class Bootstrap {
         $this->container = new ServiceContainer();
         
         $this->checkRequirements();
-        $this->loadTextDomain();
+        // Move text domain loading to init hook
+        add_action('init', [$this, 'loadTextDomain']);
         $this->registerServices();
         $this->registerHooks();
         $this->registerCronSchedules();
@@ -50,7 +51,7 @@ class Bootstrap {
     /**
      * Load the plugin text domain
      */
-    private function loadTextDomain() {
+    public function loadTextDomain() {
         load_plugin_textdomain('wp-woocommerce-printify-sync', false, dirname(WPWPS_PLUGIN_BASENAME) . '/languages');
     }
     

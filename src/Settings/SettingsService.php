@@ -4,7 +4,7 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Settings;
 /**
  * Settings Service
  */
-class SettingsService {
+class SettingsService implements SettingsServiceInterface {
     /**
      * Option group prefix
      * 

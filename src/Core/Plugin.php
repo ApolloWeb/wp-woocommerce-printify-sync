@@ -106,7 +106,7 @@ class Plugin {
         // Register import scheduler
         $this->container->register('import_scheduler', function($container) {
             return new \ApolloWeb\WPWooCommercePrintifySync\Products\ImportScheduler(
-                $container->get('api'),
+                $container->get('api'), // This should be the RetryableApiClient that implements PrintifyApiInterface
                 $container->get('logger'),
                 $container->get('settings')
             );
@@ -296,18 +296,18 @@ class Plugin {
     
     /**
      * Initialize AJAX handlers
-     * 
-     * @return void
      */
     private function initializeAjaxHandlers() {
-        $settings = new \ApolloWeb\WPWooCommercePrintifySync\Settings\SettingsAjax(
-            $this->container->get('settings')
-        );
-        $settings->registerAjaxHandlers();
-        
-        $product_ajax = new \ApolloWeb\WPWooCommercePrintifySync\Products\ProductAjax(
-            $this->container->get('product_sync')
-        );
-        $product_ajax->registerAjaxHandlers();
+        // Product AJAX
+        $this->container->register('product_ajax', function($container) {
+            return new \ApolloWeb\WPWooCommercePrintifySync\Products\ProductAjax(
+                $container->get('api'),  // Changed from product_sync to api
+                $container->get('logger'),
+                $container->get('import_scheduler')
+            );
+        });
+
+        // Register AJAX hooks
+        $this->container->get('product_ajax')->register_hooks();
     }
 }

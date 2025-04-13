@@ -71,3 +71,40 @@ if (defined('WP_CLI') && WP_CLI) {
     require_once WPWPS_PLUGIN_DIR . 'src/CLI/PrintifyCommands.php';
     \WP_CLI::add_command('printify', '\ApolloWeb\WPWooCommercePrintifySync\CLI\PrintifyCommands');
 }
+
+// Initialize our API rate limiter for debugging/monitoring
+add_action('admin_footer', function() {
+    if (is_admin() && current_user_can('manage_options')) {
+        ?>
+        <script>
+        // Add API rate limit tracking for monitoring
+        window.wpwpsApiRateLimit = {
+            lastRequest: 0,
+            requestCount: 0,
+            resetTime: 0,
+            limitReached: false,
+            
+            track: function() {
+                const now = Date.now();
+                this.requestCount++;
+                
+                // Reset counter if it's been more than 60 seconds
+                if (now - this.resetTime > 60000) {
+                    this.requestCount = 1;
+                    this.resetTime = now;
+                    this.limitReached = false;
+                }
+                
+                // Check if limit is exceeded (default: 30 requests per minute)
+                if (this.requestCount > 30 && !this.limitReached) {
+                    this.limitReached = true;
+                    console.warn('API rate limit warning: 30 requests per minute reached');
+                }
+                
+                this.lastRequest = now;
+            }
+        };
+        </script>
+        <?php
+    }
+});

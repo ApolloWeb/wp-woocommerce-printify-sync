@@ -4,7 +4,7 @@ namespace ApolloWeb\WPWooCommercePrintifySync\Api;
 /**
  * Printify API interaction class
  */
-class PrintifyApi {
+class PrintifyApi implements PrintifyApiInterface {
     /**
      * API Key
      *
